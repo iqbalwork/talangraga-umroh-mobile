@@ -20,6 +20,10 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.koin.android)
+            implementation(libs.koin.androidx.compose)
+            implementation(libs.androidx.material.icons.extended)
+            implementation("androidx.navigation:navigation-compose:2.7.7")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -68,4 +72,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-
