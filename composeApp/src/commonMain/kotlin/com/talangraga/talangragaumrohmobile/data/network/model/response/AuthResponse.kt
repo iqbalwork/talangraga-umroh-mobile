@@ -1,4 +1,4 @@
-package com.talangraga.talangragaumrohmobile.data
+package com.talangraga.talangragaumrohmobile.data.network.model.response
 
 import kotlinx.serialization.Serializable
 
@@ -6,4 +6,4 @@ import kotlinx.serialization.Serializable
 data class AuthResponse(
     val jwt: String,
     val user: UserResponse
-): StrapiErrorResponse()
+): ErrorResponse()

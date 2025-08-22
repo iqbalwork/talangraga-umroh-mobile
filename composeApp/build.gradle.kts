@@ -1,9 +1,3 @@
-import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
-import org.gradle.kotlin.dsl.android
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.libs
-import org.gradle.kotlin.dsl.sourceSets
-import org.jetbrains.compose.ComposePlugin.CommonComponentsDependencies.resources
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -24,14 +18,14 @@ buildConfig {
     val productionUrl = project.findProperty("productionUrl") ?: ""
     val token = project.findProperty("token") ?: ""
     // Set the default value for all build types
-    buildConfigField("String", "BUILD_TYPE", """"$buildType"""")
-    buildConfigField(type = "String", name = "STAGING_BASE_URL", expression = """"$stagingUrl"""")
+    buildConfigField("String", "BUILD_TYPE", "\"$buildType\"")
+    buildConfigField(type = "String", name = "STAGING_BASE_URL", expression = "\"$stagingUrl\"")
     buildConfigField(
         type = "String",
         name = "PRODUCTION_BASE_URL",
-        expression = """"$productionUrl""""
+        expression = "\"$productionUrl\""
     )
-    buildConfigField(type = "String", name = "TOKEN", expression = """"$token"""")
+    buildConfigField(type = "String", name = "TOKEN", expression = "\"$token\"")
 }
 
 kotlin {
@@ -50,6 +44,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            freeCompilerArgs += "-Xbinary=bundleId=com.talangraga.talangragaumrohmobile.app"
         }
     }
     
@@ -58,7 +53,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
-            implementation(libs.ktor.client.okhttp) // Ktor OkHttp engine for Android
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -67,16 +62,29 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.voyager.navigator)
+            implementation(libs.voyager.screenmodel)
+            implementation(libs.voyager.bottomsheetnavigator)
+            implementation(libs.voyager.tabnavigator)
+            implementation(libs.voyager.transition)
+            implementation(libs.voyager.koin)
+            implementation(libs.material.icons.extended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.kstore.core)
+            implementation(libs.kstore.file)
+            implementation(libs.kotlinx.serialization.json)
         }
         iosMain.dependencies{
-            implementation(libs.ktor.client.darwin) // Ktor Darwin engine for iOS
+            implementation(libs.ktor.client.darwin)
+            implementation(libs.kstore.file)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -114,4 +122,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-

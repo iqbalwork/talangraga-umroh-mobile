@@ -1,0 +1,29 @@
+package com.talangraga.talangragaumrohmobile.data.network
+
+import com.talangraga.talangragaumrohmobile.data.network.model.request.LoginRequest
+import com.talangraga.talangragaumrohmobile.data.network.model.response.AuthResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+
+class AuthService(private val httpClient: HttpClient) {
+
+    private suspend inline fun <reified T> postAuthRequest(pathSegment: String, requestBody: T): AuthResponse {
+        return httpClient.post(pathSegment) { // Ktor client is already configured with the base URL
+            contentType(ContentType.Application.Json)
+            setBody(requestBody)
+            // Ktor's body() function will typically throw an exception for non-2xx responses
+            // or if deserialization fails.
+            // For more explicit control, HttpCallValidator with expectSuccess can be used
+            // at the client level or per request via expectSuccess = true in the request block.
+        }.body()
+    }
+
+    suspend fun login(identifier: String, password: String): AuthResponse {
+        val loginRequest = LoginRequest(identifier = identifier, password = password)
+        return postAuthRequest("auth/local", loginRequest)
+    }
+}

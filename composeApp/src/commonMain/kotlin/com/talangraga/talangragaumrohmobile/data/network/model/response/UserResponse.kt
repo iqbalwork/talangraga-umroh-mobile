@@ -1,4 +1,4 @@
-package com.talangraga.talangragaumrohmobile.data
+package com.talangraga.talangragaumrohmobile.data.network.model.response
 
 import kotlinx.serialization.Serializable
 
