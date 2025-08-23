@@ -6,10 +6,10 @@ import kotlinx.serialization.Serializable
 data class StrapiError(
     val status: Int? = 0,
     val name: String? = "",
-    val message: String? = ""
+    val message: String? = "",
 )
 
 @Serializable
-open class ErrorResponse(
+open class BaseResponse(
     var error: StrapiError? = null
 )

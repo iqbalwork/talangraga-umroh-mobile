@@ -26,9 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -66,10 +63,6 @@ fun LoginScreen(
     val loginSucceed by viewModel.loginSucceed.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
-    LaunchedEffect(isLoading) {
-        println("LoginScreen: isLoading = $isLoading")
-    }
-
     LaunchedEffect(loginSucceed) {
         if (loginSucceed == true) {
             navHostController.navigate(HomeRoute) {
@@ -99,8 +92,6 @@ fun LoginContent(
     onIdentifierChange: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
-
-    var showLoading by remember { mutableStateOf(isLoading) }
 
     TalangragaTheme(useDynamicColor = false) {
         Scaffold { innerPadding ->
@@ -164,7 +155,6 @@ fun LoginContent(
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {
-                            showLoading = true
                             if (!isLoading) onLoginClick()
                         },
                         enabled = identifier.isNotBlank() && password.isNotBlank(),
@@ -174,7 +164,7 @@ fun LoginContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            AnimatedVisibility(showLoading) {
+                            AnimatedVisibility(visible = isLoading) {
                                 CircularProgressIndicator(
                                     color = Sandstone,
                                     modifier = Modifier.size(24.dp)

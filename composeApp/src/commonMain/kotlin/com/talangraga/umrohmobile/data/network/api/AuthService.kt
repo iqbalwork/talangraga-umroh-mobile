@@ -13,7 +13,10 @@ import io.ktor.http.contentType
 
 class AuthService(private val httpClient: HttpClient) {
 
-    private suspend inline fun <reified T> postAuthRequest(pathSegment: String, requestBody: T): AuthResponse {
+    private suspend inline fun <reified T> postAuthRequest(
+        pathSegment: String,
+        requestBody: T
+    ): AuthResponse {
         return httpClient.post(pathSegment) { // Ktor client is already configured with the base URL
             contentType(ContentType.Application.Json)
             setBody(requestBody)
@@ -26,7 +29,11 @@ class AuthService(private val httpClient: HttpClient) {
 
     suspend fun login(identifier: String, password: String): AuthResponse {
         val loginRequest = LoginRequest(identifier = identifier, password = password)
-        return postAuthRequest("auth/local", loginRequest)
+        return httpClient.post("auth/local") {
+            contentType(ContentType.Application.Json)
+            setBody(loginRequest)
+        }.body()
+//        return postAuthRequest("auth/local", loginRequest)
     }
 
     suspend fun getLoginProfile(): UserResponse {
