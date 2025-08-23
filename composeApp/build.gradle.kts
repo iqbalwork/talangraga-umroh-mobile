@@ -74,14 +74,11 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.auth)
-            implementation(libs.kstore.core)
-            implementation(libs.kstore.file)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.datastore.preferences)
         }
         iosMain.dependencies{
             implementation(libs.ktor.client.darwin)
-            implementation(libs.kstore.file)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
