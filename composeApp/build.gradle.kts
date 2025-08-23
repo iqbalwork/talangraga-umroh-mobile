@@ -12,7 +12,7 @@ plugins {
 
 buildConfig {
     // Define a string constant named 'BASE_URL'
-    packageName = "com.talangraga.talangragaumrohmobile"
+    packageName = "com.talangraga.umrohmobile"
     val buildType = project.findProperty("buildType") ?: "release"
     val stagingUrl = project.findProperty("stagingUrl") ?: ""
     val productionUrl = project.findProperty("productionUrl") ?: ""
@@ -35,7 +35,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -47,7 +47,7 @@ kotlin {
             freeCompilerArgs += "-Xbinary=bundleId=com.talangraga.talangragaumrohmobile.app"
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -62,12 +62,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.voyager.navigator)
-            implementation(libs.voyager.screenmodel)
-            implementation(libs.voyager.bottomsheetnavigator)
-            implementation(libs.voyager.tabnavigator)
-            implementation(libs.voyager.transition)
-            implementation(libs.voyager.koin)
+            implementation(libs.navigation.compose)
             implementation(libs.material.icons.extended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
@@ -78,9 +73,11 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.auth)
             implementation(libs.kstore.core)
             implementation(libs.kstore.file)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.androidx.datastore.preferences)
         }
         iosMain.dependencies{
             implementation(libs.ktor.client.darwin)
@@ -93,11 +90,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.talangraga.talangragaumrohmobile"
+    namespace = "com.talangraga.umrohmobile"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.talangraga.talangragaumrohmobile"
+        applicationId = "com.talangraga.umrohmobile"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
