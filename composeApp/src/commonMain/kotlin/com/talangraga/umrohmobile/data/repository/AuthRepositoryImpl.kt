@@ -1,9 +1,10 @@
 package com.talangraga.umrohmobile.data.repository
 
 import SessionStore
-import com.talangraga.umrohmobile.data.local.DataStoreKey
-import com.talangraga.umrohmobile.data.local.saveBoolean
-import com.talangraga.umrohmobile.data.local.saveString
+import com.talangraga.umrohmobile.data.local.session.DataStoreKey
+import com.talangraga.umrohmobile.data.local.session.TokenManager
+import com.talangraga.umrohmobile.data.local.session.saveBoolean
+import com.talangraga.umrohmobile.data.local.session.saveString
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
 import com.talangraga.umrohmobile.data.network.api.AuthService
 import com.talangraga.umrohmobile.data.network.model.response.AuthResponse
@@ -22,7 +23,8 @@ import kotlinx.serialization.json.Json
 class AuthRepositoryImpl(
     private val authService: AuthService,
     private val json: Json,
-    private val sessionStore: SessionStore
+    private val sessionStore: SessionStore,
+    private val tokenManager: TokenManager
 ) : AuthRepository {
 
     private inline fun <reified T : BaseResponse> safeApiCall(crossinline apiCall: suspend () -> T): Flow<ApiResponse<T, BaseResponse>> {
@@ -91,8 +93,8 @@ class AuthRepositoryImpl(
     ): Flow<ApiResponse<AuthResponse, BaseResponse>> {
         return safeApiCall {
             val authData = authService.login(identifier, password)
+            tokenManager.saveToken(authData.jwt.orEmpty())
             sessionStore.saveBoolean(DataStoreKey.IS_LOGGED_IN, true)
-            sessionStore.saveString(DataStoreKey.TOKEN_KEY, authData.jwt.orEmpty())
             authData
         }
     }

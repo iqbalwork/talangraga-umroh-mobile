@@ -8,6 +8,13 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.buildConfig)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room)
+    alias(libs.plugins.kotlinParcelize)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 buildConfig {
@@ -45,6 +52,8 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
             freeCompilerArgs += "-Xbinary=bundleId=com.talangraga.talangragaumrohmobile.app"
+            // Required when using NativeSQLiteDriver
+            linkerOpts.add("-lsqlite3")
         }
     }
 
@@ -54,6 +63,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
+//            implementation(libs.androidx.room.sqlite.wrapper)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -76,6 +86,10 @@ kotlin {
             implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.datastore.preferences)
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.coil.compose)
+            implementation(libs.constraintlayout.compose.multiplatform)
         }
         iosMain.dependencies{
             implementation(libs.ktor.client.darwin)
@@ -115,4 +129,8 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspIosX64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
 }

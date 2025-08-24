@@ -3,10 +3,11 @@ package com.talangraga.umrohmobile.presentation.home
 import SessionStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.talangraga.umrohmobile.data.local.clearAll
-import com.talangraga.umrohmobile.data.local.getUserProfile
+import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.data.local.session.clearAll
+import com.talangraga.umrohmobile.data.local.session.getUserProfile
+import com.talangraga.umrohmobile.data.mapper.toUserEntity
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
-import com.talangraga.umrohmobile.data.network.model.response.UserResponse
 import com.talangraga.umrohmobile.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,12 +27,8 @@ class HomeViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
-    private val _profile = MutableStateFlow<UserResponse?>(null)
+    private val _profile = MutableStateFlow<UserEntity?>(null)
     val profile = _profile.asStateFlow()
-
-    init {
-        getProfile()
-    }
 
     fun getProfile() {
         authRepository.getLoginProfile()
@@ -43,17 +40,22 @@ class HomeViewModel(
 
                     is ApiResponse.Success -> {
                         _isLoading.update { false }
-                        getUserProfile()
+                        _profile.update { it }
+                        getLocalProfile()
                     }
                 }
             }
             .launchIn(viewModelScope)
     }
 
-    fun getUserProfile() {
+    fun getLocalProfile() {
         sessionStore.getUserProfile()
             .onEach { profile ->
-                _profile.update { profile }
+                if (profile?.username.isNullOrBlank()) {
+                    getProfile()
+                } else {
+                    _profile.update { profile.toUserEntity() }
+                }
             }.launchIn(viewModelScope)
     }
 

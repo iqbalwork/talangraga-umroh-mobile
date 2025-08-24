@@ -13,8 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.talangraga.umrohmobile.data.local.DataStoreKey
-import com.talangraga.umrohmobile.data.local.getBoolean
+import com.talangraga.umrohmobile.data.local.session.DataStoreKey
+import com.talangraga.umrohmobile.data.local.session.getBoolean
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
 import com.talangraga.umrohmobile.presentation.navigation.SplashRoute
@@ -43,7 +43,7 @@ fun SplashScreen(
             }
             println("Navigation: Splash to Login")
         } else {
-            navHostController.navigate(HomeRoute) {
+            navHostController.navigate(HomeRoute()) {
                 popUpTo(SplashRoute) { inclusive = true }
             }
             println("Navigation: Splash to Home")

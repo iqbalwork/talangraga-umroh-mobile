@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.talangraga.umrohmobile.presentation.home.HomeScreen
 import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
@@ -17,6 +18,10 @@ fun App() {
     NavHost(navController = navController, startDestination = SplashRoute) {
         composable<SplashRoute> { SplashScreen(navHostController = navController) }
         composable<LoginRoute> { LoginScreen(navHostController = navController) }
-        composable<HomeRoute> { HomeScreen(navHostController = navController) }
+        composable<HomeRoute> { backStackEntry ->
+            val homeArgs = backStackEntry.toRoute<HomeRoute>()
+            val justLogin = homeArgs.justLogin
+            HomeScreen(navHostController = navController, justLogin = justLogin)
+        }
     }
 }

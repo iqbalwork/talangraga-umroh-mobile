@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.data.local
+package com.talangraga.umrohmobile.data.local.session
 
 import SessionStore
 import androidx.compose.runtime.Composable
@@ -48,7 +48,20 @@ fun SessionStore.getUserProfile(): Flow<UserResponse?> {
         }
         profile
     }
+}
 
+fun SessionStore.getToken(): Flow<String?> {
+    return data.map { preferences ->
+        val stringKey = stringPreferencesKey(DataStoreKey.TOKEN_KEY)
+        preferences[stringKey]
+    }
+}
+
+suspend fun SessionStore.saveToken(token: String) {
+    edit {
+        val stringKey = stringPreferencesKey(DataStoreKey.TOKEN_KEY)
+        it[stringKey] = token
+    }
 }
 
 suspend fun SessionStore.fetchString(key: String): String? {

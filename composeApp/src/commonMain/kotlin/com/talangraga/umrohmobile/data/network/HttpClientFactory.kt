@@ -1,8 +1,7 @@
 package com.talangraga.umrohmobile.data.network
 
 import SessionStore
-import com.talangraga.umrohmobile.BuildConfig
-import com.talangraga.umrohmobile.data.local.fetchToken
+import com.talangraga.umrohmobile.data.local.session.TokenManager
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.auth.Auth
@@ -18,7 +17,11 @@ import kotlinx.serialization.json.Json
 
 object HttpClientFactory {
 
-    fun create(engine: HttpClientEngine, sessionStore: SessionStore): HttpClient {
+    fun create(
+        engine: HttpClientEngine,
+        sessionStore: SessionStore,
+        tokenManager: TokenManager
+    ): HttpClient {
         return HttpClient(engine) {
             install(ContentNegotiation) {
                 json(Json {
@@ -30,7 +33,7 @@ object HttpClientFactory {
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        println("KTOR LOGGER: $message")
+                        println("==> KTOR LOGGER: $message")
                     }
                 }
                 level = LogLevel.ALL
@@ -38,14 +41,26 @@ object HttpClientFactory {
             install(Auth) {
                 bearer {
                     loadTokens {
-                        val token = sessionStore.fetchToken().ifBlank { BuildConfig.TOKEN }
-                        BearerTokens(
-                            accessToken = token,
-                            refreshToken = null
-                        )
+//                        val token = sessionStore.getToken().first().orEmpty()
+//                            .ifBlank { BuildConfig.TOKEN }
+                        tokenManager.getToken()?.let {
+                            println("==> Token: $it")
+                            BearerTokens(it, null)
+                        }
+//                        BearerTokens(
+//                            accessToken = token,
+//                            refreshToken = null
+//                        )
                     }
                 }
             }
+//            HttpResponseValidator {
+//                validateResponse { response ->
+//                    if (response.status.value == 401) {
+//
+//                    }
+//                }
+//            }
             defaultRequest {
                 url("http://192.168.101.8:1337/api/")
             }

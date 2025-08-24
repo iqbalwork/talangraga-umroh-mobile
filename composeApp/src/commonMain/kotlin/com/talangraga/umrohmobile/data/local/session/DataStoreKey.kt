@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.data.local
+package com.talangraga.umrohmobile.data.local.session
 
 object DataStoreKey {
     const val IS_LOGGED_IN = "is_logged_in"

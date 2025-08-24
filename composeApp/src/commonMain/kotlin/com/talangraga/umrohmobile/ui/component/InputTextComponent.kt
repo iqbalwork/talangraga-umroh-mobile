@@ -45,7 +45,8 @@ fun InputText(
     onValueChange: (String) -> Unit,
     placeholder: String,
     enabled: Boolean = true,
-    leadingIcon: @Composable (() -> Unit)? = null
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     Column(
         modifier = modifier,
@@ -68,7 +69,8 @@ fun InputText(
             singleLine = true,
             enabled = enabled,
             leadingIcon = leadingIcon,
-            modifier = Modifier.fillMaxWidth()
+            trailingIcon = trailingIcon,
+            modifier = Modifier.fillMaxWidth().background(color = Color.White)
         )
     }
 }
@@ -123,7 +125,7 @@ fun PasswordInput(
                     Icon(imageVector = image, description)
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().background(color = Color.White)
         )
     }
 }

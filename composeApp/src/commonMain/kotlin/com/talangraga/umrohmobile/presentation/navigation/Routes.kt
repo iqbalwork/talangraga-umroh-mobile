@@ -9,4 +9,4 @@ object SplashRoute
 object LoginRoute
 
 @Serializable
-object HomeRoute
+data class HomeRoute(val justLogin: Boolean = false)

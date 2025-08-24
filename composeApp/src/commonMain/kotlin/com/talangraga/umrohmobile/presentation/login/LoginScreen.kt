@@ -31,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -46,6 +48,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
+import talangragaumrohmobile.composeapp.generated.resources.bg_screen
 import talangragaumrohmobile.composeapp.generated.resources.input_here
 import talangragaumrohmobile.composeapp.generated.resources.input_password_here
 import talangragaumrohmobile.composeapp.generated.resources.label_username_or_email
@@ -64,8 +67,9 @@ fun LoginScreen(
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     LaunchedEffect(loginSucceed) {
+        println("==> LoginScreen Navigation: loginSucceed = $loginSucceed")
         if (loginSucceed == true) {
-            navHostController.navigate(HomeRoute) {
+            navHostController.navigate(HomeRoute(justLogin = true)) {
                 popUpTo(LoginRoute) { inclusive = true }
             }
         }
@@ -108,10 +112,17 @@ fun LoginContent(
                             ) // Bottom-right
                         )
                     )
-                    .padding(innerPadding)
                     .imePadding(),
                 contentAlignment = Alignment.Center
             ) {
+                Image(
+                    painter = painterResource(Res.drawable.bg_screen),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer(alpha = 0.45f),
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

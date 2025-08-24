@@ -1,5 +1,8 @@
 package com.talangraga.umrohmobile.module
 
+import com.talangraga.umrohmobile.data.local.database.TalangragaDatabase
+import com.talangraga.umrohmobile.data.local.database.dao.UserDao
+import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.network.HttpClientFactory
 import com.talangraga.umrohmobile.data.network.api.AuthService
 import com.talangraga.umrohmobile.data.repository.AuthRepositoryImpl
@@ -11,8 +14,10 @@ import org.koin.dsl.module
 expect val platformModule: Module
 
 val sharedModule = module {
+    single { TokenManager(get()) }
+    single<UserDao> { get<TalangragaDatabase>().userDao() }
     single {
-        HttpClientFactory.create(get(), get())
+        HttpClientFactory.create(get(), get(), get())
     }
     single {
         AuthService(get())
@@ -29,7 +34,8 @@ val sharedModule = module {
         AuthRepositoryImpl(
             authService = get(),
             json = get(),
-            sessionStore = get()
+            sessionStore = get(),
+            tokenManager = get()
         )
     }
 }
