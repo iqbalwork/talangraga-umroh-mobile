@@ -4,6 +4,7 @@ import SessionStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.local.session.clearAll
 import com.talangraga.umrohmobile.data.local.session.getUserProfile
 import com.talangraga.umrohmobile.data.mapper.toUserEntity
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val sessionStore: SessionStore,
+    private val tokenManager: TokenManager,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
@@ -62,6 +64,10 @@ class HomeViewModel(
     fun clearSession() {
         viewModelScope.launch {
             sessionStore.clearAll()
+            tokenManager.clearToken()
+            _profile.update { null }
+            _isLoading.update { false }
+            _errorMessage.update { null }
         }
     }
 

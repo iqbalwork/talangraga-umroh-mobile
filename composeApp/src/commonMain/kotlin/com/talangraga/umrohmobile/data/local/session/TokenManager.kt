@@ -16,6 +16,13 @@ class TokenManager(private val dataStore: SessionStore) {
         }
     }
 
+    suspend fun clearToken() {
+        dataStore.edit { preferences ->
+            preferences.remove(TOKEN_KEY)
+        }
+    }
+
+
     suspend fun getToken(): String? {
         return dataStore.data.map { preferences ->
             preferences[TOKEN_KEY]

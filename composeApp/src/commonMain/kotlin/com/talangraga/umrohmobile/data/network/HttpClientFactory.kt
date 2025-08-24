@@ -14,6 +14,9 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import ro.cosminmihu.ktor.monitor.ContentLength
+import ro.cosminmihu.ktor.monitor.KtorMonitorLogging
+import ro.cosminmihu.ktor.monitor.RetentionPeriod
 
 object HttpClientFactory {
 
@@ -41,26 +44,20 @@ object HttpClientFactory {
             install(Auth) {
                 bearer {
                     loadTokens {
-//                        val token = sessionStore.getToken().first().orEmpty()
-//                            .ifBlank { BuildConfig.TOKEN }
                         tokenManager.getToken()?.let {
                             println("==> Token: $it")
                             BearerTokens(it, null)
                         }
-//                        BearerTokens(
-//                            accessToken = token,
-//                            refreshToken = null
-//                        )
                     }
                 }
             }
-//            HttpResponseValidator {
-//                validateResponse { response ->
-//                    if (response.status.value == 401) {
-//
-//                    }
-//                }
-//            }
+            install(KtorMonitorLogging) {
+//                sanitizeHeader { header -> header == "Authorization" }
+//                filter { request -> !request.url.host.contains("cosminmihu.ro") }
+                showNotification = true
+                retentionPeriod = RetentionPeriod.OneHour
+                maxContentLength = ContentLength.Default
+            }
             defaultRequest {
                 url("http://192.168.101.8:1337/api/")
             }

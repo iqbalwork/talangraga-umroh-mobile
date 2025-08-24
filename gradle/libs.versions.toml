@@ -1,7 +1,7 @@
 [versions]
 agp = "8.12.1"
 android-compileSdk = "36"
-android-minSdk = "24"
+android-minSdk = "26"
 android-targetSdk = "35"
 androidx-activity = "1.10.1"
 androidx-appcompat = "1.7.1"
@@ -18,15 +18,17 @@ koin = "4.1.0"
 kotlinx-serialization = "1.9.0"
 buildConfig = "5.6.7"
 ktor = "3.2.3"
+ktorMonitorLogging = "1.7.3"
 materialIconsExtended = "1.7.3"
 navigationCompose = "2.9.0-beta03"
 datastore = "1.1.7"
 
 kotlinx-coroutines = "1.9.0"
-ksp = "2.2.0-2.0.2"
+ksp = "2.2.10-2.0.2"
 room = "2.7.2"
 sqlite = "2.5.2"
 kotlinParcelize = "2.2.20-RC"
+symbolProcessingApi = "2.2.0-2.0.2"
 
 
 [libraries]
@@ -58,6 +60,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" } # For Android/JVM with OkHttp
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" } # For iOS
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-monitor-logging = { module = "ro.cosminmihu.ktor:ktor-monitor-logging", version.ref = "ktorMonitorLogging" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
@@ -73,6 +76,7 @@ androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.r
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-room-sqlite-wrapper = { module = "androidx.room:room-sqlite-wrapper", version.ref = "room" }
+symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "symbolProcessingApi" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
