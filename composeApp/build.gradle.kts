@@ -1,3 +1,4 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -7,32 +8,46 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.buildConfig)
+//    alias(libs.plugins.buildConfig)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
-//    alias(libs.plugins.kotlinParcelize)
+    alias(libs.plugins.kotlinParcelize)
+    alias(libs.plugins.buildKonfig)
 }
 
 room {
     schemaDirectory("$projectDir/schemas")
 }
 
-buildConfig {
-    // Define a string constant named 'BASE_URL'
+
+buildkonfig {
     packageName = "com.talangraga.umrohmobile"
-    val buildType = project.findProperty("buildType") ?: "release"
+
     val stagingUrl = project.findProperty("stagingUrl") ?: ""
     val productionUrl = project.findProperty("productionUrl") ?: ""
     val token = project.findProperty("token") ?: ""
-    // Set the default value for all build types
-    buildConfigField("String", "BUILD_TYPE", "\"$buildType\"")
-    buildConfigField(type = "String", name = "STAGING_BASE_URL", expression = "\"$stagingUrl\"")
-    buildConfigField(
-        type = "String",
-        name = "PRODUCTION_BASE_URL",
-        expression = "\"$productionUrl\""
-    )
-    buildConfigField(type = "String", name = "TOKEN", expression = "\"$token\"")
+
+    defaultConfigs {
+        buildConfigField(STRING, "TOKEN", "$token")
+        buildConfigField(STRING, "BASE_URL", "$productionUrl")
+    }
+    // flavor is passed as a first argument of defaultConfigs
+    defaultConfigs("staging") {
+        buildConfigField(STRING, "TOKEN", "$token")
+        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
+    }
+
+//    targetConfigs {
+//        // names in create should be the same as target names you specified
+//        create("android") {
+//            buildConfigField(STRING, "name2", "value2")
+//            buildConfigField(STRING, "nullableField", "NonNull-value", nullable = true)
+//        }
+//
+//        create("ios") {
+//            buildConfigField(STRING, "name", "valueForNative")
+//        }
+//    }
 }
 
 kotlin {
@@ -91,8 +106,9 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.constraintlayout.compose.multiplatform)
             implementation(libs.ktor.monitor.logging)
+            implementation(libs.napier)
         }
-        iosMain.dependencies{
+        iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
         commonTest.dependencies {
@@ -133,7 +149,7 @@ dependencies {
     implementation(libs.symbol.processing.api)
 //    ksp(libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
-//    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
     add("kspIosX64", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
 }

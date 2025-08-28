@@ -2,9 +2,11 @@ package com.talangraga.umrohmobile.ui
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import talangragaumrohmobile.composeapp.generated.resources.Res
 import talangragaumrohmobile.composeapp.generated.resources.inter_bold
@@ -47,5 +49,32 @@ fun TalangragaTypography() = Typography().run {
         labelLarge = labelLarge.copy(fontFamily = fontFamily),
         labelMedium = labelMedium.copy(fontFamily = fontFamily),
         labelSmall = labelSmall.copy(fontFamily = fontFamily)
+    )
+}
+
+@Composable
+fun umrohMobileTypography(): UmrohMobileTypography {
+    val fontFamily = InterFont()
+    return UmrohMobileTypography(fontFamily)
+}
+
+class UmrohMobileTypography(private val fontFamily: FontFamily) {
+
+    val basicTextStyle = TextStyle(
+        fontFamily = fontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
+    )
+
+    val hintTextStyle = TextStyle(
+        fontFamily = fontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+    )
+
+    val title = TextStyle(
+        fontFamily = fontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp,
     )
 }

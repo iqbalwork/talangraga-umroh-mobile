@@ -17,7 +17,7 @@ val sharedModule = module {
     single { TokenManager(get()) }
     single<UserDao> { get<TalangragaDatabase>().userDao() }
     single {
-        HttpClientFactory.create(get(), get(), get())
+        HttpClientFactory.create(get(), get())
     }
     single {
         AuthService(get())

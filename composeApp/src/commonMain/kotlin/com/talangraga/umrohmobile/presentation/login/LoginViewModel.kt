@@ -46,8 +46,8 @@ class LoginViewModel(
                     }
 
                     is ApiResponse.Success -> {
-                        _isLoading.update { false }
                         _loginSucceed.update { true }
+                        _isLoading.update { false }
                     }
                 }
             }

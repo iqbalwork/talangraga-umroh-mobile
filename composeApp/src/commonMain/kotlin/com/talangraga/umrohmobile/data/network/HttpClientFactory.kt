@@ -1,7 +1,8 @@
 package com.talangraga.umrohmobile.data.network
 
-import SessionStore
+import com.talangraga.umrohmobile.BuildKonfig
 import com.talangraga.umrohmobile.data.local.session.TokenManager
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.auth.Auth
@@ -22,7 +23,6 @@ object HttpClientFactory {
 
     fun create(
         engine: HttpClientEngine,
-        sessionStore: SessionStore,
         tokenManager: TokenManager
     ): HttpClient {
         return HttpClient(engine) {
@@ -30,13 +30,13 @@ object HttpClientFactory {
                 json(Json {
                     prettyPrint = true
                     isLenient = true
-                    ignoreUnknownKeys = true // Added to handle potential extra fields in responses
+                    ignoreUnknownKeys = true
                 })
             }
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        println("==> KTOR LOGGER: $message")
+                        Napier.v(tag = "KTOR", message = message)
                     }
                 }
                 level = LogLevel.ALL
@@ -45,7 +45,6 @@ object HttpClientFactory {
                 bearer {
                     loadTokens {
                         tokenManager.getToken()?.let {
-                            println("==> Token: $it")
                             BearerTokens(it, null)
                         }
                     }
@@ -59,7 +58,7 @@ object HttpClientFactory {
                 maxContentLength = ContentLength.Default
             }
             defaultRequest {
-                url("http://192.168.101.8:1337/api/")
+                url(BuildKonfig.BASE_URL)
             }
         }
     }
