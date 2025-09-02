@@ -7,6 +7,12 @@ val Sage = Color(0xFF748873)
 val Sandstone = Color(0xFFD1A980)
 val Linen = Color(0xFFE5E0D8)
 val Porcelain = Color(0xFFF8F8F8)
+val Green = Color(0xff12b990)
+val Background = Color(0xFFEFF5FE)
+val Aqua = Color(0xFF6dd5ed)
+val Teal = Color(0xFF2193b0)
+val MediumPurple = Color(0xFF6A82FB)
+val RosePink = Color(0xFFFC5C7D)
 
 // Supporting shades
 val SageDark = Color(0xFF9FB7A1)

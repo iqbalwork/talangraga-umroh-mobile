@@ -9,3 +9,4 @@ sealed class ApiResponse<out T, out E> {
     @Serializable
     data class Error<E>(val error: E) : ApiResponse<Nothing, E>()
 }
+

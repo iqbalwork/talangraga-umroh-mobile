@@ -2,6 +2,8 @@ package com.talangraga.umrohmobile.data.network.api
 
 import com.talangraga.umrohmobile.data.network.model.request.LoginRequest
 import com.talangraga.umrohmobile.data.network.model.response.AuthResponse
+import com.talangraga.umrohmobile.data.network.model.response.DataResponse
+import com.talangraga.umrohmobile.data.network.model.response.PeriodeResponse
 import com.talangraga.umrohmobile.data.network.model.response.UserResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -38,5 +40,9 @@ class AuthService(private val httpClient: HttpClient) {
 
     suspend fun getLoginProfile(): UserResponse {
         return httpClient.get("users/me?populate=*").body<UserResponse>()
+    }
+
+    suspend fun getPeriods(): DataResponse<List<PeriodeResponse>> {
+        return httpClient.get("periodes").body<DataResponse<List<PeriodeResponse>>>()
     }
 }

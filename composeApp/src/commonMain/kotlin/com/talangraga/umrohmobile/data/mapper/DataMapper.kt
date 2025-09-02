@@ -1,7 +1,9 @@
 package com.talangraga.umrohmobile.data.mapper
 
 import com.talangraga.umrohmobile.BuildKonfig
+import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.data.network.model.response.PeriodeResponse
 import com.talangraga.umrohmobile.data.network.model.response.UserResponse
 
 fun UserResponse.toUserEntity(): UserEntity {
@@ -29,5 +31,14 @@ fun UserResponse.toUserEntity(): UserEntity {
 //                )
 //            }${this.imageProfile?.url}"
 //        }
+    )
+}
+
+fun PeriodeResponse.toPeriodEntity(): PeriodEntity {
+    return PeriodEntity(
+        documentId = this.id.toString(),
+        periodeName = this.periodeName.orEmpty(),
+        startDate = this.startDate.orEmpty(),
+        endDate = this.endDate.orEmpty()
     )
 }

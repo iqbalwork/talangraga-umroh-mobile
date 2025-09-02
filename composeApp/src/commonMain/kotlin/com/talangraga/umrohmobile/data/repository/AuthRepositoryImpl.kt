@@ -1,12 +1,16 @@
 package com.talangraga.umrohmobile.data.repository
 
 import SessionStore
+import com.talangraga.umrohmobile.data.local.database.dao.PeriodDao
+import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.session.DataStoreKey
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.local.session.saveBoolean
 import com.talangraga.umrohmobile.data.local.session.saveString
+import com.talangraga.umrohmobile.data.mapper.toPeriodEntity
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
 import com.talangraga.umrohmobile.data.network.api.AuthService
+import com.talangraga.umrohmobile.data.network.api.Result
 import com.talangraga.umrohmobile.data.network.model.response.AuthResponse
 import com.talangraga.umrohmobile.data.network.model.response.BaseResponse
 import com.talangraga.umrohmobile.data.network.model.response.StrapiError
@@ -17,14 +21,18 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class AuthRepositoryImpl(
     private val authService: AuthService,
     private val json: Json,
     private val sessionStore: SessionStore,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val periodDao: PeriodDao
 ) : AuthRepository {
 
     private inline fun <reified T : BaseResponse> safeApiCall(crossinline apiCall: suspend () -> T): Flow<ApiResponse<T, BaseResponse>> {
@@ -87,6 +95,7 @@ class AuthRepositoryImpl(
         }
     }
 
+
     override fun login(
         identifier: String,
         password: String
@@ -105,6 +114,25 @@ class AuthRepositoryImpl(
             val profileToString = json.encodeToString(UserResponse.serializer(), apiResponse)
             sessionStore.saveString(DataStoreKey.PROFILE_KEY, profileToString)
             apiResponse
+        }
+    }
+
+    override fun getPeriods(): Flow<Result<List<PeriodEntity>>> = channelFlow {
+        launch {
+            periodDao.getAllPeriods()
+                .collectLatest {
+                    send(Result.Success(it))
+                }
+        }
+
+        try {
+            val apiResponse = authService.getPeriods()
+            val data = apiResponse.data?.map {
+                it.toPeriodEntity()
+            } ?: emptyList()
+            periodDao.inserts(data)
+        } catch (e: Exception) {
+            send(Result.Error(e))
         }
     }
 }
