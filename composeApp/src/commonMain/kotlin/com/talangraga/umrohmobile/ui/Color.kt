@@ -22,3 +22,9 @@ val PorcelainDark = Color(0xFF121212)
 
 val TextPrimaryDark = Color(0xFFF5F5F5)
 val TextSecondaryDark = Color(0xFFB0B0B0)
+
+val PeriodColor = Color(0xFF6A5ACD) // A shade of purple
+val TextBodyColor = Color.DarkGray
+val TargetColor = Color.Gray
+val BackgroundColor = Color.White
+val CurrentPeriodBoxColor = Color(0xFFE6E6FA) // A light purple

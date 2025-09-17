@@ -55,6 +55,7 @@ kotlin {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+            freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
 
@@ -66,6 +67,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            freeCompilerArgs += "-Xexpect-actual-classes"
             freeCompilerArgs += "-Xbinary=bundleId=com.talangraga.talangragaumrohmobile.app"
             // Required when using NativeSQLiteDriver
             linkerOpts.add("-lsqlite3")
@@ -107,6 +109,7 @@ kotlin {
             implementation(libs.constraintlayout.compose.multiplatform)
             implementation(libs.ktor.monitor.logging)
             implementation(libs.napier)
+            implementation(libs.kotlinx.datetime)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
