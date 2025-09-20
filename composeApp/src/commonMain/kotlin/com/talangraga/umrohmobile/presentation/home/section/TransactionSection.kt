@@ -34,7 +34,7 @@ fun TransactionItem(modifier: Modifier = Modifier, username: String, amount: Int
         Text(
             text = username,
             style = UmrohMobileTypography(fontFamily).title.copy(
-                fontSize = 20.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
             ),
             modifier = Modifier.constrainAs(usernameRef) {
@@ -65,8 +65,7 @@ fun TransactionItem(modifier: Modifier = Modifier, username: String, amount: Int
                 fontWeight = FontWeight.Bold
             ),
             modifier = Modifier.constrainAs(amountRef) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
+                top.linkTo(usernameRef.bottom, 4.dp)
                 end.linkTo(parent.end)
             }
         )

@@ -7,12 +7,12 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "payment_data")
 data class PaymentEntity(
     @PrimaryKey
-    @ColumnInfo(name = "id")
-    val id: Int,
-    @ColumnInfo(name = "documentId")
+    @ColumnInfo(name = "payment_id")
+    val paymentId: Int,
+    @ColumnInfo(name = "document_id")
     val documentId: String,
-    @ColumnInfo(name = "paymentName")
+    @ColumnInfo(name = "payment_name")
     val paymentName: String,
-    @ColumnInfo(name = "paymentType")
+    @ColumnInfo(name = "payment_type")
     val paymentType: String
 )

@@ -53,6 +53,6 @@ class AuthService(private val httpClient: HttpClient) {
     }
 
     suspend fun getTransactions(): DataResponse<List<TransactionResponse>> {
-        return httpClient.get("transactions").body<DataResponse<List<TransactionResponse>>>()
+        return httpClient.get("transactions?populate=*").body<DataResponse<List<TransactionResponse>>>()
     }
 }

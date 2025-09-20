@@ -8,18 +8,11 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
-//    alias(libs.plugins.buildConfig)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.buildKonfig)
 }
-
-//project.tasks.withType<KspAATask>().configureEach {
-//    if (name != "kspCommonMainKotlinMetadata") {
-//        dependsOn("kspCommonMainKotlinMetadata")
-//    }
-//}
 
 buildkonfig {
     packageName = "com.talangraga.umrohmobile"
@@ -72,6 +65,7 @@ kotlin {
             freeCompilerArgs += "-Xbinary=bundleId=com.talangragaumroh.app"
             // Required when using NativeSQLiteDriver
             linkerOpts.add("-lsqlite3")
+//            export(libs.inspektify.ktor3)
         }
     }
 
@@ -81,7 +75,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
-//            implementation(libs.androidx.room.sqlite.wrapper)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -111,6 +104,7 @@ kotlin {
             implementation(libs.ktor.monitor.logging)
             implementation(libs.napier)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.inspektify.ktor3)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -155,9 +149,9 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
     implementation(libs.symbol.processing.api)
-//    ksp(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
-//    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
     add("kspIosX64", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
 }

@@ -16,14 +16,14 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(transactionEntity: TransactionEntity)
 
-    @Query("DELETE FROM transaction_data WHERE id = :id")
-    suspend fun deleteTransactionById(id: Int)
+    @Query("DELETE FROM transaction_data WHERE transaction_id = :transactionId")
+    suspend fun deleteTransactionById(transactionId: Int)
 
     @Query("DELETE FROM transaction_data")
     suspend fun deleteAll()
 
-    @Query("SELECT * FROM transaction_data WHERE id = :id")
-    fun getTransactionById(id: Int): TransactionEntity?
+    @Query("SELECT * FROM transaction_data WHERE transaction_id = :transactionId")
+    suspend fun getTransaction(transactionId: Int): TransactionEntity?
 
     @Query("SELECT * FROM transaction_data")
     fun getAllTransactions(): Flow<List<TransactionEntity>>

@@ -359,7 +359,7 @@ fun HomeContent(
                         ) {
                             itemsIndexed(
                                 items = transactions,
-                                key = { _, transaction -> transaction.id } // Assuming TransactionEntity has 'id'
+                                key = { _, transaction -> transaction.transactionId } // Assuming TransactionEntity has 'id'
                             ) { index, transaction ->
                                 TransactionItem(
                                     modifier = Modifier.fillMaxWidth(), // Item uses full width within contentPadding
@@ -403,7 +403,7 @@ fun HomeContentPreview() {
             ),
             transactions = listOf(
                 TransactionEntity(
-                    id = 1,
+                    transactionId = 1,
                     amount = 500000,
                     transactionDate = "2025-08-29T22:15:00.000Z",
                     reportedDate = "2025-08-29T22:15:00.000Z",
@@ -415,7 +415,7 @@ fun HomeContentPreview() {
                     confirmedBy = "Eko Yulianto"
                 ),
                 TransactionEntity(
-                    id = 2,
+                    transactionId = 2,
                     amount = 250000,
                     transactionDate = "2025-08-29T22:15:00.000Z",
                     reportedDate = "2025-08-29T22:15:00.000Z",
@@ -427,7 +427,7 @@ fun HomeContentPreview() {
                     confirmedBy = "Eko Yulianto"
                 ),
                 TransactionEntity(
-                    id = 3,
+                    transactionId = 3,
                     amount = 200000,
                     transactionDate = "2025-08-29T22:15:00.000Z",
                     reportedDate = "2025-08-29T22:15:00.000Z",

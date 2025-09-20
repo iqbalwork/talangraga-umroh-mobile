@@ -49,7 +49,7 @@ fun PeriodeResponse.toPeriodEntity(): PeriodEntity {
 
 fun TransactionResponse.toTransactionEntity(): TransactionEntity {
     return TransactionEntity(
-        id = id ?: 0,
+        transactionId = id ?: 0,
         amount = (amount ?: "0").toInt(),
         reportedDate = reportedDate.orEmpty(),
         transactionDate = transactionDate.orEmpty(),
@@ -64,7 +64,7 @@ fun TransactionResponse.toTransactionEntity(): TransactionEntity {
 
 fun PaymentResponse.toPaymentEntity(): PaymentEntity {
     return PaymentEntity(
-        id = id ?: 0,
+        paymentId = id ?: 0,
         documentId = documentId.orEmpty(),
         paymentName = paymentName.orEmpty(),
         paymentType = paymentType.orEmpty()

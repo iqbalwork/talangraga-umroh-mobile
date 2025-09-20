@@ -20,7 +20,7 @@ import kotlinx.coroutines.IO
 
 @Database(
     entities = [UserEntity::class, PaymentEntity::class, PeriodEntity::class, TransactionEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @ConstructedBy(AppDatabaseConstructor::class)

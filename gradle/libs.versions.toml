@@ -12,12 +12,13 @@ androidx-testExt = "1.3.0"
 coilCompose = "3.3.0"
 composeMultiplatform = "1.8.2"
 constraintlayoutComposeMultiplatform = "0.6.0"
+inspektifyKtor3 = "1.0.0-beta09"
 junit = "4.13.2"
 kotlin = "2.2.20"
 koin = "4.1.0"
 kotlinx-serialization = "1.9.0"
 buildConfig = "5.6.7"
-kotlinxDatetime = "0.7.1"
+kotlinxDatetime = "0.7.1-0.6.x-compat"
 ktor = "3.2.3"
 ktorMonitorLogging = "1.7.3"
 materialIconsExtended = "1.7.3"
@@ -25,8 +26,8 @@ navigationCompose = "2.9.0-beta03"
 datastore = "1.1.7"
 
 kotlinx-coroutines = "1.9.0"
-ksp = "2.1.21-2.0.1"
-room = "2.7.1"
+ksp = "2.2.10-2.0.2"
+room = "2.8.0"
 sqlite = "2.6.0"
 kotlinParcelize = "2.2.20-RC"
 symbolProcessingApi = "2.2.0-2.0.2"
@@ -36,6 +37,7 @@ napier = "2.7.1"
 [libraries]
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 constraintlayout-compose-multiplatform = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayoutComposeMultiplatform" }
+inspektify-ktor3 = { module = "io.github.bvantur:inspektify-ktor3", version.ref = "inspektifyKtor3" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }

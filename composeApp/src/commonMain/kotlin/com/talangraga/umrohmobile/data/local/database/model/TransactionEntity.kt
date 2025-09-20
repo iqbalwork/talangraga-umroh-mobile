@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "transaction_data")
 data class TransactionEntity(
     @PrimaryKey
-    @ColumnInfo(name = "id")
-    val id: Int,
+    @ColumnInfo(name = "transaction_id")
+    val transactionId: Int,
     @ColumnInfo("amount")
     val amount: Int,
     @ColumnInfo("reported_date")

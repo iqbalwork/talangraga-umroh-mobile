@@ -15,9 +15,8 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import ro.cosminmihu.ktor.monitor.ContentLength
-import ro.cosminmihu.ktor.monitor.KtorMonitorLogging
-import ro.cosminmihu.ktor.monitor.RetentionPeriod
+import sp.bvantur.inspektify.ktor.AutoDetectTarget
+import sp.bvantur.inspektify.ktor.InspektifyKtor
 
 object HttpClientFactory {
 
@@ -26,6 +25,11 @@ object HttpClientFactory {
         tokenManager: TokenManager
     ): HttpClient {
         return HttpClient(engine) {
+            install(InspektifyKtor) {
+                logLevel = sp.bvantur.inspektify.ktor.LogLevel.All
+                autoDetectEnabledFor = setOf(AutoDetectTarget.Android, AutoDetectTarget.Apple)
+                shortcutEnabled = true
+            }
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = true
@@ -50,13 +54,13 @@ object HttpClientFactory {
                     }
                 }
             }
-            install(KtorMonitorLogging) {
-//                sanitizeHeader { header -> header == "Authorization" }
-//                filter { request -> !request.url.host.contains("cosminmihu.ro") }
-                showNotification = true
-                retentionPeriod = RetentionPeriod.OneHour
-                maxContentLength = ContentLength.Default
-            }
+//            install(KtorMonitorLogging) {
+////                sanitizeHeader { header -> header == "Authorization" }
+////                filter { request -> !request.url.host.contains("cosminmihu.ro") }
+//                showNotification = true
+//                retentionPeriod = RetentionPeriod.OneHour
+//                maxContentLength = ContentLength.Default
+//            }
             defaultRequest {
                 url(BuildKonfig.BASE_URL)
             }
