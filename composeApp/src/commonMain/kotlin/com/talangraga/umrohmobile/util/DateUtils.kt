@@ -2,15 +2,46 @@
 package com.talangraga.umrohmobile.util
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.char
 import kotlinx.datetime.number
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+
+@OptIn(ExperimentalTime::class)
+fun String.formatIsoTimestampToCustom(): String {
+    return try {
+        val instant = Instant.parse(this)
+        // The 'Z' in the timestamp means UTC. We'll format it based on UTC.
+        val localDateTime = instant.toLocalDateTime(TimeZone.UTC)
+
+        val customFormat = LocalDateTime.Format {
+            day(padding = Padding.NONE)
+            // Day without leading zero
+            char(' ')
+            monthName(MonthNames.ENGLISH_FULL) // Full month name (e.g., "September")
+            char(' ')
+            year()
+            char(',')
+            char(' ')
+            hour(Padding.ZERO) // Hour with leading zero (e.g., "04")
+            char(':')
+            minute(Padding.ZERO) // Minute with leading zero (e.g., "00")
+        }
+        localDateTime.format(customFormat)
+    } catch (e: IllegalArgumentException) {
+        // Handle cases where the string might not be a valid ISO timestamp
+        println("Error parsing date: $this, ${e.message}")
+        "Invalid Date" // Or return the original string, or throw
+    }
+}
 
 fun formatDateRange(startDateString: String, endDateString: String): String {
     val startDate = LocalDate.parse(startDateString)

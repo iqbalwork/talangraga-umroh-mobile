@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -20,7 +22,10 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,7 +56,9 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
+import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.presentation.home.section.TransactionItem
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
 import com.talangraga.umrohmobile.ui.Aqua
@@ -84,6 +91,7 @@ fun HomeScreen(
 
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val periods by viewModel.periods.collectAsStateWithLifecycle()
+    val transactions by viewModel.transactions.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
@@ -95,7 +103,8 @@ fun HomeScreen(
 
     HomeContent(
         user = profile,
-        periods = periods
+        periods = periods,
+        transactions = transactions
     ) {
         viewModel.clearSession()
         navHostController.navigate(LoginRoute) {
@@ -111,6 +120,7 @@ fun HomeScreen(
 fun HomeContent(
     user: UserEntity?,
     periods: List<PeriodEntity>,
+    transactions: List<TransactionEntity>,
     onLogout: () -> Unit
 ) {
 
@@ -131,17 +141,10 @@ fun HomeContent(
     var periodShowBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(periods) {
-        Napier.i(message = "Current Date : $currentDate")
-        if (periods.isNotEmpty()) {
-            for (data in periods) {
-                Napier.i(message = data.periodeName)
-                if (currentDate.isDateInRange(data.startDate, data.endDate)) {
-                    period = data
-                    Napier.i(message = period?.periodeName.orEmpty())
-                    break
-                }
-            }
-        }
+        period = periods.find { data ->
+            currentDate.isDateInRange(data.startDate, data.endDate)
+        } ?: periods.firstOrNull()
+        Napier.i(message = "Selected period: ${period?.periodeName.orEmpty()}")
     }
 
     LaunchedEffect(user) {
@@ -334,6 +337,48 @@ fun HomeContent(
                 startIconColor = RosePink,
                 endIconColor = RosePink
             )
+
+
+            if (transactions.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "Transaksi Terakhir",
+                            style = UmrohMobileTypography(fontFamily).basicTextStyle.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            ),
+                            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                        )
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(), // This pads all content, including items and dividers
+                        ) {
+                            itemsIndexed(
+                                items = transactions,
+                                key = { _, transaction -> transaction.id } // Assuming TransactionEntity has 'id'
+                            ) { index, transaction ->
+                                TransactionItem(
+                                    modifier = Modifier.fillMaxWidth(), // Item uses full width within contentPadding
+                                    username = transaction.reportedBy,
+                                    amount = transaction.amount,
+                                    date = transaction.transactionDate
+                                )
+                                if (index < transactions.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier
+                                            .fillMaxWidth(), // Divider also uses full width within contentPadding
+                                        color = Color.LightGray // Example color, consider using MaterialTheme.colorScheme.outlineVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -355,6 +400,44 @@ fun HomeContentPreview() {
             ),
             periods = listOf(
                 PeriodEntity("", "Bulan ke 1", "2025-08-06", "2025-09-05"),
+            ),
+            transactions = listOf(
+                TransactionEntity(
+                    id = 1,
+                    amount = 500000,
+                    transactionDate = "2025-08-29T22:15:00.000Z",
+                    reportedDate = "2025-08-29T22:15:00.000Z",
+                    statusTransaksi = "Confirmed",
+                    buktiTransferUrl = "",
+                    paymentType = "",
+                    paymentName = "",
+                    reportedBy = "Iqbal Fauzi",
+                    confirmedBy = "Eko Yulianto"
+                ),
+                TransactionEntity(
+                    id = 2,
+                    amount = 250000,
+                    transactionDate = "2025-08-29T22:15:00.000Z",
+                    reportedDate = "2025-08-29T22:15:00.000Z",
+                    statusTransaksi = "Confirmed",
+                    buktiTransferUrl = "",
+                    paymentType = "",
+                    paymentName = "",
+                    reportedBy = "Iqbal Fauzi",
+                    confirmedBy = "Eko Yulianto"
+                ),
+                TransactionEntity(
+                    id = 3,
+                    amount = 200000,
+                    transactionDate = "2025-08-29T22:15:00.000Z",
+                    reportedDate = "2025-08-29T22:15:00.000Z",
+                    statusTransaksi = "Confirmed",
+                    buktiTransferUrl = "",
+                    paymentType = "",
+                    paymentName = "",
+                    reportedBy = "Iqbal Fauzi",
+                    confirmedBy = "Eko Yulianto"
+                ),
             )
         ) {
 

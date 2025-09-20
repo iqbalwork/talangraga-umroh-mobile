@@ -3,7 +3,9 @@ package com.talangraga.umrohmobile.data.network.api
 import com.talangraga.umrohmobile.data.network.model.request.LoginRequest
 import com.talangraga.umrohmobile.data.network.model.response.AuthResponse
 import com.talangraga.umrohmobile.data.network.model.response.DataResponse
+import com.talangraga.umrohmobile.data.network.model.response.PaymentResponse
 import com.talangraga.umrohmobile.data.network.model.response.PeriodeResponse
+import com.talangraga.umrohmobile.data.network.model.response.TransactionResponse
 import com.talangraga.umrohmobile.data.network.model.response.UserResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -44,5 +46,13 @@ class AuthService(private val httpClient: HttpClient) {
 
     suspend fun getPeriods(): DataResponse<List<PeriodeResponse>> {
         return httpClient.get("periodes").body<DataResponse<List<PeriodeResponse>>>()
+    }
+
+    suspend fun getPayments(): DataResponse<List<PaymentResponse>> {
+        return httpClient.get("payments").body<DataResponse<List<PaymentResponse>>>()
+    }
+
+    suspend fun getTransactions(): DataResponse<List<TransactionResponse>> {
+        return httpClient.get("transactions").body<DataResponse<List<TransactionResponse>>>()
     }
 }

@@ -1,4 +1,5 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import com.google.devtools.ksp.gradle.KspAATask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -19,6 +20,11 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+project.tasks.withType<KspAATask>().configureEach {
+    if (name != "kspCommonMainKotlinMetadata") {
+        dependsOn("kspCommonMainKotlinMetadata")
+    }
+}
 
 buildkonfig {
     packageName = "com.talangraga.umrohmobile"
@@ -68,7 +74,7 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
             freeCompilerArgs += "-Xexpect-actual-classes"
-            freeCompilerArgs += "-Xbinary=bundleId=com.talangraga.talangragaumrohmobile.app"
+            freeCompilerArgs += "-Xbinary=bundleId=com.talangragaumroh.app"
             // Required when using NativeSQLiteDriver
             linkerOpts.add("-lsqlite3")
         }
@@ -149,8 +155,8 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-    implementation(libs.symbol.processing.api)
-    ksp(libs.androidx.room.compiler)
+//    implementation(libs.symbol.processing.api)
+//    ksp(libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspIosSimulatorArm64", libs.androidx.room.compiler)
     add("kspIosX64", libs.androidx.room.compiler)

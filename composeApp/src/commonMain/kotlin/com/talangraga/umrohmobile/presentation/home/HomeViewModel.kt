@@ -4,6 +4,7 @@ import SessionStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
+import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.local.session.clearAll
@@ -11,7 +12,7 @@ import com.talangraga.umrohmobile.data.local.session.getUserProfile
 import com.talangraga.umrohmobile.data.mapper.toUserEntity
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
 import com.talangraga.umrohmobile.data.network.api.Result
-import com.talangraga.umrohmobile.domain.repository.AuthRepository
+import com.talangraga.umrohmobile.domain.repository.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -22,7 +23,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val sessionStore: SessionStore,
     private val tokenManager: TokenManager,
-    private val authRepository: AuthRepository
+    private val repository: Repository
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -37,12 +38,16 @@ class HomeViewModel(
     private val _periods = MutableStateFlow<List<PeriodEntity>>(emptyList())
     val periods = _periods.asStateFlow()
 
+    private val _transactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
+    val transactions = _transactions.asStateFlow()
+
     init {
         getPeriods()
+        getTransactions()
     }
 
     fun getProfile() {
-        authRepository.getLoginProfile()
+        repository.getLoginProfile()
             .onEach { response ->
                 when (response) {
                     is ApiResponse.Error -> {
@@ -71,7 +76,7 @@ class HomeViewModel(
     }
 
     fun getPeriods() {
-        authRepository.getPeriods()
+        repository.getPeriods()
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
@@ -83,6 +88,22 @@ class HomeViewModel(
                     }
                 }
             }.launchIn(viewModelScope)
+    }
+
+    fun getTransactions() {
+        repository.getTransactions()
+            .onEach { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _errorMessage.update { result.t.message }
+                    }
+
+                    is Result.Success -> {
+                        _transactions.update { result.data }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun clearSession() {

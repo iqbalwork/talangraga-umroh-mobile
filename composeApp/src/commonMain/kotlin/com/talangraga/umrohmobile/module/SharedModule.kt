@@ -1,13 +1,15 @@
 package com.talangraga.umrohmobile.module
 
 import com.talangraga.umrohmobile.data.local.database.TalangragaDatabase
+import com.talangraga.umrohmobile.data.local.database.dao.PaymentDao
 import com.talangraga.umrohmobile.data.local.database.dao.PeriodDao
+import com.talangraga.umrohmobile.data.local.database.dao.TransactionDao
 import com.talangraga.umrohmobile.data.local.database.dao.UserDao
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.network.HttpClientFactory
 import com.talangraga.umrohmobile.data.network.api.AuthService
-import com.talangraga.umrohmobile.data.repository.AuthRepositoryImpl
-import com.talangraga.umrohmobile.domain.repository.AuthRepository
+import com.talangraga.umrohmobile.data.repository.RepositoryImpl
+import com.talangraga.umrohmobile.domain.repository.Repository
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -18,6 +20,8 @@ val sharedModule = module {
     single { TokenManager(get()) }
     single<UserDao> { get<TalangragaDatabase>().userDao() }
     single<PeriodDao> { get<TalangragaDatabase>().periodsDao() }
+    single<TransactionDao> { get<TalangragaDatabase>().transactionDao() }
+    single<PaymentDao> { get<TalangragaDatabase>().paymentDao() }
     single {
         HttpClientFactory.create(get(), get())
     }
@@ -32,13 +36,15 @@ val sharedModule = module {
             // Add other Json configurations as needed
         }
     }
-    single<AuthRepository> {
-        AuthRepositoryImpl(
+    single<Repository> {
+        RepositoryImpl(
             authService = get(),
             json = get(),
             sessionStore = get(),
             tokenManager = get(),
-            periodDao = get()
+            periodDao = get(),
+            transactionDao = get(),
+            paymentDao = get(),
         )
     }
 }

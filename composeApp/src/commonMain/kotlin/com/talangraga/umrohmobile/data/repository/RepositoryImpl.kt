@@ -1,13 +1,19 @@
 package com.talangraga.umrohmobile.data.repository
 
 import SessionStore
+import com.talangraga.umrohmobile.data.local.database.dao.PaymentDao
 import com.talangraga.umrohmobile.data.local.database.dao.PeriodDao
+import com.talangraga.umrohmobile.data.local.database.dao.TransactionDao
+import com.talangraga.umrohmobile.data.local.database.model.PaymentEntity
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
+import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.session.DataStoreKey
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.local.session.saveBoolean
 import com.talangraga.umrohmobile.data.local.session.saveString
+import com.talangraga.umrohmobile.data.mapper.toPaymentEntity
 import com.talangraga.umrohmobile.data.mapper.toPeriodEntity
+import com.talangraga.umrohmobile.data.mapper.toTransactionEntity
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
 import com.talangraga.umrohmobile.data.network.api.AuthService
 import com.talangraga.umrohmobile.data.network.api.Result
@@ -15,7 +21,7 @@ import com.talangraga.umrohmobile.data.network.model.response.AuthResponse
 import com.talangraga.umrohmobile.data.network.model.response.BaseResponse
 import com.talangraga.umrohmobile.data.network.model.response.StrapiError
 import com.talangraga.umrohmobile.data.network.model.response.UserResponse
-import com.talangraga.umrohmobile.domain.repository.AuthRepository
+import com.talangraga.umrohmobile.domain.repository.Repository
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.HttpResponse
@@ -27,13 +33,15 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
-class AuthRepositoryImpl(
+class RepositoryImpl(
     private val authService: AuthService,
     private val json: Json,
     private val sessionStore: SessionStore,
     private val tokenManager: TokenManager,
-    private val periodDao: PeriodDao
-) : AuthRepository {
+    private val periodDao: PeriodDao,
+    private val transactionDao: TransactionDao,
+    private val paymentDao: PaymentDao
+) : Repository {
 
     private inline fun <reified T : BaseResponse> safeApiCall(crossinline apiCall: suspend () -> T): Flow<ApiResponse<T, BaseResponse>> {
         return flow {
@@ -135,4 +143,43 @@ class AuthRepositoryImpl(
             send(Result.Error(e))
         }
     }
+
+    override fun getTransactions(): Flow<Result<List<TransactionEntity>>> = channelFlow {
+        launch {
+            transactionDao.getAllTransactions()
+                .collectLatest {
+                    send(Result.Success(it))
+                }
+        }
+
+        try {
+            val apiResponse = authService.getTransactions()
+            val data = apiResponse.data?.map {
+                it.toTransactionEntity()
+            } ?: emptyList()
+            transactionDao.inserts(data)
+        } catch (e: Exception) {
+            send(Result.Error(e))
+        }
+    }
+
+    override fun getPayments(): Flow<Result<List<PaymentEntity>>> = channelFlow {
+        launch {
+            paymentDao.getAllPayments()
+                .collectLatest {
+                    send(Result.Success(it))
+                }
+        }
+
+        try {
+            val apiResponse = authService.getPayments()
+            val data = apiResponse.data?.map {
+                it.toPaymentEntity()
+            } ?: emptyList()
+            paymentDao.inserts(data)
+        } catch (e: Exception) {
+            send(Result.Error(e))
+        }
+    }
+
 }
