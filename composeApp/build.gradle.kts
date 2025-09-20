@@ -1,5 +1,4 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import com.google.devtools.ksp.gradle.KspAATask
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -16,15 +15,11 @@ plugins {
     alias(libs.plugins.buildKonfig)
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
-}
-
-project.tasks.withType<KspAATask>().configureEach {
-    if (name != "kspCommonMainKotlinMetadata") {
-        dependsOn("kspCommonMainKotlinMetadata")
-    }
-}
+//project.tasks.withType<KspAATask>().configureEach {
+//    if (name != "kspCommonMainKotlinMetadata") {
+//        dependsOn("kspCommonMainKotlinMetadata")
+//    }
+//}
 
 buildkonfig {
     packageName = "com.talangraga.umrohmobile"
@@ -126,6 +121,10 @@ kotlin {
     }
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 android {
     namespace = "com.talangraga.umrohmobile"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -155,10 +154,10 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-//    implementation(libs.symbol.processing.api)
+    implementation(libs.symbol.processing.api)
 //    ksp(libs.androidx.room.compiler)
     add("kspAndroid", libs.androidx.room.compiler)
-    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+//    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
     add("kspIosX64", libs.androidx.room.compiler)
     add("kspIosArm64", libs.androidx.room.compiler)
 }
