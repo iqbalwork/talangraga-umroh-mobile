@@ -1,34 +1,23 @@
 package com.talangraga.umrohmobile.presentation.home
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Calculate
-import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,47 +29,34 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
-import com.talangraga.umrohmobile.presentation.home.section.TransactionItem
+import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
+import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
+import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
+import com.talangraga.umrohmobile.presentation.home.section.TransactionSection
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
 import com.talangraga.umrohmobile.ui.Aqua
 import com.talangraga.umrohmobile.ui.Background
 import com.talangraga.umrohmobile.ui.Green
-import com.talangraga.umrohmobile.ui.InterFont
 import com.talangraga.umrohmobile.ui.MediumPurple
 import com.talangraga.umrohmobile.ui.RosePink
 import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.UmrohMobileTypography
 import com.talangraga.umrohmobile.ui.section.CardInfoSection
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
 import com.talangraga.umrohmobile.util.currentDate
-import com.talangraga.umrohmobile.util.formatDateRange
+import com.talangraga.umrohmobile.util.formatToIDR
 import com.talangraga.umrohmobile.util.isDateInRange
 import io.github.aakira.napier.Napier
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import talangragaumrohmobile.composeapp.generated.resources.Res
-import talangragaumrohmobile.composeapp.generated.resources.compose_multiplatform
 
 @Composable
 fun HomeScreen(
@@ -92,25 +68,30 @@ fun HomeScreen(
     val profile by viewModel.profile.collectAsStateWithLifecycle()
     val periods by viewModel.periods.collectAsStateWithLifecycle()
     val transactions by viewModel.transactions.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-
-    if (justLogin) {
-        viewModel.getProfile()
-    } else {
-        viewModel.getLocalProfile()
-    }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     HomeContent(
         user = profile,
         periods = periods,
-        transactions = transactions
+        transactions = transactions,
+        uiState = uiState,
+        onFetchProfile = {
+            viewModel.getProfile()
+        }
     ) {
         viewModel.clearSession()
         navHostController.navigate(LoginRoute) {
             popUpTo(HomeRoute()) {
                 inclusive = true
             }
+        }
+    }
+
+    LaunchedEffect(justLogin) {
+        if (justLogin) {
+            viewModel.getProfile()
+        } else {
+            viewModel.getLocalProfile()
         }
     }
 }
@@ -121,11 +102,11 @@ fun HomeContent(
     user: UserEntity?,
     periods: List<PeriodEntity>,
     transactions: List<TransactionEntity>,
-    onLogout: () -> Unit
+    uiState: HomeUiState,
+    onFetchProfile: () -> Unit,
+    onLogout: () -> Unit // This is the actual logout logic
 ) {
 
-    val fontFamily = InterFont()
-    val context = LocalPlatformContext.current
     var userType by remember { mutableStateOf(user?.userType) }
     val userTypeIcon by remember {
         derivedStateOf {
@@ -133,6 +114,8 @@ fun HomeContent(
         }
     }
     var period by remember { mutableStateOf(periods.firstOrNull()) }
+    var showLogoutDialog by remember { mutableStateOf(false) } // State for dialog visibility
+
     val userTypeSheetState = rememberModalBottomSheetState()
     val userTypeScope = rememberCoroutineScope()
     var userTypeShowBottomSheet by remember { mutableStateOf(false) }
@@ -153,7 +136,33 @@ fun HomeContent(
         }
     }
 
-    Scaffold { paddingValues ->
+    if (showLogoutDialog) {
+        LogoutDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            onConfirmLogout = {
+                showLogoutDialog = false
+                onLogout()
+            }
+        )
+    }
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+
+                },
+                shape = CircleShape,
+                containerColor = Green
+            ) {
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = "Add Transaction, User, or Period",
+                    tint = Color.White
+                )
+            }
+        }
+    ) { paddingValues ->
 
         if (userTypeShowBottomSheet) {
             DialogUserType(
@@ -184,197 +193,80 @@ fun HomeContent(
             )
         }
 
-        Column(
-            modifier = Modifier
-                .background(color = Background)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            ConstraintLayout(
-                modifier = Modifier
-                    .background(color = Color.White)
-                    .padding(top = paddingValues.calculateTopPadding())
-                    .fillMaxWidth()
-            ) {
-                val (imageProfileRef, nameRef, userTypeRef) = createRefs()
-
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(user?.imageProfileUrl)
-                        .crossfade(true)
-                        .build(),
-                    placeholder = painterResource(Res.drawable.compose_multiplatform),
-                    error = painterResource(Res.drawable.compose_multiplatform),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            item {
+                Column(
                     modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .constrainAs(imageProfileRef) {
-                            top.linkTo(parent.top, 16.dp)
-                            start.linkTo(parent.start, 16.dp)
-                        }
-                )
-
-                Text(
-                    text = user?.fullname.orEmpty(),
-                    style = UmrohMobileTypography(fontFamily).basicTextStyle.copy(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    modifier = Modifier.constrainAs(nameRef) {
-                        top.linkTo(imageProfileRef.top)
-                        bottom.linkTo(userTypeRef.top)
-                        start.linkTo(imageProfileRef.end, 8.dp)
-                    }
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier
-                        .constrainAs(userTypeRef) {
-                            top.linkTo(nameRef.bottom, 4.dp)
-                            start.linkTo(nameRef.start)
-                        }
-                        .padding(bottom = 16.dp)
-                        .clip(RoundedCornerShape(32.dp))
-                        .clickable {
-                            userTypeShowBottomSheet = true
-                        }
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color(0xFF9B59B6),
-                                    Color(0xFF6C5CE7)
-                                )
-                            )
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .background(color = Background)
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(
-                        imageVector = userTypeIcon,
-                        contentDescription = "Admin",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = userType.orEmpty(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                    val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Expand",
-                        tint = Color.White,
+                    ProfileSection(
                         modifier = Modifier
-                            .size(16.dp)
-                            .rotate(rotate)
+                            .background(Color.White)
+                            .padding(top = paddingValues.calculateTopPadding()),
+                        userType = userType,
+                        userTypeIcon = userTypeIcon,
+                        userTypeShowBottomSheet = userTypeShowBottomSheet,
+                        state = uiState.profile,
+                        onShowUserTypeSheet = {
+                            userTypeShowBottomSheet = true
+                        },
+                        onRetry = onFetchProfile,
+                        onLogout = {
+                            showLogoutDialog = true
+                        }
                     )
-                }
-            }
+                    PeriodSection(
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(horizontal = 16.dp),
+                        period = period,
+                        onShowPeriodSheet = {
+                            periodShowBottomSheet = true
+                        },
+                    )
 
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .align(Alignment.Start)
-                    .background(color = Color.White, shape = RoundedCornerShape(12.dp))
-                    .border(1.dp, color = Color.Gray, shape = RoundedCornerShape(12.dp))
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(onClick = {
-                        periodShowBottomSheet = true
-                    })
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(imageVector = Icons.Filled.EditCalendar, contentDescription = null)
-                val dateLabel = if (period?.periodeName.isNullOrBlank()) {
-                    "-"
-                } else {
-                    "${period?.periodeName.orEmpty()} : ${
-                        formatDateRange(
-                            period?.startDate.orEmpty(),
-                            period?.endDate.orEmpty()
+                    if (transactions.isNotEmpty()) {
+                        val totalAmount = transactions.sumOf { it.amount }
+                        CardInfoSection(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                            title = "Total Tabungan Periode ini",
+                            value = totalAmount.formatToIDR(),
+                            notes = "12% dari bulan lalu",
+                            notesColor = Green,
+                            icon = Icons.Default.AttachMoney,
+                            startIconColor = Aqua,
+                            endIconColor = Green
                         )
-                    }"
-                }
-                Text(
-                    text = dateLabel,
-                    style = UmrohMobileTypography(fontFamily).basicTextStyle.copy(),
-                    modifier = Modifier
-                )
-            }
-            CardInfoSection(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                title = "Total Tabungan Periode ini",
-                value = "Rp 72.000.000",
-                notes = "12% dari bulan lalu",
-                notesColor = Green,
-                icon = Icons.Default.AttachMoney,
-                startIconColor = Aqua,
-                endIconColor = Green
-            )
-            CardInfoSection(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                title = "Anggota yang Menabung",
-                value = "142",
-                notes = "Bulan ini",
-                notesColor = MediumPurple,
-                icon = Icons.Default.AccountCircle,
-                startIconColor = MediumPurple,
-                endIconColor = MediumPurple
-            )
-            CardInfoSection(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                title = "Rata-rata Tabungan",
-                value = "Rp 455,.696",
-                notes = "Per Anggota/Bulan",
-                notesColor = RosePink,
-                icon = Icons.Default.Calculate,
-                startIconColor = RosePink,
-                endIconColor = RosePink
-            )
-
-
-            if (transactions.isNotEmpty()) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "Transaksi Terakhir",
-                            style = UmrohMobileTypography(fontFamily).basicTextStyle.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            ),
-                            modifier = Modifier.padding(start = 16.dp, top = 16.dp)
+                        val totalMember = transactions.distinctBy { it.reportedBy }.size
+                        CardInfoSection(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                            title = "Anggota yang Menabung",
+                            value = totalMember.toString(),
+                            notes = "Bulan ini",
+                            notesColor = MediumPurple,
+                            icon = Icons.Default.AccountCircle,
+                            startIconColor = MediumPurple,
+                            endIconColor = MediumPurple
                         )
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth(), // This pads all content, including items and dividers
+                        val average = transactions.map { it.amount }.average()
+                        CardInfoSection(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                            title = "Rata-rata Tabungan",
+                            value = average.toInt().formatToIDR(),
+                            notes = "Per Anggota/Bulan",
+                            notesColor = RosePink,
+                            icon = Icons.Default.Calculate,
+                            startIconColor = RosePink,
+                            endIconColor = RosePink
+                        )
+
+                        TransactionSection(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            transactions = transactions
                         ) {
-                            itemsIndexed(
-                                items = transactions,
-                                key = { _, transaction -> transaction.transactionId } // Assuming TransactionEntity has 'id'
-                            ) { index, transaction ->
-                                TransactionItem(
-                                    modifier = Modifier.fillMaxWidth(), // Item uses full width within contentPadding
-                                    username = transaction.reportedBy,
-                                    amount = transaction.amount,
-                                    date = transaction.transactionDate
-                                )
-                                if (index < transactions.lastIndex) {
-                                    HorizontalDivider(
-                                        modifier = Modifier
-                                            .fillMaxWidth(), // Divider also uses full width within contentPadding
-                                        color = Color.LightGray // Example color, consider using MaterialTheme.colorScheme.outlineVariant
-                                    )
-                                }
-                            }
+                            
                         }
                     }
                 }
@@ -438,9 +330,25 @@ fun HomeContentPreview() {
                     reportedBy = "Iqbal Fauzi",
                     confirmedBy = "Eko Yulianto"
                 ),
-            )
-        ) {
-
-        }
+            ),
+            uiState = HomeUiState(
+                profile = SectionState.Success(
+                    UserEntity(
+                        userId = 1,
+                        userName = "iqbalf",
+                        fullname = "Iqbal Fauzi",
+                        email = "",
+                        phone = "",
+                        domisili = "",
+                        userType = "Admin",
+                        imageProfileUrl = ""
+                    )
+                ),
+                periods = SectionState.Loading,
+                transactions = SectionState.Loading
+            ),
+            onFetchProfile = {},
+            onLogout = {} // Preview doesn't need to do real logout
+        )
     }
 }

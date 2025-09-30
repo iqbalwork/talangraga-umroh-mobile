@@ -13,11 +13,13 @@ import talangragaumrohmobile.composeapp.generated.resources.inter_bold
 import talangragaumrohmobile.composeapp.generated.resources.inter_medium
 import talangragaumrohmobile.composeapp.generated.resources.inter_regular
 import talangragaumrohmobile.composeapp.generated.resources.inter_semi_bold
+import talangragaumrohmobile.composeapp.generated.resources.space_grotesk_bold
+import talangragaumrohmobile.composeapp.generated.resources.space_grotesk_medium
+import talangragaumrohmobile.composeapp.generated.resources.space_grotesk_regular
+import talangragaumrohmobile.composeapp.generated.resources.space_grotesk_semibold
 
-@Suppress("ComposableNaming")
-@Composable
-fun InterFont(): FontFamily {
-    return FontFamily(
+val InterFont
+    @Composable get() = FontFamily(
         Font(
             resource = Res.font.inter_regular,
             weight = FontWeight.Normal,
@@ -27,36 +29,59 @@ fun InterFont(): FontFamily {
         Font(resource = Res.font.inter_semi_bold, weight = FontWeight.SemiBold),
         Font(resource = Res.font.inter_bold, weight = FontWeight.Bold),
     )
-}
 
-@Suppress("ComposableNaming")
-@Composable
-fun TalangragaTypography() = Typography().run {
-    val fontFamily = InterFont()
-    copy(
-        displayLarge = displayLarge.copy(fontFamily = fontFamily),
-        displayMedium = displayMedium.copy(fontFamily = fontFamily),
-        displaySmall = displaySmall.copy(fontFamily = fontFamily),
-        headlineLarge = headlineLarge.copy(fontFamily = fontFamily),
-        headlineMedium = headlineMedium.copy(fontFamily = fontFamily),
-        headlineSmall = headlineSmall.copy(fontFamily = fontFamily),
-        titleLarge = titleLarge.copy(fontFamily = fontFamily),
-        titleMedium = titleMedium.copy(fontFamily = fontFamily),
-        titleSmall = titleSmall.copy(fontFamily = fontFamily),
-        bodyLarge = bodyLarge.copy(fontFamily = fontFamily),
-        bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
-        bodySmall = bodySmall.copy(fontFamily = fontFamily),
-        labelLarge = labelLarge.copy(fontFamily = fontFamily),
-        labelMedium = labelMedium.copy(fontFamily = fontFamily),
-        labelSmall = labelSmall.copy(fontFamily = fontFamily)
+val SpaceGroteskFont
+    @Composable get() = FontFamily(
+        Font(
+            resource = Res.font.space_grotesk_regular,
+            weight = FontWeight.Normal,
+            style = FontStyle.Normal
+        ),
+        Font(resource = Res.font.space_grotesk_medium, weight = FontWeight.Medium),
+        Font(resource = Res.font.space_grotesk_semibold, weight = FontWeight.SemiBold),
+        Font(resource = Res.font.space_grotesk_bold, weight = FontWeight.Bold),
     )
-}
 
-@Composable
-fun umrohMobileTypography(): UmrohMobileTypography {
-    val fontFamily = InterFont()
-    return UmrohMobileTypography(fontFamily)
-}
+val TalangragaTypography
+    @Composable get() = Typography(
+        bodyLarge = TextStyle(
+            fontFamily = InterFont,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+        ),
+        bodyMedium = TextStyle(
+            fontFamily = InterFont,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+        ),
+        bodySmall = TextStyle(
+            fontFamily = InterFont,
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            lineHeight = 20.sp
+        ),
+        titleLarge = TextStyle(
+            fontFamily = SpaceGroteskFont,
+            fontWeight = FontWeight.Bold,
+            fontSize = 22.sp,
+            lineHeight = 28.sp
+        ),
+        titleMedium = TextStyle(
+            fontFamily = SpaceGroteskFont,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            lineHeight = 24.sp
+        ),
+        titleSmall = TextStyle(
+            fontFamily = SpaceGroteskFont,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 14.sp,
+            lineHeight = 20.sp
+        )
+    )
+
 
 class UmrohMobileTypography(private val fontFamily: FontFamily) {
 

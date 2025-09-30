@@ -36,6 +36,7 @@ fun getRoomDatabase(
 ): TalangragaDatabase {
     return builder
         .setDriver(BundledSQLiteDriver())
+        .fallbackToDestructiveMigration(true)
         .setQueryCoroutineContext(Dispatchers.IO)
         .build()
 }

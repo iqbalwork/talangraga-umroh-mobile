@@ -67,7 +67,6 @@ fun LoginScreen(
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     LaunchedEffect(loginSucceed) {
-        println("==> LoginScreen Navigation: loginSucceed = $loginSucceed")
         if (loginSucceed == true) {
             navHostController.navigate(HomeRoute(justLogin = true)) {
                 popUpTo(LoginRoute) { inclusive = true }

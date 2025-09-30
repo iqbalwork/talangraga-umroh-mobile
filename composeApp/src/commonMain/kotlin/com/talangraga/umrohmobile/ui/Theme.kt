@@ -50,7 +50,7 @@ fun TalangragaTheme(
 
     MaterialTheme(
         colorScheme = colors,
-        typography = TalangragaTypography(),
+        typography = TalangragaTypography,
         content = content
     )
 }

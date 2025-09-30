@@ -23,15 +23,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.talangraga.umrohmobile.ui.InterFont
 import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.UmrohMobileTypography
+import com.talangraga.umrohmobile.ui.TalangragaTypography
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import talangragaumrohmobile.composeapp.generated.resources.Res
@@ -51,17 +48,13 @@ fun InputText(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
-    val fontFamily = InterFont()
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
     ) {
         Text(
             text = title,
-            style = UmrohMobileTypography(fontFamily).title.copy(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            ),
+            style = TalangragaTypography.titleSmall,
             textAlign = TextAlign.Start,
             modifier = Modifier.fillMaxWidth()
         )
@@ -91,7 +84,6 @@ fun PasswordInput(
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null
 ) {
-    val fontFamily = InterFont()
     var passwordVisibility by remember { mutableStateOf(false) }
 
     Column(
@@ -101,10 +93,7 @@ fun PasswordInput(
         Text(
             text = title,
             textAlign = TextAlign.Start,
-            style = UmrohMobileTypography(fontFamily).title.copy(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            ),
+            style = TalangragaTypography.titleSmall,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(4.dp))
