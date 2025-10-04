@@ -10,3 +10,6 @@ object LoginRoute
 
 @Serializable
 data class HomeRoute(val justLogin: Boolean = false)
+
+@Serializable
+object ListUserRoute

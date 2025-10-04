@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -28,4 +29,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transaction_data")
     fun getAllTransactions(): Flow<List<TransactionEntity>>
 
+    @Transaction
+    suspend fun clearAndInsertTransactions(transactions: List<TransactionEntity>) {
+        deleteAll()
+        inserts(transactions)
+    }
 }

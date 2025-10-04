@@ -15,6 +15,13 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+val INDONESIA_FULL: MonthNames = MonthNames(
+    listOf(
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    )
+)
+
 @OptIn(ExperimentalTime::class)
 fun String.formatIsoTimestampToCustom(): String {
     return try {
@@ -26,7 +33,7 @@ fun String.formatIsoTimestampToCustom(): String {
             day(padding = Padding.NONE)
             // Day without leading zero
             char(' ')
-            monthName(MonthNames.ENGLISH_FULL) // Full month name (e.g., "September")
+            monthName(INDONESIA_FULL) // Full month name (e.g., "September")
             char(' ')
             year()
             char(',')
@@ -50,13 +57,13 @@ fun formatDateRange(startDateString: String, endDateString: String): String {
     val dayMonthFormat = LocalDate.Format {
         day(padding = Padding.NONE)
         char(' ')
-        monthName(MonthNames.ENGLISH_FULL)
+        monthName(INDONESIA_FULL)
     }
 
     val dayMonthYearFormat = LocalDate.Format {
         day(padding = Padding.NONE)
         char(' ')
-        monthName(MonthNames.ENGLISH_FULL)
+        monthName(INDONESIA_FULL)
         char(' ')
         year()
     }

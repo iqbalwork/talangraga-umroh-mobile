@@ -4,9 +4,11 @@ import SessionStore
 import com.talangraga.umrohmobile.data.local.database.dao.PaymentDao
 import com.talangraga.umrohmobile.data.local.database.dao.PeriodDao
 import com.talangraga.umrohmobile.data.local.database.dao.TransactionDao
+import com.talangraga.umrohmobile.data.local.database.dao.UserDao
 import com.talangraga.umrohmobile.data.local.database.model.PaymentEntity
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
+import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.data.local.session.DataStoreKey
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.local.session.saveBoolean
@@ -14,6 +16,7 @@ import com.talangraga.umrohmobile.data.local.session.saveString
 import com.talangraga.umrohmobile.data.mapper.toPaymentEntity
 import com.talangraga.umrohmobile.data.mapper.toPeriodEntity
 import com.talangraga.umrohmobile.data.mapper.toTransactionEntity
+import com.talangraga.umrohmobile.data.mapper.toUserEntity
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
 import com.talangraga.umrohmobile.data.network.api.AuthService
 import com.talangraga.umrohmobile.data.network.api.Result
@@ -28,7 +31,6 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -40,7 +42,8 @@ class RepositoryImpl(
     private val tokenManager: TokenManager,
     private val periodDao: PeriodDao,
     private val transactionDao: TransactionDao,
-    private val paymentDao: PaymentDao
+    private val paymentDao: PaymentDao,
+    private val userDao: UserDao
 ) : Repository {
 
     private inline fun <reified T : BaseResponse> safeApiCall(crossinline apiCall: suspend () -> T): Flow<ApiResponse<T, BaseResponse>> {
@@ -103,6 +106,33 @@ class RepositoryImpl(
         }
     }
 
+    fun <LocalType, NetworkType> networkBoundResource(
+        query: () -> Flow<LocalType>,
+        fetch: suspend () -> NetworkType,
+        saveFetchResult: suspend (LocalType) -> Unit,
+        mapper: (NetworkType) -> LocalType
+    ): Flow<Result<LocalType>> = channelFlow {
+
+        launch {
+            query().collect { data ->
+                send(Result.Success(data))
+            }
+        }
+
+        launch {
+            try {
+                // Fetch new data
+                val networkResponse = fetch()
+                val mappedData = mapper(networkResponse)
+                // Replace cache
+                saveFetchResult(mappedData)
+                // Emit updated data
+                send(Result.Success(mappedData))
+            } catch (e: Exception) {
+                send(Result.Error(e))
+            }
+        }
+    }
 
     override fun login(
         identifier: String,
@@ -125,61 +155,50 @@ class RepositoryImpl(
         }
     }
 
-    override fun getPeriods(): Flow<Result<List<PeriodEntity>>> = channelFlow {
-        launch {
-            periodDao.getAllPeriods()
-                .collectLatest {
-                    send(Result.Success(it))
-                }
-        }
-
-        try {
-            val apiResponse = authService.getPeriods()
-            val data = apiResponse.data?.map {
-                it.toPeriodEntity()
-            } ?: emptyList()
-            periodDao.inserts(data)
-        } catch (e: Exception) {
-            send(Result.Error(e))
-        }
+    override fun getListUsers(): Flow<Result<List<UserEntity>>> {
+        return networkBoundResource(
+            query = { userDao.getAllUsers() },
+            fetch = { authService.getListUsers() },
+            saveFetchResult = { userDao.clearAndInserts(it) },
+            mapper = {
+                it.data?.map { userResponse -> userResponse.toUserEntity() } ?: emptyList()
+            }
+        )
     }
 
-    override fun getTransactions(): Flow<Result<List<TransactionEntity>>> = channelFlow {
-        launch {
-            transactionDao.getAllTransactions()
-                .collectLatest {
-                    send(Result.Success(it))
-                }
-        }
-
-        try {
-            val apiResponse = authService.getTransactions()
-            val data = apiResponse.data?.map {
-                it.toTransactionEntity()
-            } ?: emptyList()
-            transactionDao.inserts(data)
-        } catch (e: Exception) {
-            send(Result.Error(e))
-        }
+    override fun getPeriods(): Flow<Result<List<PeriodEntity>>> {
+        return networkBoundResource(
+            query = { periodDao.getAllPeriods() },
+            fetch = { authService.getPeriods() },
+            saveFetchResult = { periodDao.clearAndInserts(it) },
+            mapper = {
+                it.data?.map { periodeResponse -> periodeResponse.toPeriodEntity() } ?: emptyList()
+            }
+        )
     }
 
-    override fun getPayments(): Flow<Result<List<PaymentEntity>>> = channelFlow {
-        launch {
-            paymentDao.getAllPayments()
-                .collectLatest {
-                    send(Result.Success(it))
-                }
-        }
+    override fun getTransactions(periodId: Int): Flow<Result<List<TransactionEntity>>> {
+        return networkBoundResource(
+            query = { transactionDao.getAllTransactions() },
+            fetch = { authService.getTransactions(periodId) },
+            saveFetchResult = { transactionDao.clearAndInsertTransactions(it) },
+            mapper = {
+                it.data?.map { transactionResponse ->
+                    transactionResponse.toTransactionEntity()
+                } ?: emptyList()
+            }
+        )
+    }
 
-        try {
-            val apiResponse = authService.getPayments()
-            val data = apiResponse.data?.map {
-                it.toPaymentEntity()
-            } ?: emptyList()
-            paymentDao.inserts(data)
-        } catch (e: Exception) {
-            send(Result.Error(e))
-        }
+    override fun getPayments(): Flow<Result<List<PaymentEntity>>> {
+        return networkBoundResource(
+            query = { paymentDao.getAllPayments() },
+            fetch = { authService.getPayments() },
+            saveFetchResult = { paymentDao.inserts(it) },
+            mapper = {
+                it.data?.map { paymentResponse -> paymentResponse.toPaymentEntity() } ?: emptyList()
+            }
+        )
     }
 
 }

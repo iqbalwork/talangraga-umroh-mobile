@@ -40,7 +40,8 @@ fun UserResponse.toUserEntity(): UserEntity {
 
 fun PeriodeResponse.toPeriodEntity(): PeriodEntity {
     return PeriodEntity(
-        documentId = this.id.toString(),
+        periodId = this.id ?: 0,
+        documentId = this.documentId.toString(),
         periodeName = this.periodeName.orEmpty(),
         startDate = this.startDate.orEmpty(),
         endDate = this.endDate.orEmpty()

@@ -64,6 +64,7 @@ fun PeriodSection(
 fun PreviewPeriodSection() {
     PeriodSection(
         period = PeriodEntity(
+            periodId = 0,
             periodeName = "Ramadhan 2024",
             startDate = "2024-03-10",
             endDate = "2024-04-09",

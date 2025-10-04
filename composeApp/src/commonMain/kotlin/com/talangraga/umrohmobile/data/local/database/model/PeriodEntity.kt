@@ -7,6 +7,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "periode_data")
 data class PeriodEntity(
     @PrimaryKey
+    @ColumnInfo(name = "period_id")
+    val periodId: Int,
     @ColumnInfo(name = "document_id")
     val documentId: String,
     @ColumnInfo(name = "periode_name")

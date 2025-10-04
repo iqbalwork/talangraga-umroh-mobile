@@ -45,6 +45,7 @@ val sharedModule = module {
             periodDao = get(),
             transactionDao = get(),
             paymentDao = get(),
+            userDao = get()
         )
     }
 }

@@ -17,8 +17,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,9 +31,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil3.compose.AsyncImage
@@ -42,6 +41,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.presentation.home.SectionState
+import com.talangraga.umrohmobile.ui.MediumPurple
 import com.talangraga.umrohmobile.ui.TalangragaTypography
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -52,9 +52,9 @@ import talangragaumrohmobile.composeapp.generated.resources.compose_multiplatfor
 fun ProfileSection(
     modifier: Modifier,
     userType: String?,
-    userTypeIcon: ImageVector,
     userTypeShowBottomSheet: Boolean,
     state: SectionState<UserEntity>,
+    onListUserClick: () -> Unit,
     onShowUserTypeSheet: () -> Unit,
     onRetry: () -> Unit,
     onLogout: () -> Unit // Added onLogout parameter
@@ -133,7 +133,10 @@ fun ProfileSection(
                         .constrainAs(imageProfileRef) {
                             top.linkTo(parent.top, 16.dp)
                             start.linkTo(parent.start, 16.dp)
-                            bottom.linkTo(parent.bottom, 16.dp) // Ensure bottom constraint for centering logout button
+                            bottom.linkTo(
+                                parent.bottom,
+                                16.dp
+                            ) // Ensure bottom constraint for centering logout button
                         }
                 )
 
@@ -177,8 +180,10 @@ fun ProfileSection(
 //                    )
                     Text(
                         text = userType.orEmpty(),
-                        color = Color.White,
-                        fontWeight = FontWeight.Medium,
+                        style = TalangragaTypography.bodySmall.copy(
+                            textAlign = TextAlign.Center,
+                            color = Color.White
+                        ),
                         modifier = Modifier.padding(start = 8.dp)
                     )
                     val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
@@ -193,10 +198,30 @@ fun ProfileSection(
                     )
                 }
 
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            onListUserClick()
+                        }
+                        .background(MediumPurple)
+                        .padding(4.dp)
+                        .constrainAs(createRef()) {
+                            top.linkTo(logoutButtonRef.top)
+                            bottom.linkTo(logoutButtonRef.bottom)
+                            end.linkTo(logoutButtonRef.start, 8.dp)
+                        }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "User",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
                 // Logout Button
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
+                Box(
                     modifier = Modifier
                         .constrainAs(logoutButtonRef) {
                             top.linkTo(imageProfileRef.top)
@@ -206,20 +231,14 @@ fun ProfileSection(
                         .clip(RoundedCornerShape(8.dp))
                         .clickable { onLogout() }
                         .background(Color.Red) // Red background
-                        .padding(8.dp) // Adjusted padding
+                        .padding(4.dp) // Adjusted padding
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Logout,
                         contentDescription = "Logout",
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(24.dp)
                     )
-//                    Text(
-//                        text = "Logout",
-//                        color = Color.White,
-//                        fontWeight = FontWeight.Normal,
-//                        modifier = Modifier.padding(start = 8.dp)
-//                    )
                 }
             }
         }
@@ -243,9 +262,9 @@ fun PreviewProfileSection() {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
-            userTypeIcon = Icons.Default.Person,
             userTypeShowBottomSheet = false,
             state = SectionState.Success(dummyUser),
+            onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
             onLogout = {} // Added for preview
@@ -254,9 +273,9 @@ fun PreviewProfileSection() {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Admin",
-            userTypeIcon = Icons.Default.Person,
             userTypeShowBottomSheet = true,
             state = SectionState.Loading,
+            onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
             onLogout = {} // Added for preview
@@ -265,9 +284,9 @@ fun PreviewProfileSection() {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
-            userTypeIcon = Icons.Default.Person,
             userTypeShowBottomSheet = false,
             state = SectionState.Error("Failed to load"),
+            onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
             onLogout = {} // Added for preview

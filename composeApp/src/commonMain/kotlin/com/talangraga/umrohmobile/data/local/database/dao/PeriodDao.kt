@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -26,5 +27,11 @@ interface PeriodDao {
 
     @Query("SELECT * FROM periode_data WHERE document_id = :documentId LIMIT 1")
     suspend fun getPeriodById(documentId: String): PeriodEntity?
+
+    @Transaction
+    suspend fun clearAndInserts(periods: List<PeriodEntity>) {
+        deleteAllPeriods()
+        inserts(periods)
+    }
 
 }

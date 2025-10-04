@@ -44,6 +44,10 @@ class AuthService(private val httpClient: HttpClient) {
         return httpClient.get("users/me?populate=*").body<UserResponse>()
     }
 
+    suspend fun getListUsers(): DataResponse<List<UserResponse>> {
+        return httpClient.get("users?populate=*").body<DataResponse<List<UserResponse>>>()
+    }
+
     suspend fun getPeriods(): DataResponse<List<PeriodeResponse>> {
         return httpClient.get("periodes").body<DataResponse<List<PeriodeResponse>>>()
     }
@@ -52,7 +56,12 @@ class AuthService(private val httpClient: HttpClient) {
         return httpClient.get("payments").body<DataResponse<List<PaymentResponse>>>()
     }
 
-    suspend fun getTransactions(): DataResponse<List<TransactionResponse>> {
-        return httpClient.get("transactions?populate=*").body<DataResponse<List<TransactionResponse>>>()
+    suspend fun getTransactions(periodId: Int): DataResponse<List<TransactionResponse>> {
+        return httpClient.get("transactions") {
+            url {
+                parameters.append("populate", "*")
+                parameters.append("filters[periode][id]", periodId.toString())
+            }
+        }.body<DataResponse<List<TransactionResponse>>>()
     }
 }

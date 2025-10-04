@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import kotlinx.coroutines.flow.Flow
@@ -38,4 +39,10 @@ interface UserDao {
 
     @Query("DELETE FROM ${UserEntity.TABLE_NAME}")
     suspend fun deleteAllUsers()
+
+    @Transaction
+    suspend fun clearAndInserts(users: List<UserEntity>) {
+        deleteAllUsers()
+        insertUsers(users)
+    }
 }

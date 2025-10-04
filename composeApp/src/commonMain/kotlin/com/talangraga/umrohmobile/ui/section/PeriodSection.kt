@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +36,9 @@ import com.talangraga.umrohmobile.ui.PeriodColor
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.TargetColor
 import com.talangraga.umrohmobile.ui.TextBodyColor
+import com.talangraga.umrohmobile.util.currentDate
 import com.talangraga.umrohmobile.util.formatDateRange
+import com.talangraga.umrohmobile.util.isDateInRange
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -48,6 +53,21 @@ fun DialogPeriods(
     onBottomSheetChange: (Boolean) -> Unit,
     onChoosePeriod: (PeriodEntity) -> Unit
 ) {
+    val selectedPeriod = periods.find { data ->
+        currentDate.isDateInRange(data.startDate, data.endDate)
+    } ?: periods.firstOrNull()
+
+    val listState = rememberLazyListState()
+    val selectedIndex = periods.indexOf(selectedPeriod).takeIf { it != -1 }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(selectedIndex) {
+        if (selectedIndex != null) {
+            coroutineScope.launch {
+                listState.animateScrollToItem(selectedIndex)
+            }
+        }
+    }
 
     fun closeSheet() {
         scope.launch {
@@ -66,14 +86,16 @@ fun DialogPeriods(
     ) {
         LazyColumn(
             modifier = modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            state = listState
         ) {
             itemsIndexed(
                 items = periods,
                 key = { index, item -> index }
             ) { index, item ->
+                val isCurrent = item == selectedPeriod
                 PeriodItem(
-                    isCurrent = index == 0,
+                    isCurrent = isCurrent,
                     periodNumber = index + 1,
                     period = item
                 ) {
@@ -160,20 +182,6 @@ fun PeriodItem(
                             fontSize = 12.sp
                         )
                     }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(PeriodColor.copy(alpha = 0.2f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "UPCOMING",
-                            color = PeriodColor,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        )
-                    }
                 }
             }
         }
@@ -184,9 +192,9 @@ fun PeriodItem(
 @Composable
 fun PreviewPeriodItems() {
     val periods = listOf(
-        PeriodEntity("", "Bulan ke 1", "2025-08-06", "2025-09-05"),
-        PeriodEntity("", "Bulan ke 2", "2025-09-06", "2025-10-05"),
-        PeriodEntity("", "Bulan ke 3", "2025-10-06", "2025-11-05"),
+        PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
+        PeriodEntity(1, "", "Bulan ke 2", "2025-09-06", "2025-10-05"),
+        PeriodEntity(2, "", "Bulan ke 3", "2025-10-06", "2025-11-05"),
 
         )
     TalangragaTheme {
