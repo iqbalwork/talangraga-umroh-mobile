@@ -14,6 +14,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.parameters
 
 class AuthService(private val httpClient: HttpClient) {
 
@@ -44,8 +45,12 @@ class AuthService(private val httpClient: HttpClient) {
         return httpClient.get("users/me?populate=*").body<UserResponse>()
     }
 
-    suspend fun getListUsers(): DataResponse<List<UserResponse>> {
-        return httpClient.get("users?populate=*").body<DataResponse<List<UserResponse>>>()
+    suspend fun getListUsers(): List<UserResponse> {
+        return httpClient.get("users") {
+            url {
+                parameters.append("populate", "*")
+            }
+        }.body<List<UserResponse>>()
     }
 
     suspend fun getPeriods(): DataResponse<List<PeriodeResponse>> {

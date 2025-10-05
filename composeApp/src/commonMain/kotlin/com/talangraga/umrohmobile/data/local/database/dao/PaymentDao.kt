@@ -19,6 +19,9 @@ interface PaymentDao {
     @Query("DELETE FROM payment_data WHERE payment_id = :paymentId")
     suspend fun deleteById(paymentId: Int)
 
+    @Query("DELETE FROM payment_data WHERE payment_id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Int>)
+
     @Query("DELETE FROM payment_data")
     suspend fun deleteAll()
 
@@ -28,4 +31,6 @@ interface PaymentDao {
     @Query("SELECT * FROM payment_data")
     fun getAllPayments(): Flow<List<PaymentEntity>>
 
+    @Query("SELECT * FROM payment_data")
+    fun getCachedPayments(): List<PaymentEntity>
 }

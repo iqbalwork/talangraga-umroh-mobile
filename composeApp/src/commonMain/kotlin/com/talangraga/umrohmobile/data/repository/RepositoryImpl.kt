@@ -29,8 +29,12 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -113,13 +117,13 @@ class RepositoryImpl(
         mapper: (NetworkType) -> LocalType
     ): Flow<Result<LocalType>> = channelFlow {
 
-        launch {
-            query().collect { data ->
+        val db = launch {
+            query().collectLatest { data ->
                 send(Result.Success(data))
             }
         }
 
-        launch {
+        launch(Dispatchers.IO) {
             try {
                 // Fetch new data
                 val networkResponse = fetch()
@@ -128,10 +132,18 @@ class RepositoryImpl(
                 saveFetchResult(mappedData)
                 // Emit updated data
                 send(Result.Success(mappedData))
+            } catch (e: JsonConvertException) {
+                val message = e.message.orEmpty()
+                val errorBody = message.substringAfter("JSON input:").trim()
+                val baseResponse = json.decodeFromString<BaseResponse>(errorBody)
+                val ex = Exception(baseResponse.error?.message.orEmpty())
+                send(Result.Error(ex))
             } catch (e: Exception) {
                 send(Result.Error(e))
             }
         }
+
+        awaitClose { db.cancel() }
     }
 
     override fun login(
@@ -159,9 +171,18 @@ class RepositoryImpl(
         return networkBoundResource(
             query = { userDao.getAllUsers() },
             fetch = { authService.getListUsers() },
-            saveFetchResult = { userDao.clearAndInserts(it) },
+            saveFetchResult = { networkSource ->
+                val local = userDao.getCachedUsers()
+                val networkIds = networkSource.map { it.userId }.toSet()
+                val dataToDelete = local
+                    .filter { it.userId !in networkIds }
+                    .map { it.userId }
+
+                userDao.deleteByIds(dataToDelete)
+                userDao.insertUsers(networkSource)
+            },
             mapper = {
-                it.data?.map { userResponse -> userResponse.toUserEntity() } ?: emptyList()
+                it.map { userResponse -> userResponse.toUserEntity() }
             }
         )
     }
@@ -170,7 +191,15 @@ class RepositoryImpl(
         return networkBoundResource(
             query = { periodDao.getAllPeriods() },
             fetch = { authService.getPeriods() },
-            saveFetchResult = { periodDao.clearAndInserts(it) },
+            saveFetchResult = { networkSource ->
+                val local = periodDao.getCachedPeriods()
+                val networkIds = networkSource.map { it.periodId }.toSet()
+                val dataToDelete = local
+                    .filter { it.periodId !in networkIds }
+                    .map { it.periodId }
+                periodDao.deleteByIds(dataToDelete)
+                periodDao.inserts(networkSource)
+            },
             mapper = {
                 it.data?.map { periodeResponse -> periodeResponse.toPeriodEntity() } ?: emptyList()
             }
@@ -181,7 +210,16 @@ class RepositoryImpl(
         return networkBoundResource(
             query = { transactionDao.getAllTransactions() },
             fetch = { authService.getTransactions(periodId) },
-            saveFetchResult = { transactionDao.clearAndInsertTransactions(it) },
+            saveFetchResult = { networkSource ->
+                val localTransactions = transactionDao.getCachedTransactions()
+                val networkTransactionIds = networkSource.map { it.transactionId }.toSet()
+                val transactionsToDelete = localTransactions
+                    .filter { it.transactionId !in networkTransactionIds }
+                    .map { it.transactionId }
+
+                transactionDao.deleteTransactionByIds(transactionsToDelete)
+                transactionDao.inserts(networkSource)
+            },
             mapper = {
                 it.data?.map { transactionResponse ->
                     transactionResponse.toTransactionEntity()
@@ -194,7 +232,16 @@ class RepositoryImpl(
         return networkBoundResource(
             query = { paymentDao.getAllPayments() },
             fetch = { authService.getPayments() },
-            saveFetchResult = { paymentDao.inserts(it) },
+            saveFetchResult = { networkSource ->
+                val local = paymentDao.getCachedPayments()
+                val networkIds = networkSource.map { it.paymentId }.toSet()
+                val dataToDelete = local
+                    .filter { it.paymentId !in networkIds }
+                    .map { it.paymentId }
+
+                paymentDao.deleteByIds(dataToDelete)
+                paymentDao.inserts(networkSource)
+            },
             mapper = {
                 it.data?.map { paymentResponse -> paymentResponse.toPaymentEntity() } ?: emptyList()
             }

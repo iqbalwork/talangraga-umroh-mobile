@@ -17,6 +17,9 @@ interface PeriodDao {
     suspend fun inserts(periods: List<PeriodEntity>)
 
     @Query("SELECT * FROM periode_data")
+    fun getCachedPeriods(): List<PeriodEntity>
+
+    @Query("SELECT * FROM periode_data")
     fun getAllPeriods(): Flow<List<PeriodEntity>>
 
     @Query("DELETE FROM periode_data")
@@ -24,6 +27,9 @@ interface PeriodDao {
 
     @Query("DELETE FROM periode_data WHERE document_id = :documentId")
     suspend fun deletePeriodById(documentId: String)
+
+    @Query("DELETE FROM periode_data WHERE period_id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Int>)
 
     @Query("SELECT * FROM periode_data WHERE document_id = :documentId LIMIT 1")
     suspend fun getPeriodById(documentId: String): PeriodEntity?

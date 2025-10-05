@@ -20,11 +20,17 @@ interface TransactionDao {
     @Query("DELETE FROM transaction_data WHERE transaction_id = :transactionId")
     suspend fun deleteTransactionById(transactionId: Int)
 
+    @Query("DELETE FROM transaction_data WHERE transaction_id IN (:ids)")
+    suspend fun deleteTransactionByIds(ids: List<Int>)
+
     @Query("DELETE FROM transaction_data")
     suspend fun deleteAll()
 
     @Query("SELECT * FROM transaction_data WHERE transaction_id = :transactionId")
     suspend fun getTransaction(transactionId: Int): TransactionEntity?
+
+    @Query("SELECT * FROM transaction_data")
+    fun getCachedTransactions(): List<TransactionEntity>
 
     @Query("SELECT * FROM transaction_data")
     fun getAllTransactions(): Flow<List<TransactionEntity>>

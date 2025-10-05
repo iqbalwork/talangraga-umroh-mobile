@@ -68,7 +68,7 @@ fun ListUserContent(
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit)? = null
 ) {
-    TalangragaTheme {
+    TalangragaTheme(useDynamicColor = false) {
         Scaffold(
             topBar = {
                 TopAppBar(

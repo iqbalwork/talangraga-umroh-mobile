@@ -31,11 +31,17 @@ interface UserDao {
     @Query("SELECT * FROM ${UserEntity.TABLE_NAME}")
     fun getAllUsers(): Flow<List<UserEntity>>
 
+    @Query("SELECT * FROM ${UserEntity.TABLE_NAME}")
+    fun getCachedUsers(): List<UserEntity>
+
     @Delete
     suspend fun deleteUser(userEntity: UserEntity)
 
     @Query("DELETE FROM ${UserEntity.TABLE_NAME} WHERE user_id = :userId")
     suspend fun deleteUserById(userId: Int): Int
+
+    @Query("DELETE FROM user_data WHERE user_id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Int>)
 
     @Query("DELETE FROM ${UserEntity.TABLE_NAME}")
     suspend fun deleteAllUsers()
