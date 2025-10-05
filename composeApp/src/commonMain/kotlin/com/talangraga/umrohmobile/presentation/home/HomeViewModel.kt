@@ -35,9 +35,6 @@ class HomeViewModel(
     private val _periods = MutableStateFlow<List<PeriodEntity>>(emptyList())
     val periods = _periods.asStateFlow()
 
-    private val _transactions = MutableStateFlow<List<TransactionEntity>>(emptyList())
-    val transactions = _transactions.asStateFlow()
-
     private val _userType = MutableStateFlow<String?>(null)
     val userType: StateFlow<String?> = _userType.asStateFlow()
 
@@ -154,7 +151,6 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         _uiState.update { it.copy(transactions = SectionState.Success(result.data)) }
-                        _transactions.update { result.data }
                     }
                 }
             }

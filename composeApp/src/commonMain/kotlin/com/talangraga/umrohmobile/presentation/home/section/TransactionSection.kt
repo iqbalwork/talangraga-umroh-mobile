@@ -60,10 +60,7 @@ fun TransactionSection(
 ) {
     when (state) {
         is SectionState.Error -> {
-            EmptyTransactionSection(
-                modifier = modifier.fillMaxWidth(),
-                onClickAddTabungan = onAddTransaction
-            )
+
         }
 
         is SectionState.Loading -> {

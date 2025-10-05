@@ -139,6 +139,7 @@ class RepositoryImpl(
                 val ex = Exception(baseResponse.error?.message.orEmpty())
                 send(Result.Error(ex))
             } catch (e: Exception) {
+                val message = e.message.orEmpty()
                 send(Result.Error(e))
             }
         }
