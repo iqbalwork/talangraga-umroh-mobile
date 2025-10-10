@@ -17,7 +17,7 @@ import org.koin.dsl.module
 expect val platformModule: Module
 
 val sharedModule = module {
-    single { TokenManager(get()) }
+    single { TokenManager() }
     single<UserDao> { get<TalangragaDatabase>().userDao() }
     single<PeriodDao> { get<TalangragaDatabase>().periodsDao() }
     single<TransactionDao> { get<TalangragaDatabase>().transactionDao() }

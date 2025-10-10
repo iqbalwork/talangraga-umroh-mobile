@@ -5,8 +5,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class TokenManager(private val dataStore: SessionStore) {
+open class TokenManager(): KoinComponent {
+
+    private val dataStore: SessionStore by inject()
 
     private val TOKEN_KEY = stringPreferencesKey(DataStoreKey.TOKEN_KEY)
 
