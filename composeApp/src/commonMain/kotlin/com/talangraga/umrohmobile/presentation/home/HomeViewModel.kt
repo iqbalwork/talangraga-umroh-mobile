@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
-import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.local.session.clearAll
 import com.talangraga.umrohmobile.data.local.session.getUserProfile
@@ -37,6 +36,9 @@ class HomeViewModel(
 
     private val _userType = MutableStateFlow<String?>(null)
     val userType: StateFlow<String?> = _userType.asStateFlow()
+
+    private val _role = MutableStateFlow("")
+    val role = _role.asStateFlow()
 
     private var isProfileInitialized = false
     val selectedPeriod = mutableStateOf<PeriodEntity?>(null)
@@ -79,9 +81,11 @@ class HomeViewModel(
                 when (response) {
                     is ApiResponse.Error -> {
                         _uiState.update { it.copy(profile = SectionState.Error(response.error.error?.message.orEmpty())) }
+                        _errorMessage.update { it }
                     }
 
                     is ApiResponse.Success -> {
+                        _role.update { response.data.userType.orEmpty() }
                         _uiState.update { it.copy(profile = SectionState.Success(response.data.toUserEntity())) }
                         getLocalProfile()
                     }
@@ -97,6 +101,7 @@ class HomeViewModel(
                 if (profile?.username.isNullOrBlank()) {
                     getProfile()
                 } else {
+                    _role.update { profile.userType.orEmpty() }
                     _uiState.update { it.copy(profile = SectionState.Success(profile.toUserEntity())) }
                     if (_userType.value.isNullOrBlank()) {
                         _userType.update { profile.userType.orEmpty() }
@@ -111,7 +116,7 @@ class HomeViewModel(
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _uiState.update { it.copy(periods = SectionState.Error(result.t.message.orEmpty())) }
+//                        _uiState.update { it.copy(periods = SectionState.Error(result.t.message.orEmpty())) }
                         _errorMessage.update { result.t.message }
                     }
 
@@ -145,7 +150,7 @@ class HomeViewModel(
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _uiState.update { it.copy(transactions = SectionState.Error(result.t.message.orEmpty())) }
+//                        _uiState.update { it.copy(transactions = SectionState.Error(result.t.message.orEmpty())) }
                         _errorMessage.update { result.t.message }
                     }
 

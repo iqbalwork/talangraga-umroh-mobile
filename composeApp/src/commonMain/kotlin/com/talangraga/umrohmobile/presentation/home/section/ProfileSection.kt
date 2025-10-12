@@ -52,6 +52,7 @@ import talangragaumrohmobile.composeapp.generated.resources.compose_multiplatfor
 fun ProfileSection(
     modifier: Modifier,
     userType: String?,
+    role: String,
     userTypeShowBottomSheet: Boolean,
     state: SectionState<UserEntity>,
     onListUserClick: () -> Unit,
@@ -159,7 +160,7 @@ fun ProfileSection(
                             start.linkTo(nameRef.start)
                         }
                         .clip(RoundedCornerShape(32.dp))
-                        .clickable {
+                        .clickable(enabled = role == "ADMIN") {
                             onShowUserTypeSheet()
                         }
                         .background(
@@ -184,40 +185,45 @@ fun ProfileSection(
                             textAlign = TextAlign.Center,
                             color = Color.White
                         ),
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
-                    val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Expand User Type",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .padding(start = 4.dp)
-                            .size(16.dp)
-                            .rotate(rotate)
-                    )
+
+                    if (role == "ADMIN") {
+                        val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Expand User Type",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .padding(start = 4.dp)
+                                .size(16.dp)
+                                .rotate(rotate)
+                        )
+                    }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable {
-                            onListUserClick()
-                        }
-                        .background(MediumPurple)
-                        .padding(4.dp)
-                        .constrainAs(createRef()) {
-                            top.linkTo(logoutButtonRef.top)
-                            bottom.linkTo(logoutButtonRef.bottom)
-                            end.linkTo(logoutButtonRef.start, 8.dp)
-                        }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "User",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
+                if (role == "ADMIN") {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                onListUserClick()
+                            }
+                            .background(MediumPurple)
+                            .padding(4.dp)
+                            .constrainAs(createRef()) {
+                                top.linkTo(logoutButtonRef.top)
+                                bottom.linkTo(logoutButtonRef.bottom)
+                                end.linkTo(logoutButtonRef.start, 8.dp)
+                            }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "User",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
 
                 // Logout Button
@@ -267,7 +273,8 @@ fun PreviewProfileSection() {
             onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
-            onLogout = {} // Added for preview
+            onLogout = {},
+            role = "" // Added for preview
         )
         HorizontalDivider()
         ProfileSection(
@@ -278,7 +285,8 @@ fun PreviewProfileSection() {
             onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
-            onLogout = {} // Added for preview
+            onLogout = {},
+            role = "" // Added for preview
         )
         HorizontalDivider()
         ProfileSection(
@@ -289,7 +297,8 @@ fun PreviewProfileSection() {
             onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
-            onLogout = {} // Added for preview
+            onLogout = {},
+            role = "" // Added for preview
         )
     }
 }

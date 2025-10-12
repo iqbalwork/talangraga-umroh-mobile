@@ -13,6 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
-import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.domain.model.UserType
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
 import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
@@ -41,6 +43,7 @@ import com.talangraga.umrohmobile.ui.Green
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -52,7 +55,9 @@ fun HomeScreen(
 
     val periods by viewModel.periods.collectAsStateWithLifecycle()
     val userType by viewModel.userType.collectAsStateWithLifecycle()
+    val role by viewModel.role.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.getProfileIfNecessary(justLogin)
@@ -60,9 +65,11 @@ fun HomeScreen(
 
     HomeContent(
         userType = userType.orEmpty(),
+        role = role,
         onUserTypeChange = viewModel::setUserType,
         periods = periods,
         uiState = uiState,
+        errorMessage = errorMessage.orEmpty(),
         selectedPeriod = viewModel.selectedPeriod.value,
         onPeriodChange = {
             viewModel.setSelectedPeriod(it)
@@ -91,9 +98,11 @@ fun HomeScreen(
 @Composable
 fun HomeContent(
     userType: String,
+    role: String,
     onUserTypeChange: (String) -> Unit,
     periods: List<PeriodEntity>,
     uiState: HomeUiState,
+    errorMessage: String,
     selectedPeriod: PeriodEntity?,
     onPeriodChange: (PeriodEntity) -> Unit,
     onSeeMoreTransaction: () -> Unit,
@@ -111,6 +120,15 @@ fun HomeContent(
     val periodSheetState = rememberModalBottomSheetState()
     val periodScope = rememberCoroutineScope()
     var periodShowBottomSheet by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(errorMessage) {
+        scope.launch {
+            if (errorMessage.isNotEmpty()) snackbarHostState.showSnackbar(errorMessage)
+        }
+    }
 
     if (showLogoutDialog) {
         LogoutDialog(
@@ -135,6 +153,9 @@ fun HomeContent(
                     tint = Color.White
                 )
             }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
 
@@ -159,6 +180,8 @@ fun HomeContent(
             )
         }
 
+        val userRole = UserType.fromRole(userType.lowercase())
+
         LazyColumn(
             modifier = Modifier.background(color = Background).fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -169,6 +192,7 @@ fun HomeContent(
                         .background(Color.White)
                         .padding(top = paddingValues.calculateTopPadding()),
                     userType = userType,
+                    role = userRole.name,
                     userTypeShowBottomSheet = userTypeShowBottomSheet,
                     state = uiState.profile,
                     onListUserClick = onListUserClick,
@@ -177,6 +201,7 @@ fun HomeContent(
                     onLogout = { showLogoutDialog = true }
                 )
             }
+
             item {
                 PeriodSection(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -184,6 +209,7 @@ fun HomeContent(
                     onShowPeriodSheet = { periodShowBottomSheet = true },
                 )
             }
+
             item {
                 TransactionSection(
                     modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
@@ -202,66 +228,6 @@ fun PreviewHomeContent() {
     TalangragaTheme {
         HomeContent(
             periods = listOf(
-                PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
-                PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
-            ),
-            uiState = HomeUiState(
-                profile = SectionState.Success(
-                    UserEntity(
-                        userId = 1,
-                        userName = "iqbalf",
-                        fullname = "Iqbal Fauzi",
-                        email = "",
-                        phone = "",
-                        domisili = "",
-                        userType = "Admin",
-                        imageProfileUrl = ""
-                    )
-                ),
-                periods = SectionState.Loading,
-                transactions = SectionState.Success(
-                    data = listOf(
-                        TransactionEntity(
-                            transactionId = 1,
-                            amount = 500000,
-                            transactionDate = "2025-08-29T22:15:00.000Z",
-                            statusTransaksi = "",
-                            reportedDate = "2025-08-29T22:15:00.000Z",
-                            buktiTransferUrl = "",
-                            paymentType = "",
-                            paymentName = "",
-                            reportedBy = "Iqbal Fauzi",
-                            confirmedBy = ""
-                        )
-                    )
-                )
-            ),
-            onListUserClick = {},
-            onFetchProfile = {},
-            onLogout = {},
-            onPeriodChange = {},
-            selectedPeriod = PeriodEntity(
-                periodId = 0,
-                "",
-                "Bulan ke 1",
-                "2025-08-06",
-                "2025-09-05"
-            ),
-            userType = "Admin",
-            onUserTypeChange = { },
-            onSeeMoreTransaction = { },
-            onAddTransaction = { },
-        )
-    }
-}
-
-@Preview
-@Composable
-fun PreviewHomeContentEmptyData() {
-    TalangragaTheme {
-        HomeContent(
-            periods = listOf(
-                PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
                 PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
             ),
             uiState = HomeUiState(
@@ -282,6 +248,7 @@ fun PreviewHomeContentEmptyData() {
                     data = listOf()
                 )
             ),
+            errorMessage = "",
             onListUserClick = {},
             onFetchProfile = {},
             onLogout = {},
@@ -297,6 +264,7 @@ fun PreviewHomeContentEmptyData() {
             onUserTypeChange = { },
             onSeeMoreTransaction = { },
             onAddTransaction = { },
+            role = "",
         )
     }
 }
