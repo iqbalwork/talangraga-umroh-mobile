@@ -225,7 +225,7 @@ class RepositoryImpl(
             }
         )
     }
-
+    // SQL Delight
     override fun getPayments(): Flow<Result<List<PaymentEntity>>> {
         return networkBoundResource(
             query = { databaseHelper.getAllPaymentsAsFlow() },
