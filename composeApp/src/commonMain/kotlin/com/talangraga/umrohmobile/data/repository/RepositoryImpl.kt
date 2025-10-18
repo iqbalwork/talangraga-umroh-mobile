@@ -1,10 +1,7 @@
 package com.talangraga.umrohmobile.data.repository
 
 import SessionStore
-import com.talangraga.umrohmobile.data.local.database.dao.PaymentDao
-import com.talangraga.umrohmobile.data.local.database.dao.PeriodDao
-import com.talangraga.umrohmobile.data.local.database.dao.TransactionDao
-import com.talangraga.umrohmobile.data.local.database.dao.UserDao
+import com.talangraga.umrohmobile.data.local.database.DatabaseHelper
 import com.talangraga.umrohmobile.data.local.database.model.PaymentEntity
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
@@ -44,10 +41,7 @@ class RepositoryImpl(
     private val json: Json,
     private val sessionStore: SessionStore,
     private val tokenManager: TokenManager,
-    private val periodDao: PeriodDao,
-    private val transactionDao: TransactionDao,
-    private val paymentDao: PaymentDao,
-    private val userDao: UserDao
+    private val databaseHelper: DatabaseHelper
 ) : Repository {
 
     private inline fun <reified T : BaseResponse> safeApiCall(crossinline apiCall: suspend () -> T): Flow<ApiResponse<T, BaseResponse>> {
@@ -111,14 +105,14 @@ class RepositoryImpl(
     }
 
     fun <LocalType, NetworkType> networkBoundResource(
-        query: () -> Flow<LocalType>,
+        query: () -> Flow<LocalType>?,
         fetch: suspend () -> NetworkType,
         saveFetchResult: suspend (LocalType) -> Unit,
         mapper: (NetworkType) -> LocalType
     ): Flow<Result<LocalType>> = channelFlow {
 
         val db = launch {
-            query().collectLatest { data ->
+            query()?.collectLatest { data ->
                 send(Result.Success(data))
             }
         }
@@ -170,17 +164,18 @@ class RepositoryImpl(
 
     override fun getListUsers(): Flow<Result<List<UserEntity>>> {
         return networkBoundResource(
-            query = { userDao.getAllUsers() },
+            query = { databaseHelper.getAllUsersAsFlow() },
             fetch = { authService.getListUsers() },
             saveFetchResult = { networkSource ->
-                val local = userDao.getCachedUsers()
+                val local = databaseHelper.getAllUsers()
                 val networkIds = networkSource.map { it.userId }.toSet()
                 val dataToDelete = local
                     .filter { it.userId !in networkIds }
                     .map { it.userId }
 
-                userDao.deleteByIds(dataToDelete)
-                userDao.insertUsers(networkSource)
+                databaseHelper.deleteUserByIds(dataToDelete)
+                databaseHelper.insertUsers(networkSource)
+                networkSource
             },
             mapper = {
                 it.map { userResponse -> userResponse.toUserEntity() }
@@ -190,16 +185,17 @@ class RepositoryImpl(
 
     override fun getPeriods(): Flow<Result<List<PeriodEntity>>> {
         return networkBoundResource(
-            query = { periodDao.getAllPeriods() },
+            query = { databaseHelper.getAllPeriodsAsFlow() },
             fetch = { authService.getPeriods() },
             saveFetchResult = { networkSource ->
-                val local = periodDao.getCachedPeriods()
+                val local = databaseHelper.getAllPeriods()
                 val networkIds = networkSource.map { it.periodId }.toSet()
                 val dataToDelete = local
                     .filter { it.periodId !in networkIds }
                     .map { it.periodId }
-                periodDao.deleteByIds(dataToDelete)
-                periodDao.inserts(networkSource)
+                databaseHelper.deletePeriodByIds(dataToDelete)
+                databaseHelper.insertPeriods(networkSource)
+                networkSource
             },
             mapper = {
                 it.data?.map { periodeResponse -> periodeResponse.toPeriodEntity() } ?: emptyList()
@@ -209,17 +205,18 @@ class RepositoryImpl(
 
     override fun getTransactions(periodId: Int): Flow<Result<List<TransactionEntity>>> {
         return networkBoundResource(
-            query = { transactionDao.getAllTransactions() },
+            query = { databaseHelper.getAllTransactionsAsFlow() },
             fetch = { authService.getTransactions(periodId) },
             saveFetchResult = { networkSource ->
-                val localTransactions = transactionDao.getCachedTransactions()
+                val localTransactions = databaseHelper.getAllTransactions()
                 val networkTransactionIds = networkSource.map { it.transactionId }.toSet()
                 val transactionsToDelete = localTransactions
                     .filter { it.transactionId !in networkTransactionIds }
                     .map { it.transactionId }
 
-                transactionDao.deleteTransactionByIds(transactionsToDelete)
-                transactionDao.inserts(networkSource)
+                databaseHelper.deleteTransactionByIds(transactionsToDelete)
+                databaseHelper.insertTransactions(networkSource)
+                networkSource
             },
             mapper = {
                 it.data?.map { transactionResponse ->
@@ -231,17 +228,18 @@ class RepositoryImpl(
 
     override fun getPayments(): Flow<Result<List<PaymentEntity>>> {
         return networkBoundResource(
-            query = { paymentDao.getAllPayments() },
+            query = { databaseHelper.getAllPaymentsAsFlow() },
             fetch = { authService.getPayments() },
             saveFetchResult = { networkSource ->
-                val local = paymentDao.getCachedPayments()
+                val local = databaseHelper.getAllPayments()
                 val networkIds = networkSource.map { it.paymentId }.toSet()
                 val dataToDelete = local
                     .filter { it.paymentId !in networkIds }
                     .map { it.paymentId }
 
-                paymentDao.deleteByIds(dataToDelete)
-                paymentDao.inserts(networkSource)
+                databaseHelper.deletePaymentByIds(dataToDelete)
+                databaseHelper.insertPayments(networkSource)
+                networkSource
             },
             mapper = {
                 it.data?.map { paymentResponse -> paymentResponse.toPaymentEntity() } ?: emptyList()

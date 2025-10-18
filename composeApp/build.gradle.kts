@@ -8,10 +8,9 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.androidx.room)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.buildKonfig)
+    alias(libs.plugins.sqldelight)
 }
 
 buildkonfig {
@@ -61,11 +60,10 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            freeCompilerArgs += "-Xexpect-actual-classes"
-            freeCompilerArgs += "-Xbinary=bundleId=com.talangragaumroh.app"
             // Required when using NativeSQLiteDriver
             linkerOpts.add("-lsqlite3")
-//            export(libs.inspektify.ktor3)
+            freeCompilerArgs += "-Xexpect-actual-classes"
+            freeCompilerArgs += "-Xbinary=bundleId=com.talangragaumroh.app"
         }
     }
 
@@ -75,6 +73,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
+//            implementation(libs.androidx.room.sqlite.wrapper)
+            implementation(libs.android.driver)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -97,17 +97,26 @@ kotlin {
             implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.datastore.preferences)
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.androidx.sqlite.bundled)
+//            implementation(libs.androidx.room.runtime)
+//            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.coil.compose)
             implementation(libs.constraintlayout.compose.multiplatform)
             implementation(libs.ktor.monitor.logging)
             implementation(libs.napier)
             implementation(libs.kotlinx.datetime)
             implementation(libs.inspektify.ktor3)
+            // SQLDelight
+            implementation(libs.runtime)
+            // optionally coroutines extensions
+            implementation(libs.coroutines.extensions)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+//            implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.native.driver)
+        }
+        nativeMain.dependencies {
+            implementation(libs.native.driver)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -116,8 +125,8 @@ kotlin {
     }
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
+kotlin.sourceSets.all {
+    kotlin.srcDir("build/generated/ksp/${name}/kotlin")
 }
 
 android {
@@ -149,10 +158,14 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-    implementation(libs.symbol.processing.api)
-    ksp(libs.androidx.room.compiler)
-    add("kspAndroid", libs.androidx.room.compiler)
-    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-    add("kspIosX64", libs.androidx.room.compiler)
-    add("kspIosArm64", libs.androidx.room.compiler)
+}
+
+sqldelight {
+    databases {
+        create("TalangragaDatabase") {
+            packageName.set("com.talangraga.umrohmobile")
+            // optional: specify srcDirs if you place .sq files outside default
+            // srcDirs.setFrom("src/commonMain/sqldelight")
+        }
+    }
 }

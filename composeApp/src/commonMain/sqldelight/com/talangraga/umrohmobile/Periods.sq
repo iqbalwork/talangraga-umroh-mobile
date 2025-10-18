@@ -1,0 +1,40 @@
+CREATE TABLE PeriodData (
+    periodId Integer PRIMARY KEY,
+    documentId TEXT,
+    periodeName TEXT NOT NULL,
+    startDate TEXT NOT NULL,
+    endDate TEXT NOT NULL
+);
+
+-- Insert a single PeriodData record
+insertPeriodData:
+INSERT OR REPLACE INTO PeriodData(
+    periodId,
+    documentId,
+    periodeName,
+    startDate,
+    endDate
+) VALUES (?, ?, ?, ?, ?);
+
+upsertPeriodData:
+INSERT OR REPLACE INTO PeriodData(
+    periodId,
+    documentId,
+    periodeName,
+    startDate,
+    endDate
+) VALUES (?, ?, ?, ?, ?);
+
+-- Get all records
+selectAllPeriodData:
+SELECT * FROM PeriodData;
+
+-- Delete a single record by id
+deletePeriodDataById:
+DELETE FROM PeriodData
+WHERE periodId = ?;
+
+-- Delete all records
+deleteAllPeriodData:
+DELETE FROM PeriodData;
+

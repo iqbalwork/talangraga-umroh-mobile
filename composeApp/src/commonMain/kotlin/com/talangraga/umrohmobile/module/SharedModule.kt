@@ -1,10 +1,5 @@
 package com.talangraga.umrohmobile.module
 
-import com.talangraga.umrohmobile.data.local.database.TalangragaDatabase
-import com.talangraga.umrohmobile.data.local.database.dao.PaymentDao
-import com.talangraga.umrohmobile.data.local.database.dao.PeriodDao
-import com.talangraga.umrohmobile.data.local.database.dao.TransactionDao
-import com.talangraga.umrohmobile.data.local.database.dao.UserDao
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.network.HttpClientFactory
 import com.talangraga.umrohmobile.data.network.api.AuthService
@@ -18,10 +13,6 @@ expect val platformModule: Module
 
 val sharedModule = module {
     single { TokenManager() }
-    single<UserDao> { get<TalangragaDatabase>().userDao() }
-    single<PeriodDao> { get<TalangragaDatabase>().periodsDao() }
-    single<TransactionDao> { get<TalangragaDatabase>().transactionDao() }
-    single<PaymentDao> { get<TalangragaDatabase>().paymentDao() }
     single {
         HttpClientFactory.create(get(), get())
     }
@@ -42,10 +33,7 @@ val sharedModule = module {
             json = get(),
             sessionStore = get(),
             tokenManager = get(),
-            periodDao = get(),
-            transactionDao = get(),
-            paymentDao = get(),
-            userDao = get()
+            databaseHelper = get(),
         )
     }
 }

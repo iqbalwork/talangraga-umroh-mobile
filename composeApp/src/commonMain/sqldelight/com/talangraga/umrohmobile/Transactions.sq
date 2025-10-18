@@ -1,0 +1,58 @@
+CREATE TABLE TransactionData (
+  transactionId INTEGER PRIMARY KEY,
+  amount INTEGER NOT NULL,
+  reportedDate TEXT NOT NULL,
+  transactionDate TEXT NOT NULL,
+  statusTransaksi TEXT NOT NULL,
+  buktiTransferUrl TEXT NOT NULL,
+  paymentType TEXT,
+  paymentName TEXT,
+  reportedBy TEXT,
+  confirmedBy TEXT
+);
+
+selectAll:
+SELECT * FROM TransactionData;
+
+-- Insert a single TransactionData record
+insertTransactionData:
+INSERT OR REPLACE INTO TransactionData(
+    transactionId,
+    amount,
+    reportedDate,
+    transactionDate,
+    statusTransaksi,
+    buktiTransferUrl,
+    paymentType,
+    paymentName,
+    reportedBy,
+    confirmedBy
+) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?);
+
+upsertTransactionData:
+INSERT OR REPLACE INTO TransactionData(
+    transactionId,
+        amount,
+        reportedDate,
+        transactionDate,
+        statusTransaksi,
+        buktiTransferUrl,
+        paymentType,
+        paymentName,
+        reportedDate,
+        reportedBy,
+        confirmedBy
+) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?, ?);
+
+-- Get all records
+selectAllTransactionData:
+SELECT * FROM TransactionData;
+
+-- Delete a single record by id
+deleteTransactionDataById:
+DELETE FROM TransactionData
+WHERE transactionId = ?;
+
+-- Delete all records
+deleteAllTransactionData:
+DELETE FROM TransactionData;
