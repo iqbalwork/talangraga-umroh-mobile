@@ -11,7 +11,7 @@ CREATE TABLE UserData (
 
 -- Insert a single UserData record
 insertUserData:
-INSERT INTO UserData(
+INSERT OR REPLACE INTO UserData(
     userId,
     username,
     fullname,
@@ -25,13 +25,13 @@ INSERT INTO UserData(
 upsertUserData:
 INSERT OR REPLACE INTO UserData(
     userId,
-        username,
-        fullname,
-        email,
-        phone,
-        domisili,
-        userType,
-        imageProfileUrl
+    username,
+    fullname,
+    email,
+    phone,
+    domisili,
+    userType,
+    imageProfileUrl
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Get all records

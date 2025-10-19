@@ -30,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
-import com.talangraga.umrohmobile.domain.model.UserType
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
 import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
@@ -180,8 +179,6 @@ fun HomeContent(
             )
         }
 
-        val userRole = UserType.fromRole(userType.lowercase())
-
         LazyColumn(
             modifier = Modifier.background(color = Background).fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -192,7 +189,7 @@ fun HomeContent(
                         .background(Color.White)
                         .padding(top = paddingValues.calculateTopPadding()),
                     userType = userType,
-                    role = userRole.name,
+                    role = role,
                     userTypeShowBottomSheet = userTypeShowBottomSheet,
                     state = uiState.profile,
                     onListUserClick = onListUserClick,

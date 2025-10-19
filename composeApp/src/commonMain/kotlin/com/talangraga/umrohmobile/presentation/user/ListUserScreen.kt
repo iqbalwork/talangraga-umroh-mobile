@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -56,9 +60,14 @@ fun ListUserScreen(
     navHostController: NavHostController,
     viewModel: ListUserViewModel = koinViewModel()
 ) {
-    ListUserContent(onBackClick = {
-        navHostController.popBackStack()
-    })
+
+    val state = viewModel.uiState.collectAsStateWithLifecycle()
+
+    ListUserContent(
+        state = state.value,
+        onBackClick = {
+            navHostController.popBackStack()
+        })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +75,8 @@ fun ListUserScreen(
 fun ListUserContent(
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
-    onAddUserClick: (() -> Unit)? = null
+    onAddUserClick: (() -> Unit)? = null,
+    state: ListUserUiState
 ) {
     TalangragaTheme(useDynamicColor = false) {
         Scaffold(
@@ -99,22 +109,43 @@ fun ListUserContent(
                 }
             }
         ) { innerPadding ->
-            LazyColumn(
-                modifier = modifier.padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(10) { index ->
-                    UserItem(
-                        user = User(
-                            id = index.toString(),
-                            name = "User $index",
-                            email = "user$index@example.com",
-                            phone = "+62 812 3456 789$index",
-                            role = if (index % 2 == 0) "Admin" else "User"
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+            when (state) {
+                ListUserUiState.EmptyData -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Tidak ada data.")
+                    }
+                }
+                ListUserUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                is ListUserUiState.Success -> {
+                    LazyColumn(
+                        modifier = modifier.padding(innerPadding),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(state.users) { index, user ->
+                            UserItem(
+                                user = User(
+                                    id = user.userId.toString(),
+                                    name = user.fullname,
+                                    email = user.email,
+                                    phone = user.phone,
+                                    role = user.userType
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -211,7 +242,9 @@ fun PreviewListUserContent() {
     TalangragaTheme {
         ListUserContent(
             onBackClick = {},
-            onAddUserClick = {}
+            onAddUserClick = {},
+            modifier = Modifier,
+            state = ListUserUiState.Loading,
         )
     }
 }

@@ -5,7 +5,6 @@ import ComposeApp
 struct iOSApp: App {
 
     init() {
-        KoinKt.doInitKoin()
         LoggerKt.debugBuild()
     }
 

@@ -160,7 +160,7 @@ fun ProfileSection(
                             start.linkTo(nameRef.start)
                         }
                         .clip(RoundedCornerShape(32.dp))
-                        .clickable(enabled = role == "ADMIN") {
+                        .clickable(enabled = role.uppercase() == "ADMIN") {
                             onShowUserTypeSheet()
                         }
                         .background(
@@ -188,21 +188,20 @@ fun ProfileSection(
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
 
-                    if (role == "ADMIN") {
+                    if (role.uppercase() == "ADMIN") {
                         val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
                         Icon(
                             imageVector = Icons.Default.ArrowDropDown,
                             contentDescription = "Expand User Type",
                             tint = Color.White,
                             modifier = Modifier
-                                .padding(start = 4.dp)
                                 .size(16.dp)
                                 .rotate(rotate)
                         )
                     }
                 }
 
-                if (role == "ADMIN") {
+                if (role.uppercase() == "ADMIN") {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
