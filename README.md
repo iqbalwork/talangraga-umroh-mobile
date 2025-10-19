@@ -31,13 +31,21 @@ This app was created to simplify, centralize, and automate the entire savings tr
 
 ### 🧱 Architecture
 UI (Compose Multiplatform)
+
 ↓
+
 ViewModel (MVVM)
+
 ↓
+
 UseCase (Business Logic)
+
 ↓
+
 Repository (Network + Local)
+
 ↓
+
 DataSource (Ktor API / SQLDelight DB)
 
 ---
