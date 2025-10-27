@@ -53,7 +53,7 @@ kotlin {
             // Required when using NativeSQLiteDriver
             linkerOpts.add("-lsqlite3")
             freeCompilerArgs += "-Xexpect-actual-classes"
-            freeCompilerArgs += "-Xbinary=bundleId=com.talangragaumroh.app"
+            freeCompilerArgs += "-Xbinary=bundleId=com.talangraga.umrohmobile.app"
         }
     }
 
@@ -86,7 +86,6 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.androidx.datastore.preferences)
             implementation(libs.coil.compose)
             implementation(libs.constraintlayout.compose.multiplatform)
             implementation(libs.ktor.monitor.logging)
@@ -97,6 +96,8 @@ kotlin {
             implementation(libs.runtime)
             // optionally coroutines extensions
             implementation(libs.coroutines.extensions)
+            implementation(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.serialization)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

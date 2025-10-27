@@ -1,13 +1,11 @@
 package com.talangraga.umrohmobile.presentation.home
 
-import SessionStore
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
+import com.talangraga.umrohmobile.data.local.session.Session
 import com.talangraga.umrohmobile.data.local.session.TokenManager
-import com.talangraga.umrohmobile.data.local.session.clearAll
-import com.talangraga.umrohmobile.data.local.session.getUserProfile
 import com.talangraga.umrohmobile.data.mapper.toUserEntity
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
 import com.talangraga.umrohmobile.data.network.api.Result
@@ -23,7 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val sessionStore: SessionStore,
+    private val session: Session,
     private val tokenManager: TokenManager,
     private val repository: Repository,
 ) : ViewModel() {
@@ -96,18 +94,18 @@ class HomeViewModel(
 
     fun getLocalProfile() {
         _uiState.update { it.copy(profile = SectionState.Loading) }
-        sessionStore.getUserProfile()
-            .onEach { profile ->
-                if (profile?.username.isNullOrBlank()) {
-                    getProfile()
-                } else {
-                    _role.update { profile.userType.orEmpty() }
-                    _uiState.update { it.copy(profile = SectionState.Success(profile.toUserEntity())) }
-                    if (_userType.value.isNullOrBlank()) {
-                        _userType.update { profile.userType.orEmpty() }
-                    }
+        viewModelScope.launch {
+            val profile = session.getProfile()
+            if (profile?.username.isNullOrBlank()) {
+                getProfile()
+            } else {
+                _role.update { profile.userType.orEmpty() }
+                _uiState.update { it.copy(profile = SectionState.Success(profile.toUserEntity())) }
+                if (_userType.value.isNullOrBlank()) {
+                    _userType.update { profile.userType.orEmpty() }
                 }
-            }.launchIn(viewModelScope)
+            }
+        }
     }
 
     fun getPeriods() {
@@ -164,7 +162,7 @@ class HomeViewModel(
 
     fun clearSession() {
         viewModelScope.launch {
-            sessionStore.clearAll()
+            session.clear()
             tokenManager.clearToken()
             _errorMessage.update { null }
         }

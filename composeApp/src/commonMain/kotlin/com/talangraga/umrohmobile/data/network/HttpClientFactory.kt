@@ -27,7 +27,7 @@ object HttpClientFactory {
         val authPlugin = createClientPlugin("AuthPlugin") {
             onRequest { request, _ ->
                 val token = tokenManager.getToken() // suspend works here
-                if (!token.isNullOrBlank()) {
+                if (token.isNotBlank()) {
                     request.headers.append(HttpHeaders.Authorization, "Bearer $token")
                 }
             }

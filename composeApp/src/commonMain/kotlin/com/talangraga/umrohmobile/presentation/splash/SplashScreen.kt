@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.talangraga.umrohmobile.data.local.session.DataStoreKey
-import com.talangraga.umrohmobile.data.local.session.getBoolean
+import com.talangraga.umrohmobile.data.local.session.SessionKey
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
 import com.talangraga.umrohmobile.presentation.navigation.SplashRoute
@@ -32,21 +30,18 @@ fun SplashScreen(
     viewModel: SplashViewModel = koinViewModel()
 ) {
 
-    val isLogin by viewModel.sessionStore.getBoolean(DataStoreKey.IS_LOGGED_IN)
+    val isLogin = viewModel.session.getBoolean(SessionKey.IS_LOGGED_IN)
 
     LaunchedEffect(isLogin) {
-        println("SplashScreen Navigation: isLogin = $isLogin")
         delay(1000)
-        if (isLogin == null || isLogin == false) {
+        if (!isLogin) {
             navHostController.navigate(LoginRoute) {
                 popUpTo(SplashRoute) { inclusive = true }
             }
-            println("Navigation: Splash to Login")
         } else {
             navHostController.navigate(HomeRoute()) {
                 popUpTo(SplashRoute) { inclusive = true }
             }
-            println("Navigation: Splash to Home")
         }
     }
 

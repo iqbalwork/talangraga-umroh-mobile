@@ -1,5 +1,7 @@
-package com.talangraga.umrohmobile.module
+package com.talangraga.umrohmobile.di
 
+import com.russhwolf.settings.Settings
+import com.talangraga.umrohmobile.data.local.session.Session
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.network.HttpClientFactory
 import com.talangraga.umrohmobile.data.network.api.AuthService
@@ -12,13 +14,6 @@ import org.koin.dsl.module
 expect val platformModule: Module
 
 val sharedModule = module {
-    single { TokenManager() }
-    single {
-        HttpClientFactory.create(get(), get())
-    }
-    single {
-        AuthService(get())
-    }
     single<Json> {
         Json {
             isLenient = true // Optional: if you want to be lenient with JSON parsing
@@ -27,11 +22,20 @@ val sharedModule = module {
             // Add other Json configurations as needed
         }
     }
+    single { Settings() }
+    single { Session(get(), get()) }
+    single { TokenManager() }
+    single {
+        HttpClientFactory.create(get(), get())
+    }
+    single {
+        AuthService(get())
+    }
     single<Repository> {
         RepositoryImpl(
             authService = get(),
             json = get(),
-            sessionStore = get(),
+            session = get(),
             tokenManager = get(),
             databaseHelper = get(),
         )

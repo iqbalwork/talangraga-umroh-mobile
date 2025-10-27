@@ -1,8 +1,8 @@
 package com.talangraga.umrohmobile.presentation.splash
 
-import SessionStore
 import androidx.lifecycle.ViewModel
+import com.talangraga.umrohmobile.data.local.session.Session
 
 class SplashViewModel(
-    val sessionStore: SessionStore
+    val session: Session
 ) : ViewModel()

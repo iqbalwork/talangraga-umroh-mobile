@@ -1,15 +1,13 @@
 package com.talangraga.umrohmobile.data.repository
 
-import SessionStore
 import com.talangraga.umrohmobile.data.local.database.DatabaseHelper
 import com.talangraga.umrohmobile.data.local.database.model.PaymentEntity
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
-import com.talangraga.umrohmobile.data.local.session.DataStoreKey
+import com.talangraga.umrohmobile.data.local.session.Session
+import com.talangraga.umrohmobile.data.local.session.SessionKey
 import com.talangraga.umrohmobile.data.local.session.TokenManager
-import com.talangraga.umrohmobile.data.local.session.saveBoolean
-import com.talangraga.umrohmobile.data.local.session.saveString
 import com.talangraga.umrohmobile.data.mapper.toPaymentEntity
 import com.talangraga.umrohmobile.data.mapper.toPeriodEntity
 import com.talangraga.umrohmobile.data.mapper.toTransactionEntity
@@ -39,10 +37,36 @@ import kotlinx.serialization.json.Json
 class RepositoryImpl(
     private val authService: AuthService,
     private val json: Json,
-    private val sessionStore: SessionStore,
+    private val session: Session,
     private val tokenManager: TokenManager,
     private val databaseHelper: DatabaseHelper
 ) : Repository {
+
+    fun normalizeErrorMessage(throwable: Throwable): String {
+        val message = throwable.message ?: "Unknown error"
+
+        return when {
+            message.contains("Failed to connect", ignoreCase = true) ->
+                "Failed to connect to the server."
+
+            message.contains("Could not connect", ignoreCase = true) ||
+                    message.contains("NSURLErrorDomain", ignoreCase = true) ||
+                    message.contains("Code=-1004", ignoreCase = true) ->
+                "Failed to connect to the server."
+
+            message.contains("timed out", ignoreCase = true) ->
+                "Connection timed out."
+
+            message.contains("Unauthorized", ignoreCase = true) ->
+                "Unauthorized. Please check your credentials."
+
+            message.contains("Network is unreachable", ignoreCase = true) ->
+                "No internet connection."
+
+            else -> message
+        }
+    }
+
 
     private inline fun <reified T : BaseResponse> safeApiCall(crossinline apiCall: suspend () -> T): Flow<ApiResponse<T, BaseResponse>> {
         return flow {
@@ -89,13 +113,14 @@ class RepositoryImpl(
                 )
             } catch (e: Exception) {
                 // Catch other exceptions (e.g., network issues, serialization issues not from ClientRequestException)
+                val message = normalizeErrorMessage(e)
                 emit(
                     ApiResponse.Error(
                         BaseResponse(
                             error = StrapiError(
                                 status = 0, // Or a specific status code for general errors
                                 name = "GenericError",
-                                message = e.message ?: "An unexpected error occurred",
+                                message = message
                             )
                         )
                     )
@@ -148,17 +173,16 @@ class RepositoryImpl(
         return safeApiCall {
             val authData = authService.login(identifier, password)
             tokenManager.saveToken(authData.jwt.orEmpty())
-            sessionStore.saveBoolean(DataStoreKey.IS_LOGGED_IN, true)
+            session.saveBoolean(SessionKey.IS_LOGGED_IN, true)
             authData
         }
     }
 
     override fun getLoginProfile(): Flow<ApiResponse<UserResponse, BaseResponse>> {
         return safeApiCall {
-            val apiResponse = authService.getLoginProfile()
-            val profileToString = json.encodeToString(UserResponse.serializer(), apiResponse)
-            sessionStore.saveString(DataStoreKey.PROFILE_KEY, profileToString)
-            apiResponse
+            val userResponse = authService.getLoginProfile()
+            session.saveProfile(userResponse)
+            userResponse
         }
     }
 
@@ -225,6 +249,7 @@ class RepositoryImpl(
             }
         )
     }
+
     // SQL Delight
     override fun getPayments(): Flow<Result<List<PaymentEntity>>> {
         return networkBoundResource(

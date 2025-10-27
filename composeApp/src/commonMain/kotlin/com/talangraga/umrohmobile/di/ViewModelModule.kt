@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.module
+package com.talangraga.umrohmobile.di
 
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
 import com.talangraga.umrohmobile.presentation.login.LoginViewModel
@@ -8,7 +8,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
-    viewModel { SplashViewModel(sessionStore = get()) }
+    viewModel { SplashViewModel(session = get()) }
     viewModel { LoginViewModel(repository = get()) }
     viewModel { HomeViewModel(get(), get(), get()) }
     viewModel { ListUserViewModel(repository = get()) }
