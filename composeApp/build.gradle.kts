@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.buildKonfig)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotzilla)
 }
 
 buildkonfig {
@@ -30,17 +31,6 @@ buildkonfig {
         buildConfigField(STRING, "BASE_URL", "$stagingUrl")
     }
 
-//    targetConfigs {
-//        // names in create should be the same as target names you specified
-//        create("android") {
-//            buildConfigField(STRING, "name2", "value2")
-//            buildConfigField(STRING, "nullableField", "NonNull-value", nullable = true)
-//        }
-//
-//        create("ios") {
-//            buildConfigField(STRING, "name", "valueForNative")
-//        }
-//    }
 }
 
 kotlin {
@@ -73,7 +63,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
-//            implementation(libs.androidx.room.sqlite.wrapper)
             implementation(libs.android.driver)
         }
         commonMain.dependencies {
@@ -87,6 +76,7 @@ kotlin {
             implementation(libs.material.icons.extended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.kotzilla.sdk.compose)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
@@ -97,8 +87,6 @@ kotlin {
             implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.datastore.preferences)
-//            implementation(libs.androidx.room.runtime)
-//            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.coil.compose)
             implementation(libs.constraintlayout.compose.multiplatform)
             implementation(libs.ktor.monitor.logging)
@@ -112,7 +100,6 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-//            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.native.driver)
         }
         nativeMain.dependencies {
