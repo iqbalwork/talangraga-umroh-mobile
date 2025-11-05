@@ -42,7 +42,8 @@ class LoginViewModel(
                 when (response) {
                     is ApiResponse.Error -> {
                         _isLoading.update { false }
-                        _errorMessage.update { response.error.error?.message }
+                        val message = response.error.error?.message
+                        _errorMessage.update { message }
                     }
 
                     is ApiResponse.Success -> {

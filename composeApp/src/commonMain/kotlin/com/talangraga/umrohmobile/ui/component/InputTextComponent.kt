@@ -40,11 +40,12 @@ import talangragaumrohmobile.composeapp.generated.resources.show_password
 @Composable
 fun InputText(
     modifier: Modifier = Modifier,
-    title: String,
+    title: String? = null,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
     enabled: Boolean = true,
+    backgroundColor: Color = Color.White,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
 ) {
@@ -52,12 +53,14 @@ fun InputText(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
     ) {
-        Text(
-            text = title,
-            style = TalangragaTypography.titleSmall,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.fillMaxWidth()
-        )
+        title?.let {
+            Text(
+                text = title,
+                style = TalangragaTypography.titleSmall,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = value,
@@ -69,7 +72,7 @@ fun InputText(
             enabled = enabled,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
-            modifier = Modifier.fillMaxWidth().background(color = Color.White)
+            modifier = Modifier.fillMaxWidth().background(color = backgroundColor)
         )
     }
 }

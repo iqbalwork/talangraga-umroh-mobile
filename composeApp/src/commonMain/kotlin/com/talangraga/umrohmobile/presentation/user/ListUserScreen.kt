@@ -1,18 +1,7 @@
 package com.talangraga.umrohmobile.presentation.user
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -21,19 +10,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,9 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.component.InputText
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import talangragaumrohmobile.composeapp.generated.resources.Res
+import talangragaumrohmobile.composeapp.generated.resources.search_username
 
 data class User(
     val id: String,
@@ -109,41 +96,65 @@ fun ListUserContent(
                 }
             }
         ) { innerPadding ->
-            when (state) {
-                ListUserUiState.EmptyData -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Tidak ada data.")
-                    }
-                }
-                ListUserUiState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
 
-                is ListUserUiState.Success -> {
-                    LazyColumn(
-                        modifier = modifier.padding(innerPadding),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        itemsIndexed(state.users) { index, user ->
-                            UserItem(
-                                user = User(
-                                    id = user.userId.toString(),
-                                    name = user.fullname,
-                                    email = user.email,
-                                    phone = user.phone,
-                                    role = user.userType
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            )
+            var username by remember { mutableStateOf("") }
+
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                InputText(
+                    value = username,
+                    onValueChange = {
+                        username = it
+                    },
+                    placeholder = stringResource(Res.string.search_username),
+                    backgroundColor = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .padding(horizontal = 16.dp)
+                )
+
+                when (state) {
+                    ListUserUiState.EmptyData -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Tidak ada data.")
+                        }
+                    }
+
+                    ListUserUiState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+
+                    is ListUserUiState.Success -> {
+                        LazyColumn(
+                            modifier = Modifier,
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            itemsIndexed(state.users) { index, user ->
+                                UserItem(
+                                    user = User(
+                                        id = user.userId.toString(),
+                                        name = user.fullname,
+                                        email = user.email,
+                                        phone = user.phone,
+                                        role = user.userType
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }
@@ -244,7 +255,30 @@ fun PreviewListUserContent() {
             onBackClick = {},
             onAddUserClick = {},
             modifier = Modifier,
-            state = ListUserUiState.Loading,
+            state = ListUserUiState.Success(
+                listOf(
+                    UserEntity(
+                        userId = 1,
+                        userName = "johndoe",
+                        fullname = "John Doe",
+                        email = "john@mail.com",
+                        phone = "+62",
+                        domisili = "Bandung",
+                        userType = "Admin",
+                        imageProfileUrl = ""
+                    ),
+                    UserEntity(
+                        userId = 1,
+                        userName = "doejohn",
+                        fullname = "Doe John",
+                        email = "doe@mail.com",
+                        phone = "+621",
+                        domisili = "Bandung",
+                        userType = "Member",
+                        imageProfileUrl = ""
+                    )
+                )
+            ),
         )
     }
 }
