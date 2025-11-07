@@ -1,6 +1,5 @@
 CREATE TABLE PeriodData (
     periodId Integer PRIMARY KEY,
-    documentId TEXT,
     periodeName TEXT NOT NULL,
     startDate TEXT NOT NULL,
     endDate TEXT NOT NULL
@@ -10,20 +9,18 @@ CREATE TABLE PeriodData (
 insertPeriodData:
 INSERT OR REPLACE INTO PeriodData(
     periodId,
-    documentId,
     periodeName,
     startDate,
     endDate
-) VALUES (?, ?, ?, ?, ?);
+) VALUES (?, ?, ?, ?);
 
 upsertPeriodData:
 INSERT OR REPLACE INTO PeriodData(
     periodId,
-    documentId,
     periodeName,
     startDate,
     endDate
-) VALUES (?, ?, ?, ?, ?);
+) VALUES (?, ?, ?, ?);
 
 -- Get all records
 selectAllPeriodData:

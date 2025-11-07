@@ -225,7 +225,7 @@ fun PreviewHomeContent() {
     TalangragaTheme {
         HomeContent(
             periods = listOf(
-                PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
+                PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
             ),
             uiState = HomeUiState(
                 profile = SectionState.Success(
@@ -252,7 +252,6 @@ fun PreviewHomeContent() {
             onPeriodChange = {},
             selectedPeriod = PeriodEntity(
                 periodId = 0,
-                "",
                 "Bulan ke 1",
                 "2025-08-06",
                 "2025-09-05"

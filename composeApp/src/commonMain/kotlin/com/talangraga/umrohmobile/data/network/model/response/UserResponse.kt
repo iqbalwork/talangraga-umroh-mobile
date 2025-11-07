@@ -1,18 +1,26 @@
 package com.talangraga.umrohmobile.data.network.model.response
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserResponse(
-    val id: Int? = 0, 
+    @SerialName("id")
+    val id: Int,
+    @SerialName("username")
     val username: String? = null,
-    val email: String? = null,
-    val provider: String? = null,
-    val confirmed: Boolean? = null,
-    val blocked: Boolean? = null,
+    @SerialName("fullname")
     val fullname: String? = null,
+    @SerialName("email")
+    val email: String? = null,
+    @SerialName("phone_number")
     val phone: String? = null,
+    @SerialName("domisili")
     val domisili: String? = null,
+    @SerialName("user_type")
     val userType: String? = null,
-    val imageProfile: ImageResponse? = null
-) : BaseResponse()
+    @SerialName("image_profile_url")
+    val imageProfile: String? = null,
+    @SerialName("is_active")
+    val isActive: Boolean? = null
+)

@@ -68,6 +68,5 @@ fun PreviewPeriodSection() {
             periodeName = "Ramadhan 2024",
             startDate = "2024-03-10",
             endDate = "2024-04-09",
-            documentId = ""
         ), onShowPeriodSheet = {})
 }

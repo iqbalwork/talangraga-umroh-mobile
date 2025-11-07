@@ -7,25 +7,23 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TransactionResponse(
     @SerialName("id")
-    val id: Int?,
-    @SerialName("documentId")
-    val documentId: String?,
+    val id: Int,
     @SerialName("amount")
-    val amount: String?,
-    @SerialName("reportedDate")
-    val reportedDate: String?,
-    @SerialName("transactionDate")
-    val transactionDate: String?,
-    @SerialName("statusTransaksi")
+    val amount: Double,
+    @SerialName("transaction_date")
+    val transactionDate: String,
+    @SerialName("bukti_transfer_url")
+    val buktiTransfer: String? = null,
+    @SerialName("status")
     val statusTransaksi: String?,
-    @SerialName("buktiTransferImage")
-    val buktiTransfer: ImageResponse? = null,
-    @SerialName("reportedByUser")
+    @SerialName("reported_date")
+    val reportedDate: String,
+    @SerialName("reported_by")
     val reportedByUser: UserResponse? = null,
-    @SerialName("confirmedByUser")
+    @SerialName("confirmed_by")
     val confirmedByUser: UserResponse? = null,
-    @SerialName("periode")
-    val periode: PeriodeResponse? = null,
     @SerialName("payment")
     val payment: PaymentResponse? = null,
+    @SerialName("periode")
+    val periode: PeriodeResponse? = null,
 )

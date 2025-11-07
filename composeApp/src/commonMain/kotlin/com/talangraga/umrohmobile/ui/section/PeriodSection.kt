@@ -192,9 +192,9 @@ fun PeriodItem(
 @Composable
 fun PreviewPeriodItems() {
     val periods = listOf(
-        PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
-        PeriodEntity(1, "", "Bulan ke 2", "2025-09-06", "2025-10-05"),
-        PeriodEntity(2, "", "Bulan ke 3", "2025-10-06", "2025-11-05"),
+        PeriodEntity(periodId = 0,  "Bulan ke 1", "2025-08-06", "2025-09-05"),
+        PeriodEntity(1,  "Bulan ke 2", "2025-09-06", "2025-10-05"),
+        PeriodEntity(2,  "Bulan ke 3", "2025-10-06", "2025-11-05"),
 
         )
     TalangragaTheme {

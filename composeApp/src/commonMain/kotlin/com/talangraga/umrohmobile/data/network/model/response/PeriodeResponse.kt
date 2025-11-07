@@ -7,13 +7,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PeriodeResponse(
     @SerialName("id")
-    val id: Int?,
-    @SerialName("documentId")
-    val documentId: String?,
-    @SerialName("periodeName")
-    val periodeName: String?,
-    @SerialName("startDate")
-    val startDate: String?,
-    @SerialName("endDate")
-    val endDate: String?
+    val id: Int,
+    @SerialName("periode_name")
+    val periodeName: String,
+    @SerialName("start_date")
+    val startDate: String,
+    @SerialName("end_date")
+    val endDate: String
 )

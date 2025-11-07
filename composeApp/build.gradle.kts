@@ -19,15 +19,12 @@ buildkonfig {
 
     val stagingUrl = project.findProperty("stagingUrl") ?: ""
     val productionUrl = project.findProperty("productionUrl") ?: ""
-    val token = project.findProperty("token") ?: ""
 
     defaultConfigs {
-        buildConfigField(STRING, "TOKEN", "$token")
         buildConfigField(STRING, "BASE_URL", "$productionUrl")
     }
     // flavor is passed as a first argument of defaultConfigs
     defaultConfigs("staging") {
-        buildConfigField(STRING, "TOKEN", "$token")
         buildConfigField(STRING, "BASE_URL", "$stagingUrl")
     }
 
