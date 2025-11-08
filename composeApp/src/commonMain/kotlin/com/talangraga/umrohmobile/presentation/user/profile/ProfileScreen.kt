@@ -307,7 +307,7 @@ fun ThemeToggleScreen(modifier: Modifier, themeManager: ThemeManager = koinInjec
         Text("Select Theme:")
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             ThemeMode.entries.forEach { mode ->
                 Row(

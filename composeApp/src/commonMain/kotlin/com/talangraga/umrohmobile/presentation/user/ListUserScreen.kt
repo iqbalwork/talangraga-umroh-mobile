@@ -49,122 +49,112 @@ data class User(
 fun ListUserScreen(
     navHostController: NavHostController,
     viewModel: ListUserViewModel = koinViewModel(),
-    appViewModel: AppViewModel = koinViewModel()
 ) {
 
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
-    val isDarkMode by appViewModel.isDarkMode.collectAsStateWithLifecycle()
-
-    Crossfade(targetState = isDarkMode, animationSpec = tween(600)) {
-        ListUserContent(
-            isDarkMode = isDarkMode,
-            state = state.value,
-            onBackClick = {
-                navHostController.popBackStack()
-            })
-    }
+    ListUserContent(
+        state = state.value,
+        onBackClick = {
+            navHostController.popBackStack()
+        })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListUserContent(
-    isDarkMode: Boolean,
-    modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit)? = null,
     state: ListUserUiState
 ) {
-    TalangragaTheme(darkTheme = isDarkMode, useDynamicColor = false) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Daftar Anggota", style = MaterialTheme.typography.titleLarge) },
-                    navigationIcon = {
-                        IconButton(onClick = { onBackClick?.invoke() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Daftar Anggota", style = MaterialTheme.typography.titleLarge) },
+                navigationIcon = {
+                    IconButton(onClick = { onBackClick?.invoke() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { onAddUserClick?.invoke() },
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add User",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-        ) { innerPadding ->
-
-            var username by remember { mutableStateOf("") }
-
-            Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onAddUserClick?.invoke() },
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
-                InputText(
-                    value = username,
-                    onValueChange = {
-                        username = it
-                    },
-                    placeholder = stringResource(Res.string.search_username),
-                    backgroundColor = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .padding(horizontal = 16.dp)
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add User",
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
+            }
+        }
+    ) { innerPadding ->
 
-                when (state) {
-                    ListUserUiState.EmptyData -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Tidak ada data.")
-                        }
+        var username by remember { mutableStateOf("") }
+
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            InputText(
+                value = username,
+                onValueChange = {
+                    username = it
+                },
+                placeholder = stringResource(Res.string.search_username),
+                backgroundColor = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 16.dp)
+            )
+
+            when (state) {
+                ListUserUiState.EmptyData -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Tidak ada data.")
                     }
+                }
 
-                    ListUserUiState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                ListUserUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
+                }
 
-                    is ListUserUiState.Success -> {
-                        LazyColumn(
-                            modifier = Modifier,
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            itemsIndexed(state.users) { index, user ->
-                                UserItem(
-                                    user = User(
-                                        id = user.userId.toString(),
-                                        name = user.fullname,
-                                        email = user.email,
-                                        phone = user.phone,
-                                        role = user.userType
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
+                is ListUserUiState.Success -> {
+                    LazyColumn(
+                        modifier = Modifier,
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(state.users) { index, user ->
+                            UserItem(
+                                user = User(
+                                    id = user.userId.toString(),
+                                    name = user.fullname,
+                                    email = user.email,
+                                    phone = user.phone,
+                                    role = user.userType
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
                 }
@@ -264,7 +254,6 @@ fun PreviewListUserContent() {
         ListUserContent(
             onBackClick = {},
             onAddUserClick = {},
-            modifier = Modifier,
             state = ListUserUiState.Success(
                 listOf(
                     UserEntity(
@@ -289,7 +278,6 @@ fun PreviewListUserContent() {
                     )
                 )
             ),
-            isDarkMode = false,
         )
     }
 }
