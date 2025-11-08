@@ -1,6 +1,8 @@
 package com.talangraga.umrohmobile.presentation.login
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.talangraga.umrohmobile.AppViewModel
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
 import com.talangraga.umrohmobile.ui.SageDark
@@ -59,8 +62,11 @@ import talangragaumrohmobile.composeapp.generated.resources.talangraga_logo
 @Composable
 fun LoginScreen(
     navHostController: NavHostController,
-    viewModel: LoginViewModel = koinViewModel()
+    viewModel: LoginViewModel = koinViewModel(),
+    appViewModel: AppViewModel = koinViewModel(),
 ) {
+
+    val isDarkMode by appViewModel.isDarkMode.collectAsStateWithLifecycle()
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val loginSucceed by viewModel.loginSucceed.collectAsStateWithLifecycle()
@@ -74,19 +80,23 @@ fun LoginScreen(
         }
     }
 
-    LoginContent(
-        isLoading = isLoading,
-        errorMessage = errorMessage.orEmpty(),
-        identifier = viewModel.identifier.value,
-        password = viewModel.password.value,
-        onIdentifierChange = viewModel::onIdentifierChange,
-        onPasswordChange = viewModel::onPasswordChange,
-        onLoginClick = viewModel::login
-    )
+    Crossfade(targetState = isDarkMode, animationSpec = tween(600)) {
+        LoginContent(
+            isDarkMode = isDarkMode,
+            isLoading = isLoading,
+            errorMessage = errorMessage.orEmpty(),
+            identifier = viewModel.identifier.value,
+            password = viewModel.password.value,
+            onIdentifierChange = viewModel::onIdentifierChange,
+            onPasswordChange = viewModel::onPasswordChange,
+            onLoginClick = viewModel::login
+        )
+    }
 }
 
 @Composable
 fun LoginContent(
+    isDarkMode: Boolean,
     isLoading: Boolean = false,
     errorMessage: String,
     identifier: String,
@@ -95,8 +105,7 @@ fun LoginContent(
     onIdentifierChange: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
-
-    TalangragaTheme(useDynamicColor = false) {
+    TalangragaTheme(darkTheme = isDarkMode, useDynamicColor = false) {
         Scaffold { innerPadding ->
             Box(
                 modifier = Modifier
@@ -203,15 +212,14 @@ fun LoginContent(
 @Preview
 @Composable
 fun LoginContentPreview() {
-    TalangragaTheme {
-        LoginContent(
-            isLoading = false,
-            errorMessage = "",
-            identifier = "ekoyulianto",
-            password = "talangraga",
-            onIdentifierChange = {},
-            onPasswordChange = {},
-            onLoginClick = {}
-        )
-    }
+    LoginContent(
+        isDarkMode = false,
+        isLoading = false,
+        errorMessage = "",
+        identifier = "ekoyulianto",
+        password = "talangraga",
+        onIdentifierChange = {},
+        onPasswordChange = {},
+        onLoginClick = {}
+    )
 }

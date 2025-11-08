@@ -26,6 +26,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -136,7 +137,7 @@ fun TransactionSection(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
@@ -228,7 +229,7 @@ fun TransactionItem(modifier: Modifier = Modifier, username: String, amount: Int
     ConstraintLayout(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(color = Color(0xFFF5F5F5)) // Light gray background for the item
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
             .padding(12.dp) // Internal padding for the item
             .fillMaxWidth()
     ) {
@@ -272,7 +273,7 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
     ) {
         ConstraintLayout(
             modifier = Modifier
-                .background(color = Color.White)
+                .background(color = MaterialTheme.colorScheme.surfaceBright)
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {

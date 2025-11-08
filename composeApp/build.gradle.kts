@@ -95,6 +95,7 @@ kotlin {
             implementation(libs.coroutines.extensions)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.serialization)
+            implementation(libs.multiplatform.settings.coroutines)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

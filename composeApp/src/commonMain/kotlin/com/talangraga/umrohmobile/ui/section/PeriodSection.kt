@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -118,7 +119,7 @@ fun PeriodItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(BackgroundColor)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .clickable(onClick = {
                 onPeriodClick(period)
             })
@@ -153,13 +154,11 @@ fun PeriodItem(
             ) {
                 Text(
                     text = period.periodeName,
-                    color = TextBodyColor,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = formatDateRange(period.startDate, period.endDate),
-                    color = TargetColor,
                     fontSize = 14.sp
                 )
             }
@@ -192,9 +191,9 @@ fun PeriodItem(
 @Composable
 fun PreviewPeriodItems() {
     val periods = listOf(
-        PeriodEntity(periodId = 0,  "Bulan ke 1", "2025-08-06", "2025-09-05"),
-        PeriodEntity(1,  "Bulan ke 2", "2025-09-06", "2025-10-05"),
-        PeriodEntity(2,  "Bulan ke 3", "2025-10-06", "2025-11-05"),
+        PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
+        PeriodEntity(1, "Bulan ke 2", "2025-09-06", "2025-10-05"),
+        PeriodEntity(2, "Bulan ke 3", "2025-10-06", "2025-11-05"),
 
         )
     TalangragaTheme {

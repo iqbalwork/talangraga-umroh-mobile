@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -37,19 +38,20 @@ import com.talangraga.umrohmobile.presentation.home.section.TransactionSection
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.ListUserRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
+import com.talangraga.umrohmobile.presentation.navigation.UserRoute
 import com.talangraga.umrohmobile.ui.Background
 import com.talangraga.umrohmobile.ui.Green
-import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun HomeScreen(
     navHostController: NavHostController,
     justLogin: Boolean,
-    viewModel: HomeViewModel
+    viewModel: HomeViewModel = koinViewModel(),
 ) {
 
     val periods by viewModel.periods.collectAsStateWithLifecycle()
@@ -74,6 +76,12 @@ fun HomeScreen(
             viewModel.setSelectedPeriod(it)
             viewModel.getTransactions(it.periodId)
         },
+        onUserCLick = {
+            navHostController.navigate(UserRoute(user = it, isLoginUser = true)) {
+                launchSingleTop = true
+                restoreState = true
+            }
+        },
         onListUserClick = {
             navHostController.navigate(ListUserRoute) {
                 launchSingleTop = true
@@ -82,7 +90,7 @@ fun HomeScreen(
         },
         onFetchProfile = viewModel::getProfile,
         onSeeMoreTransaction = { },
-        onAddTransaction = { }
+        onAddTransaction = { },
     ) {
         viewModel.clearSession()
         navHostController.navigate(LoginRoute) {
@@ -106,6 +114,7 @@ fun HomeContent(
     onPeriodChange: (PeriodEntity) -> Unit,
     onSeeMoreTransaction: () -> Unit,
     onAddTransaction: () -> Unit,
+    onUserCLick: (UserEntity) -> Unit,
     onListUserClick: () -> Unit,
     onFetchProfile: () -> Unit,
     onLogout: () -> Unit
@@ -180,13 +189,14 @@ fun HomeContent(
         }
 
         LazyColumn(
-            modifier = Modifier.background(color = Background).fillMaxSize(),
+            modifier = Modifier.background(color = MaterialTheme.colorScheme.background)
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 ProfileSection(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(MaterialTheme.colorScheme.surface)
                         .padding(top = paddingValues.calculateTopPadding()),
                     userType = userType,
                     role = role,
@@ -195,7 +205,8 @@ fun HomeContent(
                     onListUserClick = onListUserClick,
                     onShowUserTypeSheet = { userTypeShowBottomSheet = true },
                     onRetry = onFetchProfile,
-                    onLogout = { showLogoutDialog = true }
+                    onLogout = { showLogoutDialog = true },
+                    onClickUser = onUserCLick
                 )
             }
 
@@ -222,45 +233,44 @@ fun HomeContent(
 @Preview
 @Composable
 fun PreviewHomeContent() {
-    TalangragaTheme {
-        HomeContent(
-            periods = listOf(
-                PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
-            ),
-            uiState = HomeUiState(
-                profile = SectionState.Success(
-                    UserEntity(
-                        userId = 1,
-                        userName = "iqbalf",
-                        fullname = "Iqbal Fauzi",
-                        email = "",
-                        phone = "",
-                        domisili = "",
-                        userType = "Admin",
-                        imageProfileUrl = ""
-                    )
-                ),
-                periods = SectionState.Loading,
-                transactions = SectionState.Success(
-                    data = listOf()
+    HomeContent(
+        periods = listOf(
+            PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
+        ),
+        uiState = HomeUiState(
+            profile = SectionState.Success(
+                UserEntity(
+                    userId = 1,
+                    userName = "iqbalf",
+                    fullname = "Iqbal Fauzi",
+                    email = "",
+                    phone = "",
+                    domisili = "",
+                    userType = "Admin",
+                    imageProfileUrl = ""
                 )
             ),
-            errorMessage = "",
-            onListUserClick = {},
-            onFetchProfile = {},
-            onLogout = {},
-            onPeriodChange = {},
-            selectedPeriod = PeriodEntity(
-                periodId = 0,
-                "Bulan ke 1",
-                "2025-08-06",
-                "2025-09-05"
-            ),
-            userType = "Admin",
-            onUserTypeChange = { },
-            onSeeMoreTransaction = { },
-            onAddTransaction = { },
-            role = "",
-        )
-    }
+            periods = SectionState.Loading,
+            transactions = SectionState.Success(
+                data = listOf()
+            )
+        ),
+        errorMessage = "",
+        onListUserClick = {},
+        onFetchProfile = {},
+        onLogout = {},
+        onPeriodChange = {},
+        selectedPeriod = PeriodEntity(
+            periodId = 0,
+            "Bulan ke 1",
+            "2025-08-06",
+            "2025-09-05"
+        ),
+        userType = "Admin",
+        onUserTypeChange = { },
+        onSeeMoreTransaction = { },
+        onAddTransaction = { },
+        role = "",
+        onUserCLick = {},
+    )
 }

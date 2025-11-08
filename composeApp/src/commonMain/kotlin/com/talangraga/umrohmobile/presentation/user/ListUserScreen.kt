@@ -1,5 +1,7 @@
 package com.talangraga.umrohmobile.presentation.user
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.talangraga.umrohmobile.AppViewModel
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.component.InputText
@@ -45,27 +48,34 @@ data class User(
 @Composable
 fun ListUserScreen(
     navHostController: NavHostController,
-    viewModel: ListUserViewModel = koinViewModel()
+    viewModel: ListUserViewModel = koinViewModel(),
+    appViewModel: AppViewModel = koinViewModel()
 ) {
 
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
-    ListUserContent(
-        state = state.value,
-        onBackClick = {
-            navHostController.popBackStack()
-        })
+    val isDarkMode by appViewModel.isDarkMode.collectAsStateWithLifecycle()
+
+    Crossfade(targetState = isDarkMode, animationSpec = tween(600)) {
+        ListUserContent(
+            isDarkMode = isDarkMode,
+            state = state.value,
+            onBackClick = {
+                navHostController.popBackStack()
+            })
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListUserContent(
+    isDarkMode: Boolean,
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit)? = null,
     state: ListUserUiState
 ) {
-    TalangragaTheme(useDynamicColor = false) {
+    TalangragaTheme(darkTheme = isDarkMode, useDynamicColor = false) {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -250,7 +260,7 @@ fun UserItem(
 @Preview
 @Composable
 fun PreviewListUserContent() {
-    TalangragaTheme {
+    TalangragaTheme(useDynamicColor = false) {
         ListUserContent(
             onBackClick = {},
             onAddUserClick = {},
@@ -279,6 +289,7 @@ fun PreviewListUserContent() {
                     )
                 )
             ),
+            isDarkMode = false,
         )
     }
 }

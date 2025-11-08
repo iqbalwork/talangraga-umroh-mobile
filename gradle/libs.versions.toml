@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "8.13.0"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "35"
@@ -87,6 +87,7 @@ runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqlDelight" }
 coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqlDelight" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings"}
 multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings"}
+multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

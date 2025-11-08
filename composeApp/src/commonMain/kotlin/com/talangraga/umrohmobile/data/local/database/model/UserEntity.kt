@@ -1,5 +1,8 @@
 package com.talangraga.umrohmobile.data.local.database.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class UserEntity(
     val userId: Int,
     val userName: String,

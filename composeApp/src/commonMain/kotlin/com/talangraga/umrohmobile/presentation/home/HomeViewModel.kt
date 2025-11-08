@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.session.Session
+import com.talangraga.umrohmobile.data.local.session.SessionKey
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.mapper.toUserEntity
 import com.talangraga.umrohmobile.data.network.api.Result

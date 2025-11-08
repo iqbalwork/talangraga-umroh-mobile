@@ -81,25 +81,3 @@ val TalangragaTypography
             lineHeight = 20.sp
         )
     )
-
-
-class UmrohMobileTypography(private val fontFamily: FontFamily) {
-
-    val basicTextStyle = TextStyle(
-        fontFamily = fontFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp
-    )
-
-    val hintTextStyle = TextStyle(
-        fontFamily = fontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 12.sp,
-    )
-
-    val title = TextStyle(
-        fontFamily = fontFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize = 18.sp,
-    )
-}
