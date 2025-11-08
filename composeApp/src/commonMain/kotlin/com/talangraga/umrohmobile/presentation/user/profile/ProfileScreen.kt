@@ -203,49 +203,50 @@ fun ProfileContent(
                 }
             }
 
-            Card(
-                modifier = Modifier.padding(16.dp).constrainAs(themeRef) {
-                    top.linkTo(cardInfoRef.bottom, 8.dp)
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-                },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                ConstraintLayout(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                    val (iconRef, modeRef, switchRef) = createRefs()
-                    IconBlock(
-                        icon = Icons.Filled.LightMode,
-                        startColor = Sage,
-                        endColor = Sage,
-                        size = 40.dp,
-                        iconSize = 24.dp,
-                        modifier = Modifier.constrainAs(iconRef) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                        }
-                    )
-                    val mode = if (isDarkMode) "Gelap" else "Terang"
-                    Text(
-                        text = "Mode $mode",
-                        style = TalangragaTypography.titleLarge.copy(
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 20.sp
-                        ),
-                        modifier = Modifier.constrainAs(modeRef) {
-                            top.linkTo(iconRef.top)
-                            bottom.linkTo(iconRef.bottom)
-                            start.linkTo(iconRef.end, 16.dp)
-                        }
-                    )
+            if (isLoginUser) {
+                Card(
+                    modifier = Modifier.padding(16.dp).constrainAs(themeRef) {
+                        top.linkTo(cardInfoRef.bottom, 8.dp)
+                        start.linkTo(parent.start, 16.dp)
+                        end.linkTo(parent.end, 16.dp)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    ConstraintLayout(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        val (iconRef, modeRef, switchRef) = createRefs()
+                        IconBlock(
+                            icon = Icons.Filled.LightMode,
+                            startColor = Sage,
+                            endColor = Sage,
+                            size = 40.dp,
+                            iconSize = 24.dp,
+                            modifier = Modifier.constrainAs(iconRef) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                            }
+                        )
+                        val mode = if (isDarkMode) "Gelap" else "Terang"
+                        Text(
+                            text = "Mode $mode",
+                            style = TalangragaTypography.titleLarge.copy(
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 20.sp
+                            ),
+                            modifier = Modifier.constrainAs(modeRef) {
+                                top.linkTo(iconRef.top)
+                                bottom.linkTo(iconRef.bottom)
+                                start.linkTo(iconRef.end, 16.dp)
+                            }
+                        )
 
-                    ThemeToggleScreen(Modifier.fillMaxWidth().constrainAs(switchRef) {
-                        start.linkTo(iconRef.start)
-                        top.linkTo(iconRef.bottom, 16.dp)
-                    })
+                        ThemeToggleScreen(Modifier.fillMaxWidth().constrainAs(switchRef) {
+                            start.linkTo(iconRef.start)
+                            top.linkTo(iconRef.bottom, 16.dp)
+                        })
 
 //                        Switch(
 //                            checked = isDarkMode,
@@ -264,6 +265,7 @@ fun ProfileContent(
 //                                bottom.linkTo(parent.bottom)
 //                            }
 //                        )
+                    }
                 }
             }
         }

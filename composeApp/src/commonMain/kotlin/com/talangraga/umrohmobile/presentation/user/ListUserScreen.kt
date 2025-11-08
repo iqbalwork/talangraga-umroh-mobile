@@ -1,9 +1,19 @@
 package com.talangraga.umrohmobile.presentation.user
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -12,7 +22,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,8 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.umrohmobile.AppViewModel
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.presentation.navigation.UserRoute
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.component.InputText
 import org.jetbrains.compose.resources.stringResource
@@ -57,6 +78,11 @@ fun ListUserScreen(
         state = state.value,
         onBackClick = {
             navHostController.popBackStack()
+        }, onUserClick = {
+            navHostController.navigate(UserRoute(user = it, isLoginUser = false)) {
+                launchSingleTop = true
+                restoreState = true
+            }
         })
 }
 
@@ -65,7 +91,8 @@ fun ListUserScreen(
 fun ListUserContent(
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit)? = null,
-    state: ListUserUiState
+    onUserClick: (UserEntity) -> Unit,
+    state: ListUserUiState,
 ) {
     Scaffold(
         topBar = {
@@ -153,7 +180,11 @@ fun ListUserContent(
                                     phone = user.phone,
                                     role = user.userType
                                 ),
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .clickable {
+                                        onUserClick(user)
+                                    }
+                                    .fillMaxWidth()
                             )
                         }
                     }
@@ -254,6 +285,7 @@ fun PreviewListUserContent() {
         ListUserContent(
             onBackClick = {},
             onAddUserClick = {},
+            onUserClick = {},
             state = ListUserUiState.Success(
                 listOf(
                     UserEntity(

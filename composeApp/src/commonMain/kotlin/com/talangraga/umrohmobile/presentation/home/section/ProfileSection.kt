@@ -19,9 +19,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -119,7 +121,7 @@ fun ProfileSection(
                 modifier = modifier
                     .fillMaxWidth()
             ) {
-                val (imageProfileRef, nameRef, userTypeRef, logoutButtonRef) = createRefs()
+                val (imageProfileRef, nameRef, userTypeRef, listUserRef, settingsRef, logoutButtonRef) = createRefs()
                 BasicImage(
                     model = user.imageProfileUrl,
                     modifier = Modifier
@@ -158,6 +160,7 @@ fun ProfileSection(
                     modifier = Modifier
                         .constrainAs(userTypeRef) {
                             top.linkTo(nameRef.bottom, 4.dp)
+                            bottom.linkTo(imageProfileRef.bottom)
                             start.linkTo(nameRef.start)
                         }
                         .clip(RoundedCornerShape(32.dp))
@@ -181,7 +184,7 @@ fun ProfileSection(
 //                        modifier = Modifier.size(20.dp)
 //                    )
                     Text(
-                        text = userType.orEmpty(),
+                        text = userType?.replaceFirstChar { it.titlecase() }.orEmpty(),
                         style = TalangragaTypography.bodySmall.copy(
                             textAlign = TextAlign.Center,
                             color = Color.White
@@ -211,10 +214,10 @@ fun ProfileSection(
                             }
                             .background(MediumPurple)
                             .padding(4.dp)
-                            .constrainAs(createRef()) {
+                            .constrainAs(listUserRef) {
                                 top.linkTo(logoutButtonRef.top)
                                 bottom.linkTo(logoutButtonRef.bottom)
-                                end.linkTo(logoutButtonRef.start, 8.dp)
+                                end.linkTo(settingsRef.start, 8.dp)
                             }
                     ) {
                         Icon(
@@ -224,6 +227,26 @@ fun ProfileSection(
                             modifier = Modifier.size(24.dp)
                         )
                     }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .constrainAs(settingsRef) {
+                            top.linkTo(imageProfileRef.top)
+                            bottom.linkTo(imageProfileRef.bottom)
+                            end.linkTo(logoutButtonRef.start, 8.dp)
+                        }
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onClickUser(user) }
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
 
                 // Logout Button
