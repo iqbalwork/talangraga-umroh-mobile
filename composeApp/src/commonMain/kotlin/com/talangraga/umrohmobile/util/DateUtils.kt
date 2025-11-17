@@ -22,6 +22,13 @@ val INDONESIA_FULL: MonthNames = MonthNames(
     )
 )
 
+val INDONESIA_TRIMMED: MonthNames = MonthNames(
+    listOf(
+        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+        "Jul", "Agust", "Sept", "Okt", "Nov", "Des"
+    )
+)
+
 @OptIn(ExperimentalTime::class)
 fun String.formatIsoTimestampToCustom(): String {
     return try {
@@ -50,20 +57,20 @@ fun String.formatIsoTimestampToCustom(): String {
     }
 }
 
-fun formatDateRange(startDateString: String, endDateString: String): String {
+fun formatDateRange(startDateString: String, endDateString: String, monthFormat: MonthNames = INDONESIA_FULL): String {
     val startDate = LocalDate.parse(startDateString)
     val endDate = LocalDate.parse(endDateString)
 
     val dayMonthFormat = LocalDate.Format {
         day(padding = Padding.NONE)
         char(' ')
-        monthName(INDONESIA_FULL)
+        monthName(monthFormat)
     }
 
     val dayMonthYearFormat = LocalDate.Format {
         day(padding = Padding.NONE)
         char(' ')
-        monthName(INDONESIA_FULL)
+        monthName(monthFormat)
         char(' ')
         year()
     }

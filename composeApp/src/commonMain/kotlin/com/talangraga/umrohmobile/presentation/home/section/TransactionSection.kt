@@ -19,8 +19,13 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Countertops
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.MoneyOff
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.SupervisorAccount
+import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,7 +48,10 @@ import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.ui.Aqua
 import com.talangraga.umrohmobile.ui.Green
 import com.talangraga.umrohmobile.ui.MediumPurple
+import com.talangraga.umrohmobile.ui.PorcelainDark
 import com.talangraga.umrohmobile.ui.RosePink
+import com.talangraga.umrohmobile.ui.Sage
+import com.talangraga.umrohmobile.ui.Sandstone
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.TalangragaTypography
 import com.talangraga.umrohmobile.ui.component.IconBlock
@@ -89,9 +97,8 @@ fun TransactionSection(
                         modifier = Modifier.fillMaxWidth(),
                         title = "Total Tabungan Periode ini",
                         value = if (transactionAvailable) totalAmount.formatToIDR() else "Belum Ada Transaksi",
-                        notes = if (transactionAvailable) "12% dari bulan lalu" else "",
-                        notesColor = Green,
-                        icon = Icons.Default.AttachMoney,
+                        icon = Icons.Default.Wallet,
+                        illustrationIcon = Icons.Default.AttachMoney,
                         startIconColor = Aqua,
                         endIconColor = Green
                     )
@@ -102,8 +109,9 @@ fun TransactionSection(
                         title = "Anggota yang Menabung",
                         value = if (transactionAvailable) totalMember.toString() else "Belum ada yang menabung",
                         notes = if (transactionAvailable) "Bulan ini" else "",
-                        notesColor = MediumPurple,
-                        icon = Icons.Default.AccountCircle,
+                        notesColor = PorcelainDark,
+                        icon = Icons.Default.People,
+                        illustrationIcon = Icons.Default.AccountCircle,
                         startIconColor = MediumPurple,
                         endIconColor = MediumPurple
                     )
@@ -111,9 +119,8 @@ fun TransactionSection(
                         modifier = Modifier.fillMaxWidth(),
                         title = "Rata-rata Tabungan",
                         value = average.toInt().formatToIDR(),
-                        notes = "Per Anggota/Bulan",
-                        notesColor = RosePink,
-                        icon = Icons.Default.Calculate,
+                        icon = Icons.Default.CreditCard,
+                        illustrationIcon = Icons.Default.Calculate,
                         startIconColor = RosePink,
                         endIconColor = RosePink
                     )
@@ -137,7 +144,7 @@ fun TransactionSection(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceBright),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
@@ -210,13 +217,18 @@ fun TransactionSection(
                 AnimatedVisibility(
                     transactions.isNotEmpty(),
                 ) {
-                    transactions.forEach { transaction ->
-                        TransactionItem(
-                            modifier = Modifier.fillMaxWidth(),
-                            username = transaction.reportedBy, // Assuming reportedBy is the username
-                            amount = transaction.amount,
-                            date = transaction.transactionDate
-                        )
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        transactions.forEach { transaction ->
+                            TransactionItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                username = transaction.reportedBy, // Assuming reportedBy is the username
+                                amount = transaction.amount,
+                                date = transaction.transactionDate
+                            )
+                        }
                     }
                 }
             }
@@ -229,8 +241,8 @@ fun TransactionItem(modifier: Modifier = Modifier, username: String, amount: Int
     ConstraintLayout(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(color = MaterialTheme.colorScheme.primaryContainer)
-            .padding(12.dp) // Internal padding for the item
+            .background(color = Sandstone)
+            .padding(8.dp) // Internal padding for the item
             .fillMaxWidth()
     ) {
         val (usernameRef, amountRef, dateRef) = createRefs()
@@ -401,7 +413,7 @@ fun PreviewTransactionSection() {
             confirmedBy = ""
         )
     )
-    TalangragaTheme {
+    TalangragaTheme(useDynamicColor = false) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             TransactionSection(transactions = dummyTransactions) {}
             TransactionSection(transactions = emptyList()) {} // Preview for empty state
@@ -412,7 +424,7 @@ fun PreviewTransactionSection() {
 @Preview
 @Composable
 fun PreviewTransactionItem() {
-    TalangragaTheme {
+    TalangragaTheme(useDynamicColor = false) {
         TransactionItem(
             modifier = Modifier.padding(16.dp),
             username = "Iqbal Fauzi",

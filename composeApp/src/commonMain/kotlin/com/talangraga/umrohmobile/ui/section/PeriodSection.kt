@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.ui.BackgroundColor
 import com.talangraga.umrohmobile.ui.PeriodColor
+import com.talangraga.umrohmobile.ui.Sage
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.TargetColor
 import com.talangraga.umrohmobile.ui.TextBodyColor
@@ -135,7 +136,7 @@ fun PeriodItem(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(PeriodColor),
+                    .background(Sage),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -171,12 +172,12 @@ fun PeriodItem(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color.Green.copy(alpha = 0.2f))
+                            .background(Sage.copy(alpha = 0.2f))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "CURRENT",
-                            color = Color.Green,
+                            text = "SEKARANG",
+                            color = Sage,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )

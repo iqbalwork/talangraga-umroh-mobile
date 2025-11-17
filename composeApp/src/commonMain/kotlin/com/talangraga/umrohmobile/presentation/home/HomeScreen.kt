@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -27,6 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
@@ -39,10 +42,14 @@ import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.ListUserRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
 import com.talangraga.umrohmobile.presentation.navigation.UserRoute
-import com.talangraga.umrohmobile.ui.Background
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.Green
+import com.talangraga.umrohmobile.ui.component.TextButton
+import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
+import com.talangraga.umrohmobile.util.INDONESIA_TRIMMED
+import com.talangraga.umrohmobile.util.formatDateRange
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -114,13 +121,14 @@ fun HomeContent(
     onPeriodChange: (PeriodEntity) -> Unit,
     onSeeMoreTransaction: () -> Unit,
     onAddTransaction: () -> Unit,
-    onUserCLick: (UserEntity) -> Unit,
+    onUserCLick: (UserUIData) -> Unit,
     onListUserClick: () -> Unit,
     onFetchProfile: () -> Unit,
     onLogout: () -> Unit
 ) {
 
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var period by remember { mutableStateOf<PeriodEntity?>(null) }
 
     val userTypeSheetState = rememberModalBottomSheetState()
     val userTypeScope = rememberCoroutineScope()
@@ -184,7 +192,10 @@ fun HomeContent(
                 scope = periodScope,
                 periods = periods,
                 onBottomSheetChange = { periodShowBottomSheet = it },
-                onChoosePeriod = { onPeriodChange(it) }
+                onChoosePeriod = {
+                    period = it
+                    onPeriodChange(it)
+                }
             )
         }
 
@@ -200,7 +211,6 @@ fun HomeContent(
                         .padding(top = paddingValues.calculateTopPadding()),
                     userType = userType,
                     role = role,
-                    userTypeShowBottomSheet = userTypeShowBottomSheet,
                     state = uiState.profile,
                     onListUserClick = onListUserClick,
                     onShowUserTypeSheet = { userTypeShowBottomSheet = true },
@@ -212,9 +222,14 @@ fun HomeContent(
 
             item {
                 PeriodSection(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    period = selectedPeriod,
-                    onShowPeriodSheet = { periodShowBottomSheet = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    period = period,
+                    onClickAll = {
+                        period = null
+                    },
+                    onShowPeriodSheet = { periodShowBottomSheet = true }
                 )
             }
 
@@ -230,6 +245,7 @@ fun HomeContent(
     }
 }
 
+
 @Preview
 @Composable
 fun PreviewHomeContent() {
@@ -239,15 +255,16 @@ fun PreviewHomeContent() {
         ),
         uiState = HomeUiState(
             profile = SectionState.Success(
-                UserEntity(
-                    userId = 1,
-                    userName = "iqbalf",
+                UserUIData(
+                    id = 1,
+                    username = "iqbalf",
                     fullname = "Iqbal Fauzi",
                     email = "",
                     phone = "",
-                    domisili = "",
+                    domicile = "",
                     userType = "Admin",
-                    imageProfileUrl = ""
+                    imageProfileUrl = "",
+                    isActive = true
                 )
             ),
             periods = SectionState.Loading,

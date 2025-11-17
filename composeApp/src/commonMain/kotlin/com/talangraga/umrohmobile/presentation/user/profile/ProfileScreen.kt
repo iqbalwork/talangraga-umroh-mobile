@@ -1,7 +1,5 @@
 package com.talangraga.umrohmobile.presentation.user.profile
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LightMode
@@ -27,7 +24,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -46,8 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.Sage
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.TalangragaTypography
@@ -62,10 +59,12 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     navHostController: NavHostController,
-    user: UserEntity?,
+    user: UserUIData?,
     isLoginUser: Boolean,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
+
+    val profile by viewModel.profile.collectAsStateWithLifecycle()
 
     val themeManager: ThemeManager = koinInject()
     val themeMode by themeManager.themeMode.collectAsState()
@@ -80,7 +79,7 @@ fun ProfileScreen(
     ProfileContent(
         isDarkMode = isDarkTheme,
         isLoginUser = isLoginUser,
-        user = user,
+        user = profile,
         onClickBack = { navHostController.popBackStack() }
     )
 }
@@ -90,7 +89,7 @@ fun ProfileScreen(
 fun ProfileContent(
     isDarkMode: Boolean,
     isLoginUser: Boolean,
-    user: UserEntity?,
+    user: UserUIData?,
     onClickBack: () -> Unit
 ) {
     Scaffold(
@@ -101,18 +100,18 @@ fun ProfileContent(
                     Text(text = title, style = TalangragaTypography.titleLarge)
                 },
                 modifier = Modifier,
-                navigationIcon = {
-                    IconButton(
-                        onClick = onClickBack,
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
-                            modifier = Modifier
-                        )
-                    }
-
-                },
+//                navigationIcon = {
+//                    IconButton(
+//                        onClick = onClickBack,
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                            contentDescription = null,
+//                            modifier = Modifier
+//                        )
+//                    }
+//
+//                },
                 actions = {
                     TextButton(onClick = { }) {
                         Text(
@@ -170,7 +169,7 @@ fun ProfileContent(
                 }
             )
 
-            val username = "@${user?.userName.orEmpty()}"
+            val username = "@${user?.username.orEmpty()}"
             Text(
                 text = username,
                 modifier = Modifier.constrainAs(usernameRef) {
@@ -199,7 +198,7 @@ fun ProfileContent(
                 ) {
                     UserInfoItem(icon = Icons.Filled.Phone, text = user?.phone.orEmpty())
                     UserInfoItem(icon = Icons.Filled.Email, text = user?.email.orEmpty())
-                    UserInfoItem(icon = Icons.Filled.Place, text = user?.domisili.orEmpty())
+                    UserInfoItem(icon = Icons.Filled.Place, text = user?.domicile.orEmpty())
                 }
             }
 
@@ -334,11 +333,12 @@ fun ThemeToggleScreen(modifier: Modifier, themeManager: ThemeManager = koinInjec
 fun PreviewProfileContent() {
     TalangragaTheme(useDynamicColor = false) {
         ProfileContent(
-            user = UserEntity(
+            user = UserUIData(
                 1, "iqbalfauzi", "Iqbal Fauzi", "work.iqbalfauzi@gmail.com", "087822882668",
-                domisili = "Bandung",
+                domicile = "Bandung",
                 userType = "admin",
                 imageProfileUrl = "",
+                isActive = true
             ),
             onClickBack = { },
             isLoginUser = true,

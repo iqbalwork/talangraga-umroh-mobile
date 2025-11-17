@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -49,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.presentation.navigation.UserRoute
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.component.InputText
 import org.jetbrains.compose.resources.stringResource
@@ -56,15 +58,6 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
 import talangragaumrohmobile.composeapp.generated.resources.search_username
-
-data class User(
-    val id: String,
-    val name: String,
-    val email: String,
-    val phone: String,
-    val role: String,
-    val imageUrl: String? = null
-)
 
 @Composable
 fun ListUserScreen(
@@ -91,21 +84,21 @@ fun ListUserScreen(
 fun ListUserContent(
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit)? = null,
-    onUserClick: (UserEntity) -> Unit,
+    onUserClick: (UserUIData) -> Unit,
     state: ListUserUiState,
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = { Text("Daftar Anggota", style = MaterialTheme.typography.titleLarge) },
-                navigationIcon = {
-                    IconButton(onClick = { onBackClick?.invoke() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
+//                navigationIcon = {
+//                    IconButton(onClick = { onBackClick?.invoke() }) {
+//                        Icon(
+//                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+//                            contentDescription = "Back"
+//                        )
+//                    }
+//                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -173,13 +166,7 @@ fun ListUserContent(
                     ) {
                         itemsIndexed(state.users) { index, user ->
                             UserItem(
-                                user = User(
-                                    id = user.userId.toString(),
-                                    name = user.fullname,
-                                    email = user.email,
-                                    phone = user.phone,
-                                    role = user.userType
-                                ),
+                                user = user,
                                 modifier = Modifier
                                     .clickable {
                                         onUserClick(user)
@@ -196,7 +183,7 @@ fun ListUserContent(
 
 @Composable
 fun UserItem(
-    user: User,
+    user: UserUIData,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -236,7 +223,7 @@ fun UserItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = user.name,
+                    text = user.fullname,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -256,7 +243,7 @@ fun UserItem(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
                     .background(
-                        if (user.role == "Admin")
+                        if (user.userType == "Admin")
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                         else
                             MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
@@ -264,10 +251,10 @@ fun UserItem(
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = user.role,
+                    text = user.userType,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
-                    color = if (user.role == "Admin")
+                    color = if (user.userType == "Admin")
                         MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.secondary,
@@ -278,66 +265,37 @@ fun UserItem(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun PreviewListUserContent() {
+fun ListUserContentSuccessPreview() {
+    val users = listOf(
+        UserUIData(
+            id = 1,
+            fullname = "John Doe",
+            phone = "081234567890",
+            userType = "Admin",
+            username = "",
+            email = "johndoe@mail.com",
+            domicile = "Bandung",
+            imageProfileUrl = "",
+            isActive = true
+        ),
+        UserUIData(
+            id = 1,
+            fullname = "John Doe",
+            phone = "081234567890",
+            userType = "Member",
+            username = "",
+            email = "johndoe@mail.com",
+            domicile = "Bandung",
+            imageProfileUrl = "",
+            isActive = true
+        )
+    )
     TalangragaTheme(useDynamicColor = false) {
         ListUserContent(
-            onBackClick = {},
-            onAddUserClick = {},
             onUserClick = {},
-            state = ListUserUiState.Success(
-                listOf(
-                    UserEntity(
-                        userId = 1,
-                        userName = "johndoe",
-                        fullname = "John Doe",
-                        email = "john@mail.com",
-                        phone = "+62",
-                        domisili = "Bandung",
-                        userType = "Admin",
-                        imageProfileUrl = ""
-                    ),
-                    UserEntity(
-                        userId = 1,
-                        userName = "doejohn",
-                        fullname = "Doe John",
-                        email = "doe@mail.com",
-                        phone = "+621",
-                        domisili = "Bandung",
-                        userType = "Member",
-                        imageProfileUrl = ""
-                    )
-                )
-            ),
+            state = ListUserUiState.Success(users)
         )
     }
-}
-
-@Preview
-@Composable
-fun PreviewUserItem() {
-    UserItem(
-        user = User(
-            id = "1",
-            name = "John Doe",
-            email = "john.doe@example.com",
-            phone = "+62 812 3456 7890",
-            role = "Admin"
-        )
-    )
-}
-
-@Preview
-@Composable
-fun PreviewUserItemRegularUser() {
-    UserItem(
-        user = User(
-            id = "2",
-            name = "Jane Smith",
-            email = "jane.smith@example.com",
-            phone = "+62 813 9876 5432",
-            role = "User"
-        )
-    )
 }

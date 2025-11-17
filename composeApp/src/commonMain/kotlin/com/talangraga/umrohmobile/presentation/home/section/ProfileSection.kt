@@ -1,6 +1,5 @@
 package com.talangraga.umrohmobile.presentation.home.section
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
@@ -26,45 +24,33 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.presentation.home.SectionState
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.MediumPurple
 import com.talangraga.umrohmobile.ui.TalangragaTypography
 import com.talangraga.umrohmobile.ui.component.BasicImage
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import talangragaumrohmobile.composeapp.generated.resources.Res
-import talangragaumrohmobile.composeapp.generated.resources.compose_multiplatform
 
 @Composable
 fun ProfileSection(
     modifier: Modifier,
     userType: String?,
     role: String,
-    userTypeShowBottomSheet: Boolean,
-    state: SectionState<UserEntity>,
-    onClickUser: (UserEntity) -> Unit,
+    state: SectionState<UserUIData>,
+    onClickUser: (UserUIData) -> Unit,
     onListUserClick: () -> Unit,
     onShowUserTypeSheet: () -> Unit,
     onRetry: () -> Unit,
     onLogout: () -> Unit // Added onLogout parameter
 ) {
-    val context = LocalPlatformContext.current
 
     when (state) {
         is SectionState.Loading -> {
@@ -177,12 +163,6 @@ fun ProfileSection(
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-//                    Icon(
-//                        imageVector = userTypeIcon,
-//                        contentDescription = "User Type",
-//                        tint = Color.White,
-//                        modifier = Modifier.size(20.dp)
-//                    )
                     Text(
                         text = userType?.replaceFirstChar { it.titlecase() }.orEmpty(),
                         style = TalangragaTypography.bodySmall.copy(
@@ -192,17 +172,17 @@ fun ProfileSection(
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
 
-                    if (role.uppercase() == "ADMIN") {
-                        val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Expand User Type",
-                            tint = Color.White,
-                            modifier = Modifier
-                                .size(16.dp)
-                                .rotate(rotate)
-                        )
-                    }
+//                    if (role.uppercase() == "ADMIN") {
+//                        val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
+//                        Icon(
+//                            imageVector = Icons.Default.ArrowDropDown,
+//                            contentDescription = "Expand User Type",
+//                            tint = Color.White,
+//                            modifier = Modifier
+//                                .size(16.dp)
+//                                .rotate(rotate)
+//                        )
+//                    }
                 }
 
                 if (role.uppercase() == "ADMIN") {
@@ -277,21 +257,21 @@ fun ProfileSection(
 @Preview
 @Composable
 fun PreviewProfileSection() {
-    val dummyUser = UserEntity(
-        userId = 1,
+    val dummyUser = UserUIData(
+        id = 1,
         fullname = "John Doe",
         email = "john.doe@example.com",
         phone = "1234567890",
         imageProfileUrl = "https://example.com/profile.jpg",
         userType = "Member",
-        userName = "johndoe",
-        domisili = "Bandung",
+        username = "johndoe",
+        domicile = "Bandung",
+        isActive = true,
     )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
-            userTypeShowBottomSheet = false,
             state = SectionState.Success(dummyUser),
             onListUserClick = {},
             onShowUserTypeSheet = {},
@@ -304,7 +284,6 @@ fun PreviewProfileSection() {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Admin",
-            userTypeShowBottomSheet = true,
             state = SectionState.Loading,
             onListUserClick = {},
             onShowUserTypeSheet = {},
@@ -317,7 +296,6 @@ fun PreviewProfileSection() {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
-            userTypeShowBottomSheet = false,
             state = SectionState.Error("Failed to load"),
             onListUserClick = {},
             onShowUserTypeSheet = {},

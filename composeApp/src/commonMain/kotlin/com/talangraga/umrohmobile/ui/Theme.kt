@@ -13,29 +13,53 @@ import androidx.compose.ui.graphics.Color.Companion.White
 // 🌞 Light color scheme
 private val LightColors = lightColorScheme(
     primary = Sage,
-    secondary = Sandstone,
-    background = Porcelain,
-    surface = Linen,
     onPrimary = White,
-    onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
+
+    secondary = Sandstone,
+    onSecondary = White,
+
+    tertiary = MediumPurple,
+    onTertiary = White,
+
+    background = Background,
+    onBackground = Color(0xFF1A1A1A),
+
+    surface = Porcelain,
+    onSurface = Color(0xFF1A1A1A),
+
+    surfaceVariant = Linen,
+    onSurfaceVariant = Color.DarkGray,
+
+    outline = Sage,
+    error = RosePink
 )
 
 // 🌙 Dark color scheme
 private val DarkColors = darkColorScheme(
     primary = SageDark,
-    secondary = SandstoneDark,
-    background = PorcelainDark,
-    surface = LinenDark,
     onPrimary = Color.Black,
+
+    secondary = SandstoneDark,
     onSecondary = Color.Black,
-    onBackground = TextPrimaryDark,
-    onSurface = TextPrimaryDark,
+
+    tertiary = MediumPurple,
+    onTertiary = Color.Black,
+
+    background = PorcelainDark,
+    onBackground = TextOnColor,
+
+    surface = LinenDark,
+    onSurface = TextOnColor,
+
+    surfaceVariant = Color(0xFF2A2A2A),
+    onSurfaceVariant = TextSecondaryDark,
+
+    outline = SageDark,
+    error = RosePink
 )
 
 @Composable
-expect fun dynamicColorScheme(darkTheme: Boolean): androidx.compose.material3.ColorScheme?
+expect fun dynamicColorScheme(darkTheme: Boolean): ColorScheme?
 
 @Composable
 fun animateColorSchemeAsState(targetColorScheme: ColorScheme): ColorScheme {
