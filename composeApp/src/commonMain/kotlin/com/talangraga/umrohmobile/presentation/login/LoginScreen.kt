@@ -43,6 +43,7 @@ import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.AppViewModel
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
+import com.talangraga.umrohmobile.presentation.navigation.MainRoute
 import com.talangraga.umrohmobile.ui.Sage
 import com.talangraga.umrohmobile.ui.SageDark
 import com.talangraga.umrohmobile.ui.Sandstone
@@ -79,7 +80,7 @@ fun LoginScreen(
 
     LaunchedEffect(loginSucceed) {
         if (loginSucceed == true) {
-            navHostController.navigate("main_container") {
+            navHostController.navigate(MainRoute.route) {
                 popUpTo(LoginRoute) { inclusive = true }
             }
         }

@@ -10,6 +10,11 @@ object SplashRoute
 object LoginRoute
 
 @Serializable
+object MainRoute {
+    val route = "main_route"
+}
+
+@Serializable
 data class HomeRoute(val justLogin: Boolean = false)
 
 @Serializable

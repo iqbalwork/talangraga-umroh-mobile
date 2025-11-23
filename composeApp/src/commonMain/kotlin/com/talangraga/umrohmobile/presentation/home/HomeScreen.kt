@@ -41,6 +41,7 @@ import com.talangraga.umrohmobile.presentation.home.section.TransactionSection
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.ListUserRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
+import com.talangraga.umrohmobile.presentation.navigation.MainRoute
 import com.talangraga.umrohmobile.presentation.navigation.UserRoute
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.Green
@@ -57,6 +58,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HomeScreen(
     navHostController: NavHostController,
+    rootNavHostController: NavHostController,
     justLogin: Boolean,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
@@ -100,8 +102,8 @@ fun HomeScreen(
         onAddTransaction = { },
     ) {
         viewModel.clearSession()
-        navHostController.navigate(LoginRoute) {
-            popUpTo(HomeRoute()) {
+        rootNavHostController.navigate(LoginRoute) {
+            popUpTo(MainRoute.route) {
                 inclusive = true
             }
         }
