@@ -13,8 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.data.local.session.SessionKey
-import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
+import com.talangraga.umrohmobile.presentation.navigation.MainRoute
 import com.talangraga.umrohmobile.presentation.navigation.SplashRoute
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import kotlinx.coroutines.delay
@@ -39,7 +39,8 @@ fun SplashScreen(
                 popUpTo(SplashRoute) { inclusive = true }
             }
         } else {
-            navHostController.navigate(HomeRoute()) {
+            // navigate to MainRoute’s HOME tab
+            navHostController.navigate(MainRoute.route) {
                 popUpTo(SplashRoute) { inclusive = true }
             }
         }

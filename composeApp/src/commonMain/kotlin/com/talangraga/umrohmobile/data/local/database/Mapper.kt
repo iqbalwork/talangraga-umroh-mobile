@@ -12,7 +12,6 @@ import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 fun PaymentData.toPaymentEntity(): PaymentEntity {
     return PaymentEntity(
         paymentId = paymentId.toInt(),
-        documentId = documentId.orEmpty(),
         paymentName = paymentName,
         paymentType = paymentType
     )
@@ -21,7 +20,6 @@ fun PaymentData.toPaymentEntity(): PaymentEntity {
 fun PeriodData.toPeriodEntity(): PeriodEntity {
     return PeriodEntity(
         periodId = periodId.toInt(),
-        documentId = documentId.orEmpty(),
         periodeName = periodeName,
         startDate = startDate,
         endDate = endDate

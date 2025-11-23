@@ -1,6 +1,5 @@
 package com.talangraga.umrohmobile.data.local.database
 
-import DriverFactory
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.talangraga.umrohmobile.TalangragaDatabase
@@ -25,7 +24,6 @@ class DatabaseHelper(factory: DriverFactory) {
         list.forEach { payment ->
             paymentQueries.insertPayment(
                 paymentId = payment.paymentId.toLong(),
-                documentId = payment.documentId,
                 paymentName = payment.paymentName,
                 paymentType = payment.paymentType
             )
@@ -53,10 +51,9 @@ class DatabaseHelper(factory: DriverFactory) {
             }
 
     fun insertPeriods(list: List<PeriodEntity>) {
-        list.forEach { (periodId, documentId, periodeName, startDate, endDate) ->
+        list.forEach { (periodId, periodeName, startDate, endDate) ->
             periodQueries.insertPeriodData(
                 periodId = periodId.toLong(),
-                documentId = documentId,
                 periodeName = periodeName,
                 startDate = startDate,
                 endDate = endDate

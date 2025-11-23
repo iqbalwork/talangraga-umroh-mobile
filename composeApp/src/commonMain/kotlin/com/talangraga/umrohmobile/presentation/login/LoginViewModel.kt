@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.network.api.ApiResponse
+import com.talangraga.umrohmobile.data.network.api.Result
 import com.talangraga.umrohmobile.domain.repository.Repository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,13 +41,11 @@ class LoginViewModel(
         repository.login(identifier.value, password.value)
             .onEach { response ->
                 when (response) {
-                    is ApiResponse.Error -> {
+                    is Result.Error -> {
                         _isLoading.update { false }
-                        val message = response.error.error?.message
-                        _errorMessage.update { message }
+                        _errorMessage.update { response.t.message }
                     }
-
-                    is ApiResponse.Success -> {
+                    is Result.Success -> {
                         _loginSucceed.update { true }
                         _isLoading.update { false }
                     }

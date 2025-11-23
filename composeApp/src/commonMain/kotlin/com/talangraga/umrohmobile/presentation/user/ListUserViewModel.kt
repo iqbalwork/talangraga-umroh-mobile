@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.network.api.Result
 import com.talangraga.umrohmobile.domain.repository.Repository
+import com.talangraga.umrohmobile.presentation.utils.toUiData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -34,7 +35,8 @@ class ListUserViewModel(
 
                     is Result.Success -> {
                         _uiState.update {
-                            ListUserUiState.Success(result.data)
+                            val listUser = result.data.map { it.toUiData() }
+                            ListUserUiState.Success(listUser)
                         }
                     }
                 }

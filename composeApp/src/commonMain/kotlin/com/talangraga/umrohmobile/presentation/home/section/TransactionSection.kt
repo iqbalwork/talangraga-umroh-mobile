@@ -19,13 +19,19 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Countertops
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.MoneyOff
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.SupervisorAccount
+import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,7 +48,10 @@ import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.ui.Aqua
 import com.talangraga.umrohmobile.ui.Green
 import com.talangraga.umrohmobile.ui.MediumPurple
+import com.talangraga.umrohmobile.ui.PorcelainDark
 import com.talangraga.umrohmobile.ui.RosePink
+import com.talangraga.umrohmobile.ui.Sage
+import com.talangraga.umrohmobile.ui.Sandstone
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.TalangragaTypography
 import com.talangraga.umrohmobile.ui.component.IconBlock
@@ -88,9 +97,8 @@ fun TransactionSection(
                         modifier = Modifier.fillMaxWidth(),
                         title = "Total Tabungan Periode ini",
                         value = if (transactionAvailable) totalAmount.formatToIDR() else "Belum Ada Transaksi",
-                        notes = if (transactionAvailable) "12% dari bulan lalu" else "",
-                        notesColor = Green,
-                        icon = Icons.Default.AttachMoney,
+                        icon = Icons.Default.Wallet,
+                        illustrationIcon = Icons.Default.AttachMoney,
                         startIconColor = Aqua,
                         endIconColor = Green
                     )
@@ -101,8 +109,9 @@ fun TransactionSection(
                         title = "Anggota yang Menabung",
                         value = if (transactionAvailable) totalMember.toString() else "Belum ada yang menabung",
                         notes = if (transactionAvailable) "Bulan ini" else "",
-                        notesColor = MediumPurple,
-                        icon = Icons.Default.AccountCircle,
+                        notesColor = PorcelainDark,
+                        icon = Icons.Default.People,
+                        illustrationIcon = Icons.Default.AccountCircle,
                         startIconColor = MediumPurple,
                         endIconColor = MediumPurple
                     )
@@ -110,9 +119,8 @@ fun TransactionSection(
                         modifier = Modifier.fillMaxWidth(),
                         title = "Rata-rata Tabungan",
                         value = average.toInt().formatToIDR(),
-                        notes = "Per Anggota/Bulan",
-                        notesColor = RosePink,
-                        icon = Icons.Default.Calculate,
+                        icon = Icons.Default.CreditCard,
+                        illustrationIcon = Icons.Default.Calculate,
                         startIconColor = RosePink,
                         endIconColor = RosePink
                     )
@@ -134,89 +142,49 @@ fun TransactionSection(
     transactions: List<TransactionEntity>,
     onClickSeeMore: () -> Unit
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing between items
     ) {
-        Column {
-            ConstraintLayout(
-                modifier = Modifier
-                    .clickable(onClick = onClickSeeMore)
-                    .fillMaxWidth()
-            ) {
-                val (titleRef, subtitleRef, seeAllRef) = createRefs()
 
-                Text(
-                    text = "Transaksi Terakhir",
-                    style = TalangragaTypography.titleMedium,
-                    modifier = Modifier
-                        .constrainAs(titleRef) {
-                            top.linkTo(parent.top, 16.dp)
-                            start.linkTo(parent.start, 16.dp)
-                        }
-                )
+        Text(
+            text = "Transaksi Terakhir",
+            style = TalangragaTypography.titleLarge,
+        )
 
-                Text(
-                    text = "Tekan disini untuk melihat semua transaksi",
-                    style = TalangragaTypography.bodySmall.copy(
-                        fontSize = 10.sp
-                    ),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                        .constrainAs(subtitleRef) {
-                            top.linkTo(titleRef.bottom)
-                            start.linkTo(titleRef.start)
-                        }
-                )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowRight,
-                    contentDescription = "Expand User Type",
-                    tint = Color.Black,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .constrainAs(seeAllRef) {
-                            top.linkTo(titleRef.top)
-                            end.linkTo(parent.end, 16.dp)
-                            bottom.linkTo(subtitleRef.bottom)
-                        }
-                )
-            }
-            HorizontalDivider(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                color = Color.LightGray.copy(alpha = 0.5f)
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.Black,
+            thickness = 1.dp
+        )
+
+        AnimatedVisibility(
+            visible = transactions.isEmpty(),
+        ) {
+            Text(
+                text = "Tidak ada transaksi terkini.",
+                style = TalangragaTypography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
             )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = 16.dp
-                    ), // Padding around the list of items
-                verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing between items
-            ) {
-                AnimatedVisibility(
-                    visible = transactions.isEmpty(),
-                ) {
-                    Text(
-                        text = "Tidak ada transaksi terkini.",
-                        style = TalangragaTypography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
-                    )
-                }
+        }
 
-                AnimatedVisibility(
-                    transactions.isNotEmpty(),
-                ) {
-                    transactions.forEach { transaction ->
-                        TransactionItem(
-                            modifier = Modifier.fillMaxWidth(),
-                            username = transaction.reportedBy, // Assuming reportedBy is the username
-                            amount = transaction.amount,
-                            date = transaction.transactionDate
-                        )
-                    }
+        AnimatedVisibility(
+            transactions.isNotEmpty(),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                transactions.forEach { transaction ->
+                    TransactionItem(
+                        modifier = Modifier.fillMaxWidth(),
+                        username = transaction.reportedBy, // Assuming reportedBy is the username
+                        amount = transaction.amount,
+                        date = transaction.transactionDate
+                    )
                 }
             }
         }
@@ -228,8 +196,8 @@ fun TransactionItem(modifier: Modifier = Modifier, username: String, amount: Int
     ConstraintLayout(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(color = Color(0xFFF5F5F5)) // Light gray background for the item
-            .padding(12.dp) // Internal padding for the item
+            .background(color = Sandstone)
+            .padding(8.dp) // Internal padding for the item
             .fillMaxWidth()
     ) {
         val (usernameRef, amountRef, dateRef) = createRefs()
@@ -272,7 +240,7 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
     ) {
         ConstraintLayout(
             modifier = Modifier
-                .background(color = Color.White)
+                .background(color = MaterialTheme.colorScheme.surfaceBright)
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
@@ -400,7 +368,7 @@ fun PreviewTransactionSection() {
             confirmedBy = ""
         )
     )
-    TalangragaTheme {
+    TalangragaTheme(useDynamicColor = false) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             TransactionSection(transactions = dummyTransactions) {}
             TransactionSection(transactions = emptyList()) {} // Preview for empty state
@@ -411,7 +379,7 @@ fun PreviewTransactionSection() {
 @Preview
 @Composable
 fun PreviewTransactionItem() {
-    TalangragaTheme {
+    TalangragaTheme(useDynamicColor = false) {
         TransactionItem(
             modifier = Modifier.padding(16.dp),
             username = "Iqbal Fauzi",

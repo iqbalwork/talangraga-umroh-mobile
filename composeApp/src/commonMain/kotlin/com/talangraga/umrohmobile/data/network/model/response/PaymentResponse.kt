@@ -7,11 +7,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PaymentResponse(
     @SerialName("id")
-    val id: Int?,
-    @SerialName("documentId")
-    val documentId: String?,
-    @SerialName("paymentName")
-    val paymentName: String?,
-    @SerialName("paymentType")
-    val paymentType: String?
+    val id: Int,
+    @SerialName("payment_name")
+    val paymentName: String,
+    @SerialName("payment_type")
+    val paymentType: String
 )

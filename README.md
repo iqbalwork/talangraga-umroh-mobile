@@ -52,17 +52,17 @@ DataSource (Ktor API / SQLDelight DB)
 
 ## 🧰 Tech Stack
 
-| Layer | Technology | Description |
-|-------|-------------|-------------|
-| **Language** | Kotlin Multiplatform | Shared logic for Android & iOS |
-| **UI Framework** | Compose Multiplatform (Material 3) | Declarative UI for both platforms |
-| **Networking** | Ktor Client | REST API communication (Strapi / Ktor Server) |
-| **Database** | SQLDelight | Multiplatform local database |
+| Layer | Technology | Description                             |
+|-------|-------------|-----------------------------------------|
+| **Language** | Kotlin Multiplatform | Shared logic for Android & iOS          |
+| **UI Framework** | Compose Multiplatform (Material 3) | Declarative UI for both platforms       |
+| **Networking** | Ktor Client | REST API communication (FastAPI)        |
+| **Database** | SQLDelight | Multiplatform local database            |
 | **Dependency Injection** | Koin | Lightweight DI for modular architecture |
-| **Serialization** | kotlinx.serialization | JSON parsing |
-| **Reactivity** | Kotlin Flow + Coroutines | Reactive & asynchronous data flow |
-| **Build System** | Gradle (Kotlin DSL) | Multiplatform project configuration |
-| **IDE** | Android Studio / IntelliJ IDEA | Primary development environment |
+| **Serialization** | kotlinx.serialization | JSON parsing                            |
+| **Reactivity** | Kotlin Flow + Coroutines | Reactive & asynchronous data flow       |
+| **Build System** | Gradle (Kotlin DSL) | Multiplatform project configuration     |
+| **IDE** | Android Studio / IntelliJ IDEA | Primary development environment         |
 
 ---
 
@@ -84,7 +84,7 @@ as part of the digital transformation initiative for the Umroh Savings Program.
 
 📱 **Platforms:** Android & iOS  
 ⚙️ **Version:** Beta Development  
-🛠️ **Backend:** Strapi CMS → (planned migration to Ktor Server)
+🛠️ **Backend:** Migrated to Python FastAPI
 
 ---
 

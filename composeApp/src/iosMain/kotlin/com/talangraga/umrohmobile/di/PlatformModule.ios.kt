@@ -1,6 +1,6 @@
 package com.talangraga.umrohmobile.di
 
-import DriverFactory
+import com.talangraga.umrohmobile.data.local.database.DriverFactory
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.darwin.Darwin
 import org.koin.core.module.Module

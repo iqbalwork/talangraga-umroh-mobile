@@ -4,7 +4,7 @@ import com.russhwolf.settings.Settings
 import com.talangraga.umrohmobile.data.local.session.Session
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.network.HttpClientFactory
-import com.talangraga.umrohmobile.data.network.api.AuthService
+import com.talangraga.umrohmobile.data.network.api.ApiService
 import com.talangraga.umrohmobile.data.repository.RepositoryImpl
 import com.talangraga.umrohmobile.domain.repository.Repository
 import kotlinx.serialization.json.Json
@@ -25,15 +25,13 @@ val sharedModule = module {
     single { Settings() }
     single { Session(get(), get()) }
     single { TokenManager() }
+    single { HttpClientFactory.create(get(), get()) }
     single {
-        HttpClientFactory.create(get(), get())
-    }
-    single {
-        AuthService(get())
+        ApiService(get())
     }
     single<Repository> {
         RepositoryImpl(
-            authService = get(),
+            apiService = get(),
             json = get(),
             session = get(),
             tokenManager = get(),

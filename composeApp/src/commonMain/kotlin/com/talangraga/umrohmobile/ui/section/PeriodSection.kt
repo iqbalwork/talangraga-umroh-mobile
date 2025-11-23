@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.ui.BackgroundColor
 import com.talangraga.umrohmobile.ui.PeriodColor
+import com.talangraga.umrohmobile.ui.Sage
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.TargetColor
 import com.talangraga.umrohmobile.ui.TextBodyColor
@@ -118,7 +120,7 @@ fun PeriodItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(BackgroundColor)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .clickable(onClick = {
                 onPeriodClick(period)
             })
@@ -134,7 +136,7 @@ fun PeriodItem(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(PeriodColor),
+                    .background(Sage),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -153,13 +155,11 @@ fun PeriodItem(
             ) {
                 Text(
                     text = period.periodeName,
-                    color = TextBodyColor,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = formatDateRange(period.startDate, period.endDate),
-                    color = TargetColor,
                     fontSize = 14.sp
                 )
             }
@@ -172,12 +172,12 @@ fun PeriodItem(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color.Green.copy(alpha = 0.2f))
+                            .background(Sage.copy(alpha = 0.2f))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "CURRENT",
-                            color = Color.Green,
+                            text = "SEKARANG",
+                            color = Sage,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp
                         )
@@ -192,9 +192,9 @@ fun PeriodItem(
 @Composable
 fun PreviewPeriodItems() {
     val periods = listOf(
-        PeriodEntity(periodId = 0, "", "Bulan ke 1", "2025-08-06", "2025-09-05"),
-        PeriodEntity(1, "", "Bulan ke 2", "2025-09-06", "2025-10-05"),
-        PeriodEntity(2, "", "Bulan ke 3", "2025-10-06", "2025-11-05"),
+        PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
+        PeriodEntity(1, "Bulan ke 2", "2025-09-06", "2025-10-05"),
+        PeriodEntity(2, "Bulan ke 3", "2025-10-06", "2025-11-05"),
 
         )
     TalangragaTheme {

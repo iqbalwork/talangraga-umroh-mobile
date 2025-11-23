@@ -6,4 +6,4 @@ import kotlinx.serialization.Serializable
 data class AuthResponse(
     val jwt: String? = null,
     val user: UserResponse? = null
-): BaseResponse()
+)
