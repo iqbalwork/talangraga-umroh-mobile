@@ -3,16 +3,14 @@ package com.talangraga.umrohmobile.presentation.home
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
-import com.talangraga.umrohmobile.data.local.session.Session
-import com.talangraga.umrohmobile.data.local.session.SessionKey
-import com.talangraga.umrohmobile.data.local.session.TokenManager
-import com.talangraga.umrohmobile.data.mapper.toUserEntity
-import com.talangraga.umrohmobile.data.network.api.Result
-import com.talangraga.umrohmobile.domain.repository.Repository
+import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.database.model.PeriodEntity
+import com.talangraga.data.local.session.Session
+import com.talangraga.data.local.session.TokenManager
+import com.talangraga.shared.utils.currentDate
+import com.talangraga.shared.utils.isDateInRange
 import com.talangraga.umrohmobile.presentation.utils.toUiData
-import com.talangraga.umrohmobile.util.currentDate
-import com.talangraga.umrohmobile.util.isDateInRange
+import com.talangraga.data.network.api.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +44,8 @@ class HomeViewModel(
         HomeUiState(
             profile = SectionState.Loading,
             periods = SectionState.Loading,
-            transactions = SectionState.Loading
+            transactions = SectionState.Loading,
+            isLoading = true
         )
     )
 
@@ -110,17 +109,22 @@ class HomeViewModel(
     }
 
     fun getPeriods() {
-        _uiState.update { it.copy(periods = SectionState.Loading) }
+        _uiState.update { it.copy(periods = SectionState.Loading, isLoading = true) }
         repository.getPeriods()
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-//                        _uiState.update { it.copy(periods = SectionState.Error(result.t.message.orEmpty())) }
+                        _uiState.update { it.copy(isLoading = false) }
                         _errorMessage.update { result.t.message }
                     }
 
                     is Result.Success -> {
-                        _uiState.update { it.copy(periods = SectionState.Success(result.data)) }
+                        _uiState.update {
+                            it.copy(
+                                periods = SectionState.Success(result.data),
+                                isLoading = false
+                            )
+                        }
                         _periods.update { result.data }
 
                         if (selectedPeriod.value == null) {
@@ -143,7 +147,7 @@ class HomeViewModel(
         }
     }
 
-    fun getTransactions(periodId: Int) {
+    fun getTransactions(periodId: Int? = null) {
         _uiState.update { it.copy(transactions = SectionState.Loading) }
         repository.getTransactions(periodId)
             .onEach { result ->

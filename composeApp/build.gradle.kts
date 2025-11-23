@@ -10,31 +10,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.kotlinParcelize)
-    alias(libs.plugins.buildKonfig)
-    alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotzilla)
-}
-
-buildkonfig {
-    packageName = "com.talangraga.umrohmobile"
-
-    val stagingUrl = project.findProperty("stagingUrl") ?: ""
-    val productionUrl = project.findProperty("productionUrl") ?: ""
-
-    defaultConfigs {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
-    }
-    defaultConfigs("staging") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
-    }
-    // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("release") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
-        buildConfigField(STRING, "BASE_URL", "$productionUrl")
-    }
-
 }
 
 kotlin {
@@ -67,7 +43,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.android.driver)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -92,7 +67,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.coil.compose)
             implementation(libs.constraintlayout.compose.multiplatform)
-            implementation(libs.ktor.monitor.logging)
             implementation(libs.napier)
             implementation(libs.kotlinx.datetime)
             implementation(libs.inspektify.ktor3)
@@ -103,13 +77,14 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.serialization)
             implementation(libs.multiplatform.settings.coroutines)
+
+            implementation(project(":data"))
+            implementation(project(":shared"))
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-            implementation(libs.native.driver)
         }
         nativeMain.dependencies {
-            implementation(libs.native.driver)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -151,14 +126,4 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-}
-
-sqldelight {
-    databases {
-        create("TalangragaDatabase") {
-            packageName.set("com.talangraga.umrohmobile")
-            // optional: specify srcDirs if you place .sq files outside default
-            // srcDirs.setFrom("src/commonMain/sqldelight")
-        }
-    }
 }

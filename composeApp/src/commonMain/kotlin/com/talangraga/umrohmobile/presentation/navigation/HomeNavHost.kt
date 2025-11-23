@@ -7,7 +7,11 @@ import androidx.navigation.compose.composable
 import com.talangraga.umrohmobile.presentation.home.HomeScreen
 
 @Composable
-fun HomeNavHost(navController: NavHostController, rootNavController: NavHostController) {
+fun HomeNavHost(
+    navController: NavHostController,
+    rootNavController: NavHostController,
+    onNavigateToTransaction: () -> Unit
+) {
     NavHost(
         navController = navController,
         startDestination = "home_screen"
@@ -16,7 +20,8 @@ fun HomeNavHost(navController: NavHostController, rootNavController: NavHostCont
             HomeScreen(
                 navHostController = navController,
                 rootNavHostController = rootNavController,
-                justLogin = false
+                justLogin = false,
+                onNavigateToTransaction = onNavigateToTransaction
             )
         }
     }

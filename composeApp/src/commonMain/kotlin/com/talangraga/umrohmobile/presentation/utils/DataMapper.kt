@@ -1,7 +1,7 @@
 package com.talangraga.umrohmobile.presentation.utils
 
-import com.talangraga.umrohmobile.data.local.database.model.UserEntity
-import com.talangraga.umrohmobile.data.network.model.response.UserResponse
+import com.talangraga.data.local.database.model.UserEntity
+import com.talangraga.data.network.model.response.UserResponse
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 
 fun UserResponse.toUiData(): UserUIData {

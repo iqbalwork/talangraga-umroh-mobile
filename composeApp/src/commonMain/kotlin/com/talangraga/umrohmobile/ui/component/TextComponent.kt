@@ -23,12 +23,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.talangraga.umrohmobile.ui.Background
-import com.talangraga.umrohmobile.ui.BorderColor
-import com.talangraga.umrohmobile.ui.Sage
-import com.talangraga.umrohmobile.ui.TalangragaTypography
-import com.talangraga.umrohmobile.ui.TextOnColor
-import com.talangraga.umrohmobile.ui.TextSecondaryDark
+import com.talangraga.shared.Background
+import com.talangraga.shared.BorderColor
+import com.talangraga.shared.Sage
+import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.TextOnColor
+import com.talangraga.shared.TextSecondaryDark
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable

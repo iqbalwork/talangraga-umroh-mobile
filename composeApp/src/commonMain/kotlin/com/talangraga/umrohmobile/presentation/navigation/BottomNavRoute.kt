@@ -1,7 +1,8 @@
 package com.talangraga.umrohmobile.presentation.navigation
 
-sealed class BottomNavRoute(val route: String) {
-    data object Home : BottomNavRoute("home")
-    data object Member : BottomNavRoute("members")
-    data object Profile : BottomNavRoute("profile")
+sealed class BottomNavRoute() {
+    data object Home : BottomNavRoute()
+    data object Transaction : BottomNavRoute()
+    data object Member : BottomNavRoute()
+    data object Profile : BottomNavRoute()
 }

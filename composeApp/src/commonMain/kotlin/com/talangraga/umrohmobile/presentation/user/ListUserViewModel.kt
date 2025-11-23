@@ -2,9 +2,9 @@ package com.talangraga.umrohmobile.presentation.user
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.talangraga.umrohmobile.data.network.api.Result
-import com.talangraga.umrohmobile.domain.repository.Repository
+import com.talangraga.data.domain.repository.Repository
 import com.talangraga.umrohmobile.presentation.utils.toUiData
+import com.talangraga.data.network.api.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn

@@ -1,7 +1,6 @@
 package com.talangraga.umrohmobile.presentation.home.section
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
@@ -9,12 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
+import com.talangraga.data.local.database.model.PeriodEntity
+import com.talangraga.shared.utils.INDONESIA_TRIMMED
+import com.talangraga.shared.utils.formatDateRange
 import com.talangraga.umrohmobile.ui.component.TextButton
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
-import com.talangraga.umrohmobile.util.INDONESIA_TRIMMED
-import com.talangraga.umrohmobile.util.formatDateRange
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun PeriodSection(
@@ -61,19 +59,4 @@ fun PeriodSection(
                 },
         ) { onShowPeriodSheet() }
     }
-}
-
-@Preview
-@Composable
-fun PreviewPeriodSection() {
-    PeriodSection(
-        period = PeriodEntity(
-            periodId = 0,
-            periodeName = "Ramadhan 2024",
-            startDate = "2024-03-10",
-            endDate = "2024-04-09",
-        ), onShowPeriodSheet = {},
-        modifier = Modifier,
-        onClickAll = {  }
-    )
 }

@@ -45,9 +45,9 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
-import com.talangraga.umrohmobile.ui.Sage
+import com.talangraga.shared.Sage
 import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.TalangragaTypography
+import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.ui.ThemeManager
 import com.talangraga.umrohmobile.ui.ThemeMode
 import com.talangraga.umrohmobile.ui.component.BasicImage

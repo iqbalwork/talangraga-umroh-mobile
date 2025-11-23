@@ -1,12 +1,12 @@
 package com.talangraga.umrohmobile.di
 
 import com.russhwolf.settings.Settings
-import com.talangraga.umrohmobile.data.local.session.Session
-import com.talangraga.umrohmobile.data.local.session.TokenManager
-import com.talangraga.umrohmobile.data.network.HttpClientFactory
-import com.talangraga.umrohmobile.data.network.api.ApiService
-import com.talangraga.umrohmobile.data.repository.RepositoryImpl
-import com.talangraga.umrohmobile.domain.repository.Repository
+import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.session.Session
+import com.talangraga.data.local.session.TokenManager
+import com.talangraga.data.network.HttpClientFactory
+import com.talangraga.data.network.api.ApiService
+import com.talangraga.data.repository.RepositoryImpl
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module

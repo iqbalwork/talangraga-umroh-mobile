@@ -1,19 +1,38 @@
 package com.talangraga.umrohmobile.application
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
-import com.talangraga.umrohmobile.presentation.navigation.BottomNavRoute
+import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.main.BottomNavBar
-import com.talangraga.umrohmobile.presentation.navigation.*
+import com.talangraga.umrohmobile.presentation.navigation.BottomNavRoute
+import com.talangraga.umrohmobile.presentation.navigation.HomeNavHost
+import com.talangraga.umrohmobile.presentation.navigation.MemberNavHost
+import com.talangraga.umrohmobile.presentation.navigation.ProfileNavHost
+import com.talangraga.umrohmobile.presentation.navigation.TransactionNavHost
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ThemeManager
@@ -48,12 +67,13 @@ fun App() {
             val currentRoute = navBackStack?.destination?.route
 
             val showBottomBar = currentRoute !in listOf(
-                SplashRoute::class.qualifiedName,
-                LoginRoute::class.qualifiedName
+                Screen.SplashRoute::class.qualifiedName,
+                Screen.LoginRoute::class.qualifiedName
             )
 
             // Multi-backstack: 3 NavControllers (one per tab)
             val homeNav = rememberNavController()
+            val transactionNav = rememberNavController()
             val memberNav = rememberNavController()
             val profileNav = rememberNavController()
 
@@ -69,19 +89,20 @@ fun App() {
 
                 NavHost(
                     navController = rootNavController,
-                    startDestination = SplashRoute
+                    startDestination = Screen.SplashRoute,
+                    modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
                 ) {
 
-                    composable<SplashRoute> {
+                    composable<Screen.SplashRoute> {
                         SplashScreen(rootNavController)
                     }
 
-                    composable<LoginRoute> {
+                    composable<Screen.LoginRoute> {
                         LoginScreen(rootNavController)
                     }
 
                     // MAIN CONTENT AREA (Persistent)
-                    composable(MainRoute.route) {
+                    composable(Screen.MainRoute.route) {
                         AnimatedContent(
                             targetState = selectedTab,
                             transitionSpec = {
@@ -93,6 +114,13 @@ fun App() {
                                 BottomNavRoute.Home -> HomeNavHost(
                                     homeNav,
                                     rootNavController = rootNavController
+                                ) {
+                                    selectedTab = BottomNavRoute.Transaction
+                                }
+
+                                BottomNavRoute.Transaction -> TransactionNavHost(
+                                    navController = transactionNav,
+                                    rootNavController
                                 )
 
                                 BottomNavRoute.Member -> MemberNavHost(memberNav)
@@ -101,17 +129,6 @@ fun App() {
                         }
                     }
                 }
-
-//                // Redirect to main container after login
-//                LaunchedEffect(currentRoute) {
-//                    if (currentRoute == LoginRoute::class.qualifiedName) {
-//                        // After login redirect:
-//                        // Splash -> Login -> Main
-//                        rootNavController.navigate(MainRoute.route) {
-//                            popUpTo(SplashRoute) { inclusive = true }
-//                        }
-//                    }
-//                }
             }
         }
     }
