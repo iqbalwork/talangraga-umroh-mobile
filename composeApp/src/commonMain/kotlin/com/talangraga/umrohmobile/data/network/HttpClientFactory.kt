@@ -44,10 +44,22 @@ object HttpClientFactory {
 
         val client = HttpClient(engine) {
 
-            install(InspektifyKtor) {
-                logLevel = sp.bvantur.inspektify.ktor.LogLevel.All
-                autoDetectEnabledFor = setOf(AutoDetectTarget.Android, AutoDetectTarget.Apple)
-                shortcutEnabled = true
+            if (BuildKonfig.IS_DEBUG) {
+
+                install(InspektifyKtor) {
+                    logLevel = sp.bvantur.inspektify.ktor.LogLevel.All
+                    autoDetectEnabledFor = setOf(AutoDetectTarget.Android, AutoDetectTarget.Apple)
+                    shortcutEnabled = true
+                }
+
+                install(Logging) {
+                    logger = object : Logger {
+                        override fun log(message: String) {
+                            Napier.v(tag = "KTOR", message = message)
+                        }
+                    }
+                    level = LogLevel.ALL
+                }
             }
 
             install(ContentNegotiation) {
@@ -56,15 +68,6 @@ object HttpClientFactory {
                     isLenient = true
                     ignoreUnknownKeys = true
                 })
-            }
-
-            install(Logging) {
-                logger = object : Logger {
-                    override fun log(message: String) {
-                        Napier.v(tag = "KTOR", message = message)
-                    }
-                }
-                level = LogLevel.ALL
             }
 
             install(Auth) {
@@ -92,7 +95,8 @@ object HttpClientFactory {
 
                             // Re-check if another thread already refreshed the token
                             val currentAccess = tokenManager.getAccessToken()
-                            val isStillExpired = currentAccess.isBlank() || currentAccess == oldTokens?.accessToken
+                            val isStillExpired =
+                                currentAccess.isBlank() || currentAccess == oldTokens?.accessToken
                             if (!isStillExpired) {
                                 Napier.i("✅ Token already refreshed by another coroutine")
                                 return@withLock BearerTokens(currentAccess, refreshToken)
@@ -105,9 +109,10 @@ object HttpClientFactory {
                                 }
                             }
 
-                            val response = unauthClient.post("${BuildKonfig.BASE_URL}auth/refresh") {
-                                header(HttpHeaders.Authorization, "Bearer $refreshToken")
-                            }
+                            val response =
+                                unauthClient.post("${BuildKonfig.BASE_URL}auth/refresh") {
+                                    header(HttpHeaders.Authorization, "Bearer $refreshToken")
+                                }
 
                             if (response.status.isSuccess()) {
                                 val json = response.body<JsonObject>()

@@ -3,9 +3,10 @@ package com.talangraga.umrohmobile.presentation.home
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.database.model.TransactionEntity
 import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 
 data class HomeUiState(
-    val profile: SectionState<UserEntity>,
+    val profile: SectionState<UserUIData>,
     val periods: SectionState<List<PeriodEntity>>,
     val transactions: SectionState<List<TransactionEntity>>,
     val isLoading: Boolean = false,

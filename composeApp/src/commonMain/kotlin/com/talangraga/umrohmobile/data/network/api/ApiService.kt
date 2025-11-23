@@ -20,10 +20,11 @@ import io.ktor.http.contentType
 
 class ApiService(private val httpClient: HttpClient) {
 
-//    private val authProvider = httpClient.authProvider<BearerAuthProvider>()
+    private val authProvider = httpClient.authProvider<BearerAuthProvider>()
 
     suspend fun login(identifier: String, password: String): DataResponse<TokenResponse> {
         val loginRequest = LoginRequest(identifier = identifier, password = password)
+        authProvider?.clearToken()
         return httpClient.post("auth/login") {
             contentType(ContentType.Application.Json)
             setBody(loginRequest)

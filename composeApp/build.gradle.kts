@@ -1,3 +1,4 @@
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -21,11 +22,17 @@ buildkonfig {
     val productionUrl = project.findProperty("productionUrl") ?: ""
 
     defaultConfigs {
-        buildConfigField(STRING, "BASE_URL", "$productionUrl")
+        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
+        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
+    }
+    defaultConfigs("staging") {
+        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
+        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
     }
     // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("staging") {
-        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
+    defaultConfigs("release") {
+        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
+        buildConfigField(STRING, "BASE_URL", "$productionUrl")
     }
 
 }
@@ -95,6 +102,7 @@ kotlin {
             implementation(libs.coroutines.extensions)
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.serialization)
+            implementation(libs.multiplatform.settings.coroutines)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

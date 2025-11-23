@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.data.local.session.Session
+import com.talangraga.umrohmobile.data.local.session.SessionKey
 import com.talangraga.umrohmobile.data.local.session.TokenManager
 import com.talangraga.umrohmobile.data.mapper.toUserEntity
 import com.talangraga.umrohmobile.data.network.api.Result
 import com.talangraga.umrohmobile.domain.repository.Repository
+import com.talangraga.umrohmobile.presentation.utils.toUiData
 import com.talangraga.umrohmobile.util.currentDate
 import com.talangraga.umrohmobile.util.isDateInRange
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,7 +85,7 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         _role.update { response.data.userType.orEmpty() }
-                        _uiState.update { it.copy(profile = SectionState.Success(response.data.toUserEntity())) }
+                        _uiState.update { it.copy(profile = SectionState.Success(response.data.toUiData())) }
                         getLocalProfile()
                     }
                 }
@@ -99,7 +101,7 @@ class HomeViewModel(
                 getProfile()
             } else {
                 _role.update { profile.userType.orEmpty() }
-                _uiState.update { it.copy(profile = SectionState.Success(profile.toUserEntity())) }
+                _uiState.update { it.copy(profile = SectionState.Success(profile.toUiData())) }
                 if (_userType.value.isNullOrBlank()) {
                     _userType.update { profile.userType }
                 }
@@ -151,7 +153,8 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        _uiState.update { it.copy(transactions = SectionState.Success(result.data)) }
+                        val data = result.data
+                        _uiState.update { it.copy(transactions = SectionState.Success(data)) }
                     }
                 }
             }

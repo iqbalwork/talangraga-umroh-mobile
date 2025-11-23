@@ -44,7 +44,11 @@ class Session(
 
     fun getProfile(): UserResponse? {
         val profileString = settings.getString(SessionKey.PROFILE_KEY, "")
-        val user = json.decodeFromString(UserResponse.serializer(), profileString)
+        val user = try {
+            json.decodeFromString(UserResponse.serializer(), profileString)
+        } catch (e: Exception) {
+            null
+        }
         return user
     }
 

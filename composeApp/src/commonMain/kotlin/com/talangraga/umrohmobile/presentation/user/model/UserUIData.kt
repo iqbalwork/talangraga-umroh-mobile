@@ -1,15 +1,16 @@
-package com.talangraga.umrohmobile.data.local.database.model
+package com.talangraga.umrohmobile.presentation.user.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserEntity(
-    val userId: Int,
-    val userName: String,
+data class UserUIData(
+    val id: Int,
+    val username: String,
     val fullname: String,
     val email: String,
     val phone: String,
-    val domisili: String,
+    val domicile: String,
     val userType: String,
     val imageProfileUrl: String,
+    val isActive: Boolean
 )

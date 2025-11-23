@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
@@ -23,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -46,8 +48,8 @@ fun InputText(
     placeholder: String,
     enabled: Boolean = true,
     backgroundColor: Color = Color.White,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
+    leadingIcon: ImageVector? = null,
+    trailingIcon: ImageVector? = null,
 ) {
     Column(
         modifier = modifier,
@@ -70,9 +72,55 @@ fun InputText(
             },
             singleLine = true,
             enabled = enabled,
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
+            leadingIcon = {
+                leadingIcon?.let {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null
+                    )
+                }
+            },
+            trailingIcon = {
+                trailingIcon?.let {
+                    Icon(
+                        imageVector = trailingIcon,
+                        contentDescription = null
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth().background(color = backgroundColor)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun InputTextPreview() {
+    var text by remember { mutableStateOf("") }
+    TalangragaTheme {
+        InputText(
+            modifier = Modifier.padding(16.dp),
+            title = stringResource(Res.string.label_username_or_email),
+            value = text,
+            onValueChange = { text = it },
+            placeholder = "Enter your username or email",
+            leadingIcon = Icons.Default.AccountCircle
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PasswordInputPreview() {
+    var password by remember { mutableStateOf("") }
+    TalangragaTheme {
+        PasswordInput(
+            modifier = Modifier.padding(16.dp),
+            title = stringResource(Res.string.password),
+            password = password,
+            onPasswordChange = { password = it },
+            placeholder = "Enter your password",
+            leadingIcon = Icons.Default.Security
         )
     }
 }
@@ -85,7 +133,7 @@ fun PasswordInput(
     onPasswordChange: (String) -> Unit,
     placeholder: String,
     enabled: Boolean = true,
-    leadingIcon: @Composable (() -> Unit)? = null
+    leadingIcon: ImageVector? = null
 ) {
     var passwordVisibility by remember { mutableStateOf(false) }
 
@@ -109,7 +157,14 @@ fun PasswordInput(
             singleLine = true,
             enabled = enabled,
             visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-            leadingIcon = leadingIcon,
+            leadingIcon = {
+                leadingIcon?.let {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null
+                    )
+                }
+            },
             trailingIcon = {
                 val image = if (passwordVisibility)
                     Icons.Filled.VisibilityOff
@@ -127,40 +182,5 @@ fun PasswordInput(
             },
             modifier = Modifier.fillMaxWidth().background(color = Color.White)
         )
-    }
-}
-
-@Preview
-@Composable
-fun InputTextComponentPreview(modifier: Modifier = Modifier) {
-    TalangragaTheme {
-        Column(
-            modifier = Modifier
-                .background(color = Color.White)
-                .padding(16.dp)
-                .fillMaxSize()
-        ) {
-            InputText(
-                title = stringResource(Res.string.label_username_or_email),
-                value = "",
-                onValueChange = {},
-                placeholder = "Input here",
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.AccountCircle,
-                        contentDescription = null
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            PasswordInput(
-                title = stringResource(Res.string.password),
-                password = "",
-                onPasswordChange = {},
-                placeholder = "Input password here",
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
     }
 }

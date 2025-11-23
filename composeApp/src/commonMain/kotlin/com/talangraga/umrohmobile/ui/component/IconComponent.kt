@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.talangraga.umrohmobile.ui.Aqua
 import com.talangraga.umrohmobile.ui.Green
@@ -24,13 +25,15 @@ fun IconBlock(
     modifier: Modifier = Modifier,
     icon: ImageVector,
     startColor: Color,
-    endColor: Color
+    endColor: Color,
+    size: Dp = 50.dp,
+    iconSize: Dp = 30.dp
 ) {
     val gradientColors = listOf(startColor, endColor)
 
     Box(
         modifier = modifier
-            .size(50.dp)
+            .size(size)
             .clip(RoundedCornerShape(12.dp))
             .background(Brush.horizontalGradient(gradientColors)),
         contentAlignment = Alignment.Center
@@ -39,7 +42,7 @@ fun IconBlock(
             imageVector = icon,
             contentDescription = "Dollar sign",
             tint = Color.White,
-            modifier = Modifier.size(30.dp)
+            modifier = Modifier.size(iconSize)
         )
     }
 }

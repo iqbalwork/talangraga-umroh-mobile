@@ -1,6 +1,5 @@
 package com.talangraga.umrohmobile.presentation.home.section
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,49 +17,40 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.presentation.home.SectionState
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.MediumPurple
 import com.talangraga.umrohmobile.ui.TalangragaTypography
-import org.jetbrains.compose.resources.painterResource
+import com.talangraga.umrohmobile.ui.component.BasicImage
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import talangragaumrohmobile.composeapp.generated.resources.Res
-import talangragaumrohmobile.composeapp.generated.resources.compose_multiplatform
 
 @Composable
 fun ProfileSection(
     modifier: Modifier,
     userType: String?,
     role: String,
-    userTypeShowBottomSheet: Boolean,
-    state: SectionState<UserEntity>,
+    state: SectionState<UserUIData>,
+    onClickUser: (UserUIData) -> Unit,
     onListUserClick: () -> Unit,
     onShowUserTypeSheet: () -> Unit,
     onRetry: () -> Unit,
     onLogout: () -> Unit // Added onLogout parameter
 ) {
-    val context = LocalPlatformContext.current
 
     when (state) {
         is SectionState.Loading -> {
@@ -115,20 +105,15 @@ fun ProfileSection(
             val user = state.data
             ConstraintLayout(
                 modifier = modifier
-                    .background(color = Color.White)
                     .fillMaxWidth()
             ) {
-                val (imageProfileRef, nameRef, userTypeRef, logoutButtonRef) = createRefs() // Added logoutButtonRef
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(user.imageProfileUrl)
-                        .crossfade(true)
-                        .build(),
-                    placeholder = painterResource(Res.drawable.compose_multiplatform),
-                    error = painterResource(Res.drawable.compose_multiplatform),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                val (imageProfileRef, nameRef, userTypeRef, listUserRef, settingsRef, logoutButtonRef) = createRefs()
+                BasicImage(
+                    model = user.imageProfileUrl,
                     modifier = Modifier
+                        .clickable(onClick = {
+                            onClickUser(user)
+                        })
                         .size(60.dp)
                         .clip(CircleShape)
                         .constrainAs(imageProfileRef) {
@@ -144,11 +129,15 @@ fun ProfileSection(
                 Text(
                     text = user.fullname,
                     style = TalangragaTypography.bodyMedium,
-                    modifier = Modifier.constrainAs(nameRef) {
-                        top.linkTo(imageProfileRef.top)
-                        bottom.linkTo(userTypeRef.top)
-                        start.linkTo(imageProfileRef.end, 8.dp)
-                    }
+                    modifier = Modifier
+                        .clickable {
+                            onClickUser(user)
+                        }
+                        .constrainAs(nameRef) {
+                            top.linkTo(imageProfileRef.top)
+                            bottom.linkTo(userTypeRef.top)
+                            start.linkTo(imageProfileRef.end, 8.dp)
+                        }
                 )
 
                 Row(
@@ -157,6 +146,7 @@ fun ProfileSection(
                     modifier = Modifier
                         .constrainAs(userTypeRef) {
                             top.linkTo(nameRef.bottom, 4.dp)
+                            bottom.linkTo(imageProfileRef.bottom)
                             start.linkTo(nameRef.start)
                         }
                         .clip(RoundedCornerShape(32.dp))
@@ -173,14 +163,8 @@ fun ProfileSection(
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-//                    Icon(
-//                        imageVector = userTypeIcon,
-//                        contentDescription = "User Type",
-//                        tint = Color.White,
-//                        modifier = Modifier.size(20.dp)
-//                    )
                     Text(
-                        text = userType.orEmpty(),
+                        text = userType?.replaceFirstChar { it.titlecase() }.orEmpty(),
                         style = TalangragaTypography.bodySmall.copy(
                             textAlign = TextAlign.Center,
                             color = Color.White
@@ -188,17 +172,17 @@ fun ProfileSection(
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
 
-                    if (role.uppercase() == "ADMIN") {
-                        val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Expand User Type",
-                            tint = Color.White,
-                            modifier = Modifier
-                                .size(16.dp)
-                                .rotate(rotate)
-                        )
-                    }
+//                    if (role.uppercase() == "ADMIN") {
+//                        val rotate by animateFloatAsState(if (userTypeShowBottomSheet) 180f else 0f)
+//                        Icon(
+//                            imageVector = Icons.Default.ArrowDropDown,
+//                            contentDescription = "Expand User Type",
+//                            tint = Color.White,
+//                            modifier = Modifier
+//                                .size(16.dp)
+//                                .rotate(rotate)
+//                        )
+//                    }
                 }
 
                 if (role.uppercase() == "ADMIN") {
@@ -210,10 +194,10 @@ fun ProfileSection(
                             }
                             .background(MediumPurple)
                             .padding(4.dp)
-                            .constrainAs(createRef()) {
+                            .constrainAs(listUserRef) {
                                 top.linkTo(logoutButtonRef.top)
                                 bottom.linkTo(logoutButtonRef.bottom)
-                                end.linkTo(logoutButtonRef.start, 8.dp)
+                                end.linkTo(settingsRef.start, 8.dp)
                             }
                     ) {
                         Icon(
@@ -223,6 +207,26 @@ fun ProfileSection(
                             modifier = Modifier.size(24.dp)
                         )
                     }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .constrainAs(settingsRef) {
+                            top.linkTo(imageProfileRef.top)
+                            bottom.linkTo(imageProfileRef.bottom)
+                            end.linkTo(logoutButtonRef.start, 8.dp)
+                        }
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onClickUser(user) }
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Settings",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
 
                 // Logout Button
@@ -253,51 +257,52 @@ fun ProfileSection(
 @Preview
 @Composable
 fun PreviewProfileSection() {
-    val dummyUser = UserEntity(
-        userId = 1,
+    val dummyUser = UserUIData(
+        id = 1,
         fullname = "John Doe",
         email = "john.doe@example.com",
         phone = "1234567890",
         imageProfileUrl = "https://example.com/profile.jpg",
         userType = "Member",
-        userName = "johndoe",
-        domisili = "Bandung",
+        username = "johndoe",
+        domicile = "Bandung",
+        isActive = true,
     )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
-            userTypeShowBottomSheet = false,
             state = SectionState.Success(dummyUser),
             onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
             onLogout = {},
-            role = "" // Added for preview
+            role = "",
+            onClickUser = { } // Added for preview
         )
         HorizontalDivider()
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Admin",
-            userTypeShowBottomSheet = true,
             state = SectionState.Loading,
             onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
             onLogout = {},
-            role = "" // Added for preview
+            role = "",
+            onClickUser = { } // Added for preview
         )
         HorizontalDivider()
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
-            userTypeShowBottomSheet = false,
             state = SectionState.Error("Failed to load"),
             onListUserClick = {},
             onShowUserTypeSheet = {},
             onRetry = {},
             onLogout = {},
-            role = "" // Added for preview
+            role = "",
+            onClickUser = { } // Added for preview
         )
     }
 }

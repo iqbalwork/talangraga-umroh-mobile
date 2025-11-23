@@ -1,6 +1,8 @@
 package com.talangraga.umrohmobile.presentation.login
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -33,14 +35,21 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.talangraga.umrohmobile.AppViewModel
 import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
 import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
+import com.talangraga.umrohmobile.presentation.navigation.MainRoute
+import com.talangraga.umrohmobile.ui.Sage
 import com.talangraga.umrohmobile.ui.SageDark
 import com.talangraga.umrohmobile.ui.Sandstone
 import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.TalangragaTypography
+import com.talangraga.umrohmobile.ui.TextSecondaryDark
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.PasswordInput
 import org.jetbrains.compose.resources.painterResource
@@ -59,8 +68,11 @@ import talangragaumrohmobile.composeapp.generated.resources.talangraga_logo
 @Composable
 fun LoginScreen(
     navHostController: NavHostController,
-    viewModel: LoginViewModel = koinViewModel()
+    viewModel: LoginViewModel = koinViewModel(),
+    appViewModel: AppViewModel = koinViewModel(),
 ) {
+
+    val isDarkMode by appViewModel.isDarkMode.collectAsStateWithLifecycle()
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val loginSucceed by viewModel.loginSucceed.collectAsStateWithLifecycle()
@@ -68,25 +80,29 @@ fun LoginScreen(
 
     LaunchedEffect(loginSucceed) {
         if (loginSucceed == true) {
-            navHostController.navigate(HomeRoute(justLogin = true)) {
+            navHostController.navigate(MainRoute.route) {
                 popUpTo(LoginRoute) { inclusive = true }
             }
         }
     }
 
-    LoginContent(
-        isLoading = isLoading,
-        errorMessage = errorMessage.orEmpty(),
-        identifier = viewModel.identifier.value,
-        password = viewModel.password.value,
-        onIdentifierChange = viewModel::onIdentifierChange,
-        onPasswordChange = viewModel::onPasswordChange,
-        onLoginClick = viewModel::login
-    )
+    Crossfade(targetState = isDarkMode, animationSpec = tween(600)) {
+        LoginContent(
+            isDarkMode = isDarkMode,
+            isLoading = isLoading,
+            errorMessage = errorMessage.orEmpty(),
+            identifier = viewModel.identifier.value,
+            password = viewModel.password.value,
+            onIdentifierChange = viewModel::onIdentifierChange,
+            onPasswordChange = viewModel::onPasswordChange,
+            onLoginClick = viewModel::login
+        )
+    }
 }
 
 @Composable
 fun LoginContent(
+    isDarkMode: Boolean,
     isLoading: Boolean = false,
     errorMessage: String,
     identifier: String,
@@ -95,8 +111,7 @@ fun LoginContent(
     onIdentifierChange: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
-
-    TalangragaTheme(useDynamicColor = false) {
+    TalangragaTheme(darkTheme = isDarkMode, useDynamicColor = false) {
         Scaffold { innerPadding ->
             Box(
                 modifier = Modifier
@@ -134,18 +149,30 @@ fun LoginContent(
                         contentDescription = "Logo",
                         modifier = Modifier.size(200.dp)
                     )
+                    Text(
+                        "Masuk",
+                        style = TalangragaTypography.titleMedium.copy(
+                            textAlign = TextAlign.Center,
+                            fontSize = 20.sp
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        "Masuk via email, nomor hp, atau username",
+                        style = TalangragaTypography.titleMedium.copy(
+                            fontSize = 16.sp,
+                            color = TextSecondaryDark,
+                            textAlign = TextAlign.Center
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
                     Spacer(modifier = Modifier.height(20.dp))
                     InputText(
                         title = stringResource(Res.string.label_username_or_email),
                         value = identifier,
                         onValueChange = onIdentifierChange,
                         placeholder = stringResource(Res.string.input_here),
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.AccountCircle,
-                                contentDescription = null
-                            )
-                        },
+                        leadingIcon = Icons.Filled.AccountCircle,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -154,12 +181,7 @@ fun LoginContent(
                         password = password,
                         onPasswordChange = onPasswordChange,
                         placeholder = stringResource(Res.string.input_password_here),
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.Security,
-                                contentDescription = null
-                            )
-                        },
+                        leadingIcon = Icons.Filled.Security,
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(24.dp))
@@ -203,14 +225,15 @@ fun LoginContent(
 @Preview
 @Composable
 fun LoginContentPreview() {
-    TalangragaTheme {
+    TalangragaTheme(darkTheme = false, useDynamicColor = false) {
         LoginContent(
+            isDarkMode = false,
             isLoading = false,
-            errorMessage = "",
-            identifier = "ekoyulianto",
-            password = "talangraga",
-            onIdentifierChange = {},
+            errorMessage = "Invalid credentials",
+            identifier = "testuser",
+            password = "password",
             onPasswordChange = {},
+            onIdentifierChange = {},
             onLoginClick = {}
         )
     }

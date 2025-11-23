@@ -7,7 +7,7 @@ fun initializeKoin(config: KoinAppDeclaration? = null) {
     startKoin {
         config?.invoke(this)
         modules(
-            databaseModule, platformModule, sharedModule, viewModelModule,
+            databaseModule, platformModule, sharedModule, themeModule, viewModelModule,
         )
     }
 }
