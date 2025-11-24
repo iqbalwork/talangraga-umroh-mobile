@@ -169,7 +169,7 @@ fun HomeContent(
                 }
             },
             state = refreshState,
-            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
+            modifier = Modifier
         ) {
             LazyColumn(
                 modifier = Modifier
