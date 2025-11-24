@@ -32,6 +32,7 @@ fun TransactionContent(modifier: Modifier = Modifier) {
             FloatingActionButton(
                 onClick = { },
                 containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,

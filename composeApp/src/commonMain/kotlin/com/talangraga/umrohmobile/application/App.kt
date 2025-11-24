@@ -90,7 +90,6 @@ fun App() {
                 NavHost(
                     navController = rootNavController,
                     startDestination = Screen.SplashRoute,
-                    modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
                 ) {
 
                     composable<Screen.SplashRoute> {
