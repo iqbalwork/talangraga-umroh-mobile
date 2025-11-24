@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +50,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
+import talangragaumrohmobile.composeapp.generated.resources.bg_screen
 import talangragaumrohmobile.composeapp.generated.resources.input_here
 import talangragaumrohmobile.composeapp.generated.resources.input_password_here
 import talangragaumrohmobile.composeapp.generated.resources.label_username_or_email
@@ -112,14 +115,14 @@ fun LoginContent(
                 .imePadding(),
             contentAlignment = Alignment.Center
         ) {
-//                Image(
-//                    painter = painterResource(Resource.Image.Background3Ikan),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .graphicsLayer(alpha = 0.45f),
-//                )
+                Image(
+                    painter = painterResource(Res.drawable.bg_screen),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer(alpha = 0.45f),
+                )
             Column(
                 modifier = Modifier
                     .fillMaxSize()

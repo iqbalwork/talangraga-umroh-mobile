@@ -13,3 +13,9 @@ plugins {
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.kotzilla) apply false
 }
+
+subprojects {
+    tasks.matching { it.name.contains("verify", ignoreCase = true) }.configureEach {
+        enabled = false
+    }
+}

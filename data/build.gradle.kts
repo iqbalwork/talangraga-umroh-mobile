@@ -142,6 +142,7 @@ sqldelight {
             packageName.set("com.talangraga")
             // optional: specify srcDirs if you place .sq files outside default
             // srcDirs.setFrom("src/commonMain/sqldelight")
+//            verifyMigrations.set(false)
         }
     }
 }

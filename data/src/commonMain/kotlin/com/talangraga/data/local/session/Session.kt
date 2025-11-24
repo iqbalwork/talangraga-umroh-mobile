@@ -37,15 +37,15 @@ class Session(
     fun getDouble(key: String, defaultValue: Double = 0.0): Double =
         settings.getDouble(key, defaultValue)
 
-    fun saveProfile(user: com.talangraga.data.network.model.response.UserResponse) {
-        val profileString = json.encodeToString(_root_ide_package_.com.talangraga.data.network.model.response.UserResponse.serializer(), user)
-        settings.putString(_root_ide_package_.com.talangraga.data.local.session.SessionKey.PROFILE_KEY, profileString)
+    fun saveProfile(user: UserResponse) {
+        val profileString = json.encodeToString(UserResponse.serializer(), user)
+        settings.putString(SessionKey.PROFILE_KEY, profileString)
     }
 
-    fun getProfile(): com.talangraga.data.network.model.response.UserResponse? {
-        val profileString = settings.getString(_root_ide_package_.com.talangraga.data.local.session.SessionKey.PROFILE_KEY, "")
+    fun getProfile(): UserResponse? {
+        val profileString = settings.getString(SessionKey.PROFILE_KEY, "")
         val user = try {
-            json.decodeFromString(_root_ide_package_.com.talangraga.data.network.model.response.UserResponse.serializer(), profileString)
+            json.decodeFromString(UserResponse.serializer(), profileString)
         } catch (e: Exception) {
             null
         }

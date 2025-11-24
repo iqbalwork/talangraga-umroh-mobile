@@ -22,6 +22,7 @@ sealed class Screen {
         val route = "main_route"
     }
 
+
     @Serializable
     data class HomeRoute(val justLogin: Boolean = false)
 

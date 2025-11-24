@@ -6,12 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -27,12 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.data.local.database.model.PeriodEntity
-import com.talangraga.shared.Green
 import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
@@ -176,6 +169,7 @@ fun HomeContent(
                 }
             },
             state = refreshState,
+            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             LazyColumn(
                 modifier = Modifier

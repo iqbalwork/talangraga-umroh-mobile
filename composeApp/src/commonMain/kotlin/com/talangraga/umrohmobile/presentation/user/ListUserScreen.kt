@@ -72,14 +72,16 @@ fun ListUserScreen(
                 launchSingleTop = true
                 restoreState = true
             }
-        })
+        },
+        onAddUserClick = {  }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListUserContent(
     onBackClick: (() -> Unit)? = null,
-    onAddUserClick: (() -> Unit)? = null,
+    onAddUserClick: (() -> Unit),
     onUserClick: (UserUIData) -> Unit,
     state: ListUserUiState,
 ) {
@@ -87,88 +89,83 @@ fun ListUserContent(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Daftar Anggota", style = MaterialTheme.typography.titleLarge) },
-//                navigationIcon = {
-//                    IconButton(onClick = { onBackClick?.invoke() }) {
-//                        Icon(
-//                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                            contentDescription = "Back"
-//                        )
-//                    }
-//                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onAddUserClick?.invoke() },
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add User",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-        }
-    ) { innerPadding ->
+    ) { paddingValues ->
 
         var username by remember { mutableStateOf("") }
 
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            InputText(
-                value = username,
-                onValueChange = {
-                    username = it
-                },
-                placeholder = stringResource(Res.string.search_username),
-                backgroundColor = MaterialTheme.colorScheme.surface,
+        Box(modifier = Modifier.fillMaxSize()) {
+            FloatingActionButton(
+                onClick = onAddUserClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.BottomEnd)
+                    .padding(bottom = 16.dp, end = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Transaction",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 16.dp)
-            )
+                    .padding(paddingValues)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                InputText(
+                    value = username,
+                    onValueChange = {
+                        username = it
+                    },
+                    placeholder = stringResource(Res.string.search_username),
+                    backgroundColor = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                        .padding(horizontal = 16.dp)
+                )
 
-            when (state) {
-                ListUserUiState.EmptyData -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Tidak ada data.")
+                when (state) {
+                    ListUserUiState.EmptyData -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Tidak ada data.")
+                        }
                     }
-                }
 
-                ListUserUiState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                    ListUserUiState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
-                }
 
-                is ListUserUiState.Success -> {
-                    LazyColumn(
-                        modifier = Modifier,
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        itemsIndexed(state.users) { index, user ->
-                            UserItem(
-                                user = user,
-                                modifier = Modifier
-                                    .clickable {
-                                        onUserClick(user)
-                                    }
-                                    .fillMaxWidth()
-                            )
+                    is ListUserUiState.Success -> {
+                        LazyColumn(
+                            modifier = Modifier,
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            itemsIndexed(state.users) { index, user ->
+                                UserItem(
+                                    user = user,
+                                    modifier = Modifier
+                                        .clickable {
+                                            onUserClick(user)
+                                        }
+                                        .fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }
@@ -291,7 +288,9 @@ fun ListUserContentSuccessPreview() {
     TalangragaTheme(useDynamicColor = false) {
         ListUserContent(
             onUserClick = {},
-            state = ListUserUiState.Success(users)
+            state = ListUserUiState.Success(users),
+            onBackClick = { },
+            onAddUserClick = { }
         )
     }
 }
