@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.local.session.SessionKey
 import com.talangraga.shared.Sage
-import com.talangraga.umrohmobile.presentation.navigation.BottomNavRoute
+import com.talangraga.umrohmobile.navigation.BottomNavRoute
 import org.koin.compose.koinInject
 
 @Composable

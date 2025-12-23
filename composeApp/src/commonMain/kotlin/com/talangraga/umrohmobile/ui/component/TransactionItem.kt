@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.presentation.home.section
+package com.talangraga.umrohmobile.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,8 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
+import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.shared.utils.formatIsoTimestampToCustom
@@ -55,7 +55,7 @@ fun TransactionItem(
 
             Text(
                 text = "$paymentName - $paymentMethod",
-                style = TalangragaTypography.bodyMedium,
+                style = TalangragaTypography.bodySmall,
                 modifier = Modifier
             )
 
@@ -68,7 +68,7 @@ fun TransactionItem(
 
         Text(
             text = amount.formatToIDR(),
-            style = TalangragaTypography.titleLarge,
+            style = TalangragaTypography.titleLarge.copy(color = Sage),
             modifier = Modifier.constrainAs(amountRef) {
                 top.linkTo(parent.top)
                 bottom.linkTo(parent.bottom)

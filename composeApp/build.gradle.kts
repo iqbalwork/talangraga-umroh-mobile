@@ -11,6 +11,26 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotzilla)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.buildKonfig)
+}
+
+buildkonfig {
+    packageName = "com.talangraga.umrohmobile"
+
+    val kotzillaStagingKey = project.findProperty("kotzillaStagingKey") ?: ""
+    val kotzillaProductionKey = project.findProperty("kotzillaProductionKey") ?: ""
+
+    defaultConfigs {
+        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
+        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaStagingKey")
+    }
+    // flavor is passed as a first argument of defaultConfigs
+    defaultConfigs("production") {
+        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
+        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaProductionKey")
+    }
+
 }
 
 kotlin {
@@ -78,6 +98,11 @@ kotlin {
             implementation(libs.multiplatform.settings.serialization)
             implementation(libs.multiplatform.settings.coroutines)
 
+            // Gitlive Firebase
+            implementation(libs.firebase.app)
+            implementation(libs.firebase.analytic)
+            implementation(libs.firebase.crashlytic)
+
             implementation(project(":data"))
             implementation(project(":shared"))
         }
@@ -115,9 +140,24 @@ android {
     }
     buildTypes {
         getByName("release") {
+            isMinifyEnabled = true
+        }
+        getByName("debug") {
             isMinifyEnabled = false
         }
     }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("staging") {
+            dimension = "version"
+            applicationIdSuffix = ".staging"
+        }
+        create("production") {
+            dimension = "version"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11

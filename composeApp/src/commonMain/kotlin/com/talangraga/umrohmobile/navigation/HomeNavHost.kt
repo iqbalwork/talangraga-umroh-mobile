@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.presentation.navigation
+package com.talangraga.umrohmobile.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

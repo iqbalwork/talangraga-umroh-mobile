@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.presentation.home.model
+package com.talangraga.umrohmobile.presentation.transaction.model
 
 import kotlinx.serialization.Serializable
 
@@ -9,5 +9,9 @@ data class TransactionUiData(
     val transactionDate: String,
     val statusTransaksi: String,
     val reportedDate: String,
-    val buktiTransferUrl: String
+    val reportedBy: String,
+    val confirmedBy: String,
+    val buktiTransferUrl: String,
+    val paymentType: String,
+    val paymentName: String,
 )

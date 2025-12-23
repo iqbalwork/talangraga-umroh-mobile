@@ -27,10 +27,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.presentation.home.section.HomeInfoTransactionSection
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
 import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
-import com.talangraga.umrohmobile.presentation.home.section.TransactionSection
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
@@ -60,11 +60,12 @@ fun HomeScreen(
         userType = userType.orEmpty(),
         onUserTypeChange = viewModel::setUserType,
         periods = periods,
+        selectedPeriod = viewModel.selectedPeriod.value,
         uiState = uiState,
         errorMessage = errorMessage.orEmpty(),
         onPeriodChange = {
             viewModel.setSelectedPeriod(it)
-            viewModel.getTransactions(it.periodId)
+            viewModel.getTransactions(it?.periodId)
         },
         onFetchProfile = viewModel::getProfile,
         onSeeMoreTransaction = onNavigateToTransaction,
@@ -88,9 +89,10 @@ fun HomeContent(
     userType: String,
     onUserTypeChange: (String) -> Unit,
     periods: List<PeriodEntity>,
+    selectedPeriod: PeriodEntity?,
     uiState: HomeUiState,
     errorMessage: String,
-    onPeriodChange: (PeriodEntity) -> Unit,
+    onPeriodChange: (PeriodEntity?) -> Unit,
     onSeeMoreTransaction: () -> Unit,
     onAddTransaction: () -> Unit,
     onFetchProfile: () -> Unit,
@@ -99,7 +101,6 @@ fun HomeContent(
 ) {
 
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var period by remember { mutableStateOf<PeriodEntity?>(null) }
     val refreshState = rememberPullToRefreshState()
 
     val userTypeSheetState = rememberModalBottomSheetState()
@@ -152,7 +153,6 @@ fun HomeContent(
                 periods = periods,
                 onBottomSheetChange = { periodShowBottomSheet = it },
                 onChoosePeriod = {
-                    period = it
                     onPeriodChange(it)
                 }
             )
@@ -162,8 +162,8 @@ fun HomeContent(
             isRefreshing = uiState.isLoading,
             onRefresh = {
                 onFetchProfile()
-                if (period != null) {
-                    onPeriodChange(period!!)
+                if (selectedPeriod != null) {
+                    onPeriodChange(selectedPeriod)
                 } else {
                     onFetchAllTransaction()
                 }
@@ -194,9 +194,9 @@ fun HomeContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        period = period,
+                        period = selectedPeriod,
                         onClickAll = {
-                            period = null
+                            onPeriodChange(null)
                             onFetchAllTransaction()
                         },
                         onShowPeriodSheet = { periodShowBottomSheet = true }
@@ -204,7 +204,7 @@ fun HomeContent(
                 }
 
                 item {
-                    TransactionSection(
+                    HomeInfoTransactionSection(
                         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
                         state = uiState.transactions,
                         onAddTransaction = onAddTransaction,
@@ -253,5 +253,6 @@ fun PreviewHomeContent() {
         onSeeMoreTransaction = { },
         onAddTransaction = { },
         onFetchAllTransaction = {},
+        selectedPeriod = null,
     )
 }

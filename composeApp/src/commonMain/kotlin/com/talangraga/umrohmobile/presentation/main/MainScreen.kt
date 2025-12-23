@@ -15,11 +15,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.talangraga.umrohmobile.presentation.navigation.BottomNavRoute
-import com.talangraga.umrohmobile.presentation.navigation.HomeNavHost
-import com.talangraga.umrohmobile.presentation.navigation.MemberNavHost
-import com.talangraga.umrohmobile.presentation.navigation.ProfileNavHost
-import com.talangraga.umrohmobile.presentation.navigation.TransactionNavHost
+import com.talangraga.umrohmobile.navigation.BottomNavRoute
+import com.talangraga.umrohmobile.navigation.HomeNavHost
+import com.talangraga.umrohmobile.navigation.MemberNavHost
+import com.talangraga.umrohmobile.navigation.ProfileNavHost
+import com.talangraga.umrohmobile.navigation.TransactionNavHost
 
 @Composable
 fun MainScreen(rootNavHostController: NavHostController, modifier: Modifier = Modifier) {

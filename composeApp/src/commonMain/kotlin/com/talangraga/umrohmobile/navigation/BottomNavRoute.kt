@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.presentation.navigation
+package com.talangraga.umrohmobile.navigation
 
 import kotlinx.serialization.Serializable
 

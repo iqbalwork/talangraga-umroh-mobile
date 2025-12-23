@@ -24,12 +24,8 @@ buildkonfig {
         buildConfigField(BOOLEAN, "IS_DEBUG", "true")
         buildConfigField(STRING, "BASE_URL", "$stagingUrl")
     }
-    defaultConfigs("staging") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
-    }
     // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("release") {
+    defaultConfigs("production") {
         buildConfigField(BOOLEAN, "IS_DEBUG", "false")
         buildConfigField(STRING, "BASE_URL", "$productionUrl")
     }
@@ -127,9 +123,21 @@ android {
     }
     buildTypes {
         getByName("release") {
+            isMinifyEnabled = true
+        }
+        getByName("debug") {
             isMinifyEnabled = false
         }
     }
+//    flavorDimensions += "version"
+//    productFlavors {
+//        create("staging") {
+//            dimension = "version"
+//        }
+//        create("production") {
+//            dimension = "version"
+//        }
+//    }
 }
 
 dependencies {

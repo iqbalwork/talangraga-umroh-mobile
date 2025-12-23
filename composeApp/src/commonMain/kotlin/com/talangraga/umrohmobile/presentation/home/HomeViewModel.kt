@@ -7,10 +7,12 @@ import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.local.session.TokenManager
+import com.talangraga.data.network.api.Result
 import com.talangraga.shared.utils.currentDate
 import com.talangraga.shared.utils.isDateInRange
+import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
+import com.talangraga.umrohmobile.presentation.utils.toUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
-import com.talangraga.data.network.api.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,13 +33,14 @@ class HomeViewModel(
     private val _periods = MutableStateFlow<List<PeriodEntity>>(emptyList())
     val periods = _periods.asStateFlow()
 
+    private val _transactions = MutableStateFlow<List<TransactionUiData>>(emptyList())
+    val transactions = _transactions.asStateFlow()
+
     private val _userType = MutableStateFlow<String?>(null)
     val userType: StateFlow<String?> = _userType.asStateFlow()
 
-    private val _role = MutableStateFlow("")
-    val role = _role.asStateFlow()
-
     private var isProfileInitialized = false
+
     val selectedPeriod = mutableStateOf<PeriodEntity?>(null)
 
     private val _uiState = MutableStateFlow(
@@ -83,7 +86,6 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        _role.update { response.data.userType.orEmpty() }
                         _uiState.update { it.copy(profile = SectionState.Success(response.data.toUiData())) }
                         getLocalProfile()
                     }
@@ -99,7 +101,6 @@ class HomeViewModel(
             if (profile?.username.isNullOrBlank()) {
                 getProfile()
             } else {
-                _role.update { profile.userType.orEmpty() }
                 _uiState.update { it.copy(profile = SectionState.Success(profile.toUiData())) }
                 if (_userType.value.isNullOrBlank()) {
                     _userType.update { profile.userType }
@@ -139,12 +140,10 @@ class HomeViewModel(
         // This function will run only once when periods are first fetched
         val currentPeriod = periods.find { data ->
             currentDate.isDateInRange(data.startDate, data.endDate)
-        } ?: periods.firstOrNull()
+        }
 
         setSelectedPeriod(currentPeriod)
-        currentPeriod?.let {
-            getTransactions(it.periodId)
-        }
+        getTransactions(currentPeriod?.periodId)
     }
 
     fun getTransactions(periodId: Int? = null) {
@@ -157,7 +156,8 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        val data = result.data
+                        val data = result.data.map { it.toUIData() }
+                        _transactions.update { data }
                         _uiState.update { it.copy(transactions = SectionState.Success(data)) }
                     }
                 }

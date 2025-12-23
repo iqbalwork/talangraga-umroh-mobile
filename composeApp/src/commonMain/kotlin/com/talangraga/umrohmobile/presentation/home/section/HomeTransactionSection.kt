@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CreditCard
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoneyOff
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.SupervisorAccount
-import androidx.compose.material.icons.filled.SwipeDownAlt
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -35,29 +33,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.talangraga.data.local.database.model.TransactionEntity
-import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.shared.Aqua
 import com.talangraga.shared.Green
 import com.talangraga.shared.MediumPurple
 import com.talangraga.shared.PorcelainDark
 import com.talangraga.shared.RosePink
-import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.umrohmobile.ui.component.IconBlock
-import com.talangraga.umrohmobile.ui.section.CardInfoSection
 import com.talangraga.shared.utils.formatToIDR
+import com.talangraga.umrohmobile.presentation.home.SectionState
+import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
+import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.component.IconBlock
+import com.talangraga.umrohmobile.ui.component.TransactionItem
+import com.talangraga.umrohmobile.ui.section.CardInfoSection
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun TransactionSection(
+fun HomeInfoTransactionSection(
     modifier: Modifier = Modifier,
-    state: SectionState<List<TransactionEntity>>,
+    state: SectionState<List<TransactionUiData>>,
     onAddTransaction: () -> Unit,
     onClickSeeMore: () -> Unit
 ) {
@@ -119,7 +117,7 @@ fun TransactionSection(
                         endIconColor = RosePink
                     )
 
-                    TransactionSection(
+                    HomeInfoTransactionSection(
                         modifier = Modifier,
                         transactions = transactions,
                         onClickSeeMore = onClickSeeMore
@@ -131,9 +129,9 @@ fun TransactionSection(
 }
 
 @Composable
-fun TransactionSection(
+fun HomeInfoTransactionSection(
     modifier: Modifier = Modifier,
-    transactions: List<TransactionEntity>,
+    transactions: List<TransactionUiData>,
     onClickSeeMore: () -> Unit
 ) {
     Column(
@@ -298,7 +296,7 @@ fun PreviewEmptyTransactionSection() {
 @Composable
 fun PreviewTransactionSection() {
     val dummyTransactions = listOf(
-        TransactionEntity(
+        TransactionUiData(
             transactionId = 1,
             amount = 500000,
             transactionDate = "2025-08-29T22:15:00.000Z",
@@ -310,7 +308,7 @@ fun PreviewTransactionSection() {
             reportedBy = "Iqbal Fauzi",
             confirmedBy = ""
         ),
-        TransactionEntity(
+        TransactionUiData(
             transactionId = 2,
             amount = 250000,
             transactionDate = "2025-08-29T22:15:00.000Z",
@@ -322,7 +320,7 @@ fun PreviewTransactionSection() {
             reportedBy = "Iqbal Fauzi",
             confirmedBy = ""
         ),
-        TransactionEntity(
+        TransactionUiData(
             transactionId = 3,
             amount = 200000,
             transactionDate = "2025-08-29T22:15:00.000Z",
@@ -337,8 +335,8 @@ fun PreviewTransactionSection() {
     )
     TalangragaTheme(useDynamicColor = false) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            TransactionSection(transactions = dummyTransactions) {}
-            TransactionSection(transactions = emptyList()) {} // Preview for empty state
+            HomeInfoTransactionSection(transactions = dummyTransactions) {}
+            HomeInfoTransactionSection(transactions = emptyList()) {} // Preview for empty state
         }
     }
 }

@@ -96,7 +96,19 @@ android {
     }
     buildTypes {
         getByName("release") {
+            isMinifyEnabled = true
+        }
+        getByName("debug") {
             isMinifyEnabled = false
         }
     }
+//    flavorDimensions += "version"
+//    productFlavors {
+//        create("staging") {
+//            dimension = "version"
+//        }
+//        create("production") {
+//            dimension = "version"
+//        }
+//    }
 }

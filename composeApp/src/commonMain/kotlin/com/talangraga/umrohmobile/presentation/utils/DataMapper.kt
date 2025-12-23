@@ -1,7 +1,9 @@
 package com.talangraga.umrohmobile.presentation.utils
 
+import com.talangraga.data.local.database.model.TransactionEntity
 import com.talangraga.data.local.database.model.UserEntity
 import com.talangraga.data.network.model.response.UserResponse
+import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 
 fun UserResponse.toUiData(): UserUIData {
@@ -29,5 +31,20 @@ fun UserEntity.toUiData(): UserUIData {
         userType = userType,
         imageProfileUrl = imageProfileUrl,
         isActive = true,
+    )
+}
+
+fun TransactionEntity.toUIData(): TransactionUiData {
+    return TransactionUiData(
+        transactionId = transactionId,
+        amount = amount,
+        transactionDate = this.transactionDate,
+        statusTransaksi = this.statusTransaksi,
+        reportedDate = this.reportedDate,
+        buktiTransferUrl = this.buktiTransferUrl,
+        reportedBy = this.reportedBy,
+        confirmedBy = this.confirmedBy,
+        paymentType = this.paymentType,
+        paymentName = this.paymentName
     )
 }

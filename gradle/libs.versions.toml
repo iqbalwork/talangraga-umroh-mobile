@@ -33,6 +33,10 @@ runner = "1.7.0"
 core = "1.7.0"
 sqlDelight = "2.2.1"
 settings = "1.3.0"
+# Firebase
+gitlive = "2.4.0"
+
+google = "4.4.4"
 
 [libraries]
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
@@ -69,7 +73,7 @@ ktor-monitor-logging = { module = "ro.cosminmihu.ktor:ktor-monitor-logging", ver
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
-ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor"}
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 # Logging
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
@@ -80,14 +84,19 @@ navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-co
 
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
+# Firebase Gitlive
+firebase-app = { module = "dev.gitlive:firebase-app", version.ref = "gitlive" }
+firebase-analytic = { module = "dev.gitlive:firebase-analytics", version.ref = "gitlive" }
+firebase-crashlytic = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive"}
+
 # Database
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelight" }
 native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqlDelight" }
 runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqlDelight" }
 coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqlDelight" }
-multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings"}
-multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings"}
-multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings"}
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
+multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings" }
+multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -97,8 +106,9 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlinParcelize" }
-buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig"}
+buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
-sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight"}
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 kotzilla = { id = "io.kotzilla.kotzilla-plugin", version.ref = "kotzilla" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google" }
