@@ -11,8 +11,9 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotzilla)
-    alias(libs.plugins.google.services)
     alias(libs.plugins.buildKonfig)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.crashlytics)
 }
 
 buildkonfig {

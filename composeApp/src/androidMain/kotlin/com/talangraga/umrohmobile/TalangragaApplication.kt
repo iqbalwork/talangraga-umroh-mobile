@@ -1,9 +1,9 @@
 package com.talangraga.umrohmobile
 
 import android.app.Application
-import com.google.firebase.Firebase
-import com.google.firebase.initialize
 import com.talangraga.umrohmobile.di.initializeKoin
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.initialize
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.kotzilla.sdk.analytics.koin.analytics

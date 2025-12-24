@@ -2,6 +2,7 @@ import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -17,17 +18,28 @@ plugins {
 buildkonfig {
     packageName = "com.talangraga.data"
 
-    val stagingUrl = project.findProperty("stagingUrl") ?: ""
-    val productionUrl = project.findProperty("productionUrl") ?: ""
+    val secretPropertiesFile = rootProject.file("secret.properties")
+    val secretProperties = Properties().apply {
+        if (secretPropertiesFile.exists()) {
+            load(secretPropertiesFile.inputStream())
+        }
+    }
+
+//    val stagingBaseUrl = secretProperties["staging.baseUrl"] as? String ?: ""
+
+//    val stagingUrl = project.findProperty("stagingUrl") ?: ""
+    val stagingUrl = secretProperties["stagingUrl"] as? String ?: ""
+    val productionUrl = secretProperties["productionUrl"] as? String ?: ""
+//    val productionUrl = project.findProperty("productionUrl") ?: ""
 
     defaultConfigs {
         buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
+        buildConfigField(STRING, "BASE_URL", stagingUrl)
     }
     // flavor is passed as a first argument of defaultConfigs
     defaultConfigs("production") {
         buildConfigField(BOOLEAN, "IS_DEBUG", "false")
-        buildConfigField(STRING, "BASE_URL", "$productionUrl")
+        buildConfigField(STRING, "BASE_URL", productionUrl)
     }
 
 }
