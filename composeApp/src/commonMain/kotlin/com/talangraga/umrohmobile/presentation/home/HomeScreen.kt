@@ -6,17 +6,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,31 +22,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
-import com.talangraga.umrohmobile.data.local.database.model.UserEntity
+import com.talangraga.data.local.database.model.PeriodEntity
+import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.presentation.home.section.HomeInfoTransactionSection
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
 import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
-import com.talangraga.umrohmobile.presentation.home.section.TransactionSection
-import com.talangraga.umrohmobile.presentation.navigation.HomeRoute
-import com.talangraga.umrohmobile.presentation.navigation.ListUserRoute
-import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
-import com.talangraga.umrohmobile.presentation.navigation.MainRoute
-import com.talangraga.umrohmobile.presentation.navigation.UserRoute
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
-import com.talangraga.umrohmobile.ui.Green
-import com.talangraga.umrohmobile.ui.component.TextButton
-import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
-import com.talangraga.umrohmobile.util.INDONESIA_TRIMMED
-import com.talangraga.umrohmobile.util.formatDateRange
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -60,12 +43,12 @@ fun HomeScreen(
     navHostController: NavHostController,
     rootNavHostController: NavHostController,
     justLogin: Boolean,
+    onNavigateToTransaction: () -> Unit,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
 
     val periods by viewModel.periods.collectAsStateWithLifecycle()
     val userType by viewModel.userType.collectAsStateWithLifecycle()
-    val role by viewModel.role.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
@@ -75,35 +58,25 @@ fun HomeScreen(
 
     HomeContent(
         userType = userType.orEmpty(),
-        role = role,
         onUserTypeChange = viewModel::setUserType,
         periods = periods,
+        selectedPeriod = viewModel.selectedPeriod.value,
         uiState = uiState,
         errorMessage = errorMessage.orEmpty(),
-        selectedPeriod = viewModel.selectedPeriod.value,
         onPeriodChange = {
             viewModel.setSelectedPeriod(it)
-            viewModel.getTransactions(it.periodId)
-        },
-        onUserCLick = {
-            navHostController.navigate(UserRoute(user = it, isLoginUser = true)) {
-                launchSingleTop = true
-                restoreState = true
-            }
-        },
-        onListUserClick = {
-            navHostController.navigate(ListUserRoute) {
-                launchSingleTop = true
-                restoreState = true
-            }
+            viewModel.getTransactions(it?.periodId)
         },
         onFetchProfile = viewModel::getProfile,
-        onSeeMoreTransaction = { },
+        onSeeMoreTransaction = onNavigateToTransaction,
         onAddTransaction = { },
+        onFetchAllTransaction = {
+            viewModel.getTransactions()
+        },
     ) {
         viewModel.clearSession()
-        rootNavHostController.navigate(LoginRoute) {
-            popUpTo(MainRoute.route) {
+        rootNavHostController.navigate(Screen.LoginRoute) {
+            popUpTo(Screen.MainRoute.route) {
                 inclusive = true
             }
         }
@@ -114,23 +87,21 @@ fun HomeScreen(
 @Composable
 fun HomeContent(
     userType: String,
-    role: String,
     onUserTypeChange: (String) -> Unit,
     periods: List<PeriodEntity>,
+    selectedPeriod: PeriodEntity?,
     uiState: HomeUiState,
     errorMessage: String,
-    selectedPeriod: PeriodEntity?,
-    onPeriodChange: (PeriodEntity) -> Unit,
+    onPeriodChange: (PeriodEntity?) -> Unit,
     onSeeMoreTransaction: () -> Unit,
     onAddTransaction: () -> Unit,
-    onUserCLick: (UserUIData) -> Unit,
-    onListUserClick: () -> Unit,
     onFetchProfile: () -> Unit,
+    onFetchAllTransaction: () -> Unit,
     onLogout: () -> Unit
 ) {
 
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var period by remember { mutableStateOf<PeriodEntity?>(null) }
+    val refreshState = rememberPullToRefreshState()
 
     val userTypeSheetState = rememberModalBottomSheetState()
     val userTypeScope = rememberCoroutineScope()
@@ -159,19 +130,6 @@ fun HomeContent(
     }
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { },
-                shape = CircleShape,
-                containerColor = Green
-            ) {
-                Icon(
-                    Icons.Filled.Add,
-                    contentDescription = "Add Transaction, User, or Period",
-                    tint = Color.White
-                )
-            }
-        },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         }
@@ -195,55 +153,67 @@ fun HomeContent(
                 periods = periods,
                 onBottomSheetChange = { periodShowBottomSheet = it },
                 onChoosePeriod = {
-                    period = it
                     onPeriodChange(it)
                 }
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.background(color = MaterialTheme.colorScheme.background)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        PullToRefreshBox(
+            isRefreshing = uiState.isLoading,
+            onRefresh = {
+                onFetchProfile()
+                if (selectedPeriod != null) {
+                    onPeriodChange(selectedPeriod)
+                } else {
+                    onFetchAllTransaction()
+                }
+            },
+            state = refreshState,
+            modifier = Modifier
         ) {
-            item {
-                ProfileSection(
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(top = paddingValues.calculateTopPadding()),
-                    userType = userType,
-                    role = role,
-                    state = uiState.profile,
-                    onListUserClick = onListUserClick,
-                    onShowUserTypeSheet = { userTypeShowBottomSheet = true },
-                    onRetry = onFetchProfile,
-                    onLogout = { showLogoutDialog = true },
-                    onClickUser = onUserCLick
-                )
-            }
+            LazyColumn(
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    ProfileSection(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(top = paddingValues.calculateTopPadding()),
+                        userType = userType,
+                        state = uiState.profile,
+                        onRetry = onFetchProfile,
+                        onLogout = { showLogoutDialog = true },
+                    )
+                }
 
-            item {
-                PeriodSection(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    period = period,
-                    onClickAll = {
-                        period = null
-                    },
-                    onShowPeriodSheet = { periodShowBottomSheet = true }
-                )
-            }
+                item {
+                    PeriodSection(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        period = selectedPeriod,
+                        onClickAll = {
+                            onPeriodChange(null)
+                            onFetchAllTransaction()
+                        },
+                        onShowPeriodSheet = { periodShowBottomSheet = true }
+                    )
+                }
 
-            item {
-                TransactionSection(
-                    modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-                    state = uiState.transactions,
-                    onAddTransaction = onAddTransaction,
-                    onClickSeeMore = onSeeMoreTransaction
-                )
+                item {
+                    HomeInfoTransactionSection(
+                        modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                        state = uiState.transactions,
+                        onAddTransaction = onAddTransaction,
+                        onClickSeeMore = onSeeMoreTransaction
+                    )
+                }
             }
         }
+
     }
 }
 
@@ -275,21 +245,14 @@ fun PreviewHomeContent() {
             )
         ),
         errorMessage = "",
-        onListUserClick = {},
         onFetchProfile = {},
         onLogout = {},
         onPeriodChange = {},
-        selectedPeriod = PeriodEntity(
-            periodId = 0,
-            "Bulan ke 1",
-            "2025-08-06",
-            "2025-09-05"
-        ),
         userType = "Admin",
         onUserTypeChange = { },
         onSeeMoreTransaction = { },
         onAddTransaction = { },
-        role = "",
-        onUserCLick = {},
+        onFetchAllTransaction = {},
+        selectedPeriod = null,
     )
 }

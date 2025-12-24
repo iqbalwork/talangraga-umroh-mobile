@@ -3,16 +3,16 @@ package com.talangraga.umrohmobile.presentation.home
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
-import com.talangraga.umrohmobile.data.local.session.Session
-import com.talangraga.umrohmobile.data.local.session.SessionKey
-import com.talangraga.umrohmobile.data.local.session.TokenManager
-import com.talangraga.umrohmobile.data.mapper.toUserEntity
-import com.talangraga.umrohmobile.data.network.api.Result
-import com.talangraga.umrohmobile.domain.repository.Repository
+import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.database.model.PeriodEntity
+import com.talangraga.data.local.session.Session
+import com.talangraga.data.local.session.TokenManager
+import com.talangraga.data.network.api.Result
+import com.talangraga.shared.utils.currentDate
+import com.talangraga.shared.utils.isDateInRange
+import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
+import com.talangraga.umrohmobile.presentation.utils.toUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
-import com.talangraga.umrohmobile.util.currentDate
-import com.talangraga.umrohmobile.util.isDateInRange
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,20 +33,22 @@ class HomeViewModel(
     private val _periods = MutableStateFlow<List<PeriodEntity>>(emptyList())
     val periods = _periods.asStateFlow()
 
+    private val _transactions = MutableStateFlow<List<TransactionUiData>>(emptyList())
+    val transactions = _transactions.asStateFlow()
+
     private val _userType = MutableStateFlow<String?>(null)
     val userType: StateFlow<String?> = _userType.asStateFlow()
 
-    private val _role = MutableStateFlow("")
-    val role = _role.asStateFlow()
-
     private var isProfileInitialized = false
+
     val selectedPeriod = mutableStateOf<PeriodEntity?>(null)
 
     private val _uiState = MutableStateFlow(
         HomeUiState(
             profile = SectionState.Loading,
             periods = SectionState.Loading,
-            transactions = SectionState.Loading
+            transactions = SectionState.Loading,
+            isLoading = true
         )
     )
 
@@ -84,7 +86,6 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        _role.update { response.data.userType.orEmpty() }
                         _uiState.update { it.copy(profile = SectionState.Success(response.data.toUiData())) }
                         getLocalProfile()
                     }
@@ -100,7 +101,6 @@ class HomeViewModel(
             if (profile?.username.isNullOrBlank()) {
                 getProfile()
             } else {
-                _role.update { profile.userType.orEmpty() }
                 _uiState.update { it.copy(profile = SectionState.Success(profile.toUiData())) }
                 if (_userType.value.isNullOrBlank()) {
                     _userType.update { profile.userType }
@@ -110,17 +110,22 @@ class HomeViewModel(
     }
 
     fun getPeriods() {
-        _uiState.update { it.copy(periods = SectionState.Loading) }
+        _uiState.update { it.copy(periods = SectionState.Loading, isLoading = true) }
         repository.getPeriods()
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-//                        _uiState.update { it.copy(periods = SectionState.Error(result.t.message.orEmpty())) }
+                        _uiState.update { it.copy(isLoading = false) }
                         _errorMessage.update { result.t.message }
                     }
 
                     is Result.Success -> {
-                        _uiState.update { it.copy(periods = SectionState.Success(result.data)) }
+                        _uiState.update {
+                            it.copy(
+                                periods = SectionState.Success(result.data),
+                                isLoading = false
+                            )
+                        }
                         _periods.update { result.data }
 
                         if (selectedPeriod.value == null) {
@@ -135,15 +140,13 @@ class HomeViewModel(
         // This function will run only once when periods are first fetched
         val currentPeriod = periods.find { data ->
             currentDate.isDateInRange(data.startDate, data.endDate)
-        } ?: periods.firstOrNull()
+        }
 
         setSelectedPeriod(currentPeriod)
-        currentPeriod?.let {
-            getTransactions(it.periodId)
-        }
+        getTransactions(currentPeriod?.periodId)
     }
 
-    fun getTransactions(periodId: Int) {
+    fun getTransactions(periodId: Int? = null) {
         _uiState.update { it.copy(transactions = SectionState.Loading) }
         repository.getTransactions(periodId)
             .onEach { result ->
@@ -153,7 +156,8 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        val data = result.data
+                        val data = result.data.map { it.toUIData() }
+                        _transactions.update { data }
                         _uiState.update { it.copy(transactions = SectionState.Success(data)) }
                     }
                 }

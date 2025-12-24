@@ -1,6 +1,5 @@
 package com.talangraga.umrohmobile.presentation.user
 
-import com.talangraga.umrohmobile.data.local.database.model.UserEntity
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 
 sealed class ListUserUiState {

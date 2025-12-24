@@ -44,10 +44,10 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.talangraga.shared.Sage
+import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
-import com.talangraga.umrohmobile.ui.Sage
 import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.TalangragaTypography
 import com.talangraga.umrohmobile.ui.ThemeManager
 import com.talangraga.umrohmobile.ui.ThemeMode
 import com.talangraga.umrohmobile.ui.component.BasicImage
@@ -63,6 +63,7 @@ fun ProfileScreen(
     isLoginUser: Boolean,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
+
 
     val profile by viewModel.profile.collectAsStateWithLifecycle()
 
@@ -80,6 +81,7 @@ fun ProfileScreen(
         isDarkMode = isDarkTheme,
         isLoginUser = isLoginUser,
         user = profile,
+        themeManager = themeManager,
         onClickBack = { navHostController.popBackStack() }
     )
 }
@@ -90,6 +92,7 @@ fun ProfileContent(
     isDarkMode: Boolean,
     isLoginUser: Boolean,
     user: UserUIData?,
+    themeManager: ThemeManager?,
     onClickBack: () -> Unit
 ) {
     Scaffold(
@@ -242,10 +245,14 @@ fun ProfileContent(
                             }
                         )
 
-                        ThemeToggleScreen(Modifier.fillMaxWidth().constrainAs(switchRef) {
-                            start.linkTo(iconRef.start)
-                            top.linkTo(iconRef.bottom, 16.dp)
-                        })
+                        themeManager?.let {
+                            ThemeToggleScreen(
+                                themeManager = it,
+                                modifier = Modifier.fillMaxWidth().constrainAs(switchRef) {
+                                    start.linkTo(iconRef.start)
+                                    top.linkTo(iconRef.bottom, 16.dp)
+                                })
+                        }
 
 //                        Switch(
 //                            checked = isDarkMode,
@@ -298,7 +305,7 @@ fun UserInfoItem(icon: ImageVector, text: String) {
 }
 
 @Composable
-fun ThemeToggleScreen(modifier: Modifier, themeManager: ThemeManager = koinInject()) {
+fun ThemeToggleScreen(modifier: Modifier, themeManager: ThemeManager) {
     val themeMode by themeManager.themeMode.collectAsState()
 
     Column(
@@ -343,6 +350,7 @@ fun PreviewProfileContent() {
             onClickBack = { },
             isLoginUser = true,
             isDarkMode = false,
+            themeManager = null,
         )
     }
 }

@@ -9,6 +9,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.White
+import com.talangraga.shared.Background
+import com.talangraga.shared.Linen
+import com.talangraga.shared.LinenDark
+import com.talangraga.shared.MediumPurple
+import com.talangraga.shared.Porcelain
+import com.talangraga.shared.PorcelainDark
+import com.talangraga.shared.RosePink
+import com.talangraga.shared.Sage
+import com.talangraga.shared.SageDark
+import com.talangraga.shared.Sandstone
+import com.talangraga.shared.SandstoneDark
+import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.TextOnColor
+import com.talangraga.shared.TextSecondaryDark
 
 // 🌞 Light color scheme
 private val LightColors = lightColorScheme(

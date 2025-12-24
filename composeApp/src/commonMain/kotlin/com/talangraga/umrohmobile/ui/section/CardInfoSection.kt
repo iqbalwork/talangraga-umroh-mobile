@@ -7,7 +7,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
@@ -17,12 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.talangraga.umrohmobile.ui.Aqua
-import com.talangraga.umrohmobile.ui.Green
-import com.talangraga.umrohmobile.ui.Sage
+import com.talangraga.shared.Aqua
+import com.talangraga.shared.Green
+import com.talangraga.shared.Sage
 import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.TalangragaTypography
-import com.talangraga.umrohmobile.ui.TextOnColor
+import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.TextOnColor
 import com.talangraga.umrohmobile.ui.component.IconBlock
 import com.talangraga.umrohmobile.ui.component.TitleTextIcon
 import org.jetbrains.compose.ui.tooling.preview.Preview

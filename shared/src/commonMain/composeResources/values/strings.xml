@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="label_username_or_email">Username or Email</string>
+    <string name="search_username">Search Username</string>
+    <string name="password">Password</string>
+    <string name="show_password">Show Password</string>
+    <string name="hide_password">Hide Password</string>
+    <string name="input_here">Input here</string>
+    <string name="input_password_here">Input password here</string>
+    <string name="login">Login</string>
+</resources>

@@ -6,7 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -22,13 +25,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
-import com.talangraga.umrohmobile.ui.Background
-import com.talangraga.umrohmobile.ui.BorderColor
-import com.talangraga.umrohmobile.ui.Sage
-import com.talangraga.umrohmobile.ui.TalangragaTypography
-import com.talangraga.umrohmobile.ui.TextOnColor
-import com.talangraga.umrohmobile.ui.TextSecondaryDark
+import com.talangraga.shared.Background
+import com.talangraga.shared.BorderColor
+import com.talangraga.shared.Sage
+import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.TextOnColor
+import com.talangraga.shared.TextSecondaryDark
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -96,7 +98,7 @@ fun TextButtonOption(
     modifier: Modifier = Modifier,
     text: String,
     placeholder: String,
-    trailingIcon: ImageVector? = null,
+    trailingIcon: ImageVector? = Icons.Default.ArrowDropDown,
     onClick: () -> Unit
 ) {
     val backgroundColor = if (text.isNotBlank()) Sage else Background
@@ -104,7 +106,9 @@ fun TextButtonOption(
     val selectedTextColor = if (text.isNotBlank()) TextOnColor else TextSecondaryDark
     val roundedCornerShape = RoundedCornerShape(12.dp)
 
-    ConstraintLayout(
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
             .clip(roundedCornerShape)
             .clickable { onClick() }
@@ -112,42 +116,23 @@ fun TextButtonOption(
             .border(width = 1.dp, color = borderColor, shape = roundedCornerShape)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        val (textRef, iconRef) = createRefs()
 
-        val (displayText, displayColor) = if (text.isNotBlank()) {
-            text to selectedTextColor
-        } else {
-            placeholder to TextSecondaryDark
-        }
+        val label = text.ifBlank { placeholder }
 
         Text(
-            text = displayText,
-            style = TalangragaTypography.bodyMedium.copy(color = displayColor),
+            text = label,
+            style = TalangragaTypography.bodyMedium.copy(color = selectedTextColor),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.constrainAs(textRef) {
-                start.linkTo(parent.start)
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                if (trailingIcon != null) {
-                    end.linkTo(iconRef.start, 8.dp)
-                } else {
-                    end.linkTo(parent.end)
-                }
-                width = Dimension.fillToConstraints
-            }
+            modifier = Modifier
         )
-
+        Spacer(Modifier.width(12.dp))
         trailingIcon?.let {
             Icon(
                 imageVector = it,
                 contentDescription = null,
                 tint = selectedTextColor,
-                modifier = Modifier.constrainAs(iconRef) {
-                    end.linkTo(parent.end)
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                }
+                modifier = Modifier
             )
         }
     }
@@ -172,5 +157,11 @@ fun TextRoundedPreview() {
                 modifier = Modifier.weight(1f)
             ) { }
         }
+        TextButtonOption(
+            text = "",
+            placeholder = "Pilih Bulan",
+            trailingIcon = Icons.Default.ArrowDropDown,
+            modifier = Modifier.fillMaxWidth().padding(8.dp)
+        ) { }
     }
 }

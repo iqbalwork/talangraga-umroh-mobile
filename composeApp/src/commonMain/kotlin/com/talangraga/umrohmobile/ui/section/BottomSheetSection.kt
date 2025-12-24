@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.talangraga.umrohmobile.data.local.database.model.PeriodEntity
+import com.talangraga.data.local.database.model.PeriodEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
