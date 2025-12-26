@@ -121,6 +121,8 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
             implementation(libs.ktor.client.mock)
+            implementation(libs.assertk)
+            implementation(libs.turbine)
         }
     }
 }

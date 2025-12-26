@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.session.Session
-import com.talangraga.data.local.session.TokenManager
+import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
 import com.talangraga.shared.utils.currentDate
 import com.talangraga.shared.utils.isDateInRange

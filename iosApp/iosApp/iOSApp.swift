@@ -16,7 +16,6 @@ struct iOSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     init() {
-        FirebaseApp.configure()
         LoggerKt.debugBuild()
     }
 

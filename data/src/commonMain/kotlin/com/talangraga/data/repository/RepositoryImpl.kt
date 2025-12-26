@@ -6,6 +6,7 @@ import com.talangraga.data.mapper.toPaymentEntity
 import com.talangraga.data.mapper.toPeriodEntity
 import com.talangraga.data.mapper.toTransactionEntity
 import com.talangraga.data.mapper.toUserEntity
+import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
 import com.talangraga.data.network.model.response.DataResponse
 import com.talangraga.data.network.model.response.TokenResponse
@@ -25,7 +26,7 @@ class RepositoryImpl(
     private val apiService: com.talangraga.data.network.api.ApiService,
     private val json: Json,
     private val session: com.talangraga.data.local.session.Session,
-    private val tokenManager: com.talangraga.data.local.session.TokenManager,
+    private val tokenManager: TokenManager,
     private val databaseHelper: com.talangraga.data.local.database.DatabaseHelper
 ) : Repository {
 
@@ -102,8 +103,8 @@ class RepositoryImpl(
                 apiService.login(identifier, password)
             },
             onSuccess = { token ->
-                tokenManager.saveAccessToken(token.accessToken)
-                tokenManager.saveRefreshToken(token.refreshToken)
+                tokenManager.saveAccessToken(token.accessToken.orEmpty())
+                tokenManager.saveRefreshToken(token.refreshToken.orEmpty())
                 token.userResponse?.let {
                     session.saveProfile(token.userResponse)
                     session.saveBoolean(SessionKey.IS_LOGGED_IN, true)
