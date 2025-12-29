@@ -50,10 +50,12 @@ class RefreshTokenHandler(
                 return BearerTokens(accessToken = newAccessToken, refreshToken = refreshToken)
             } else {
                 Napier.e("❌ Failed to parse new access token")
+                tokenManager.logout()
                 return null
             }
         } else {
             Napier.e("❌ Refresh request failed: ${response.status}")
+            tokenManager.logout()
             return null
         }
 
