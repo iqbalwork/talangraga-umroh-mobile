@@ -12,6 +12,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
@@ -20,6 +21,7 @@ import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.main.MainScreen
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen
+import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionScreen
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ThemeManager
 import com.talangraga.umrohmobile.ui.ThemeMode
@@ -85,6 +87,11 @@ fun App() {
                     MainScreen(
                         rootNavHostController = rootNavController
                     )
+                }
+
+                composable<Screen.AddTransactionRoute> { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.AddTransactionRoute>()
+                    AddTransactionScreen(rootNavController, args.isCollective)
                 }
             }
 
