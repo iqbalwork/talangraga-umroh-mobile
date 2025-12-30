@@ -1,12 +1,19 @@
 package com.talangraga.data.repository
 
 import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.database.DatabaseHelper
+import com.talangraga.data.local.database.model.PaymentEntity
+import com.talangraga.data.local.database.model.PeriodEntity
+import com.talangraga.data.local.database.model.TransactionEntity
+import com.talangraga.data.local.database.model.UserEntity
+import com.talangraga.data.local.session.Session
 import com.talangraga.data.local.session.SessionKey
 import com.talangraga.data.mapper.toPaymentEntity
 import com.talangraga.data.mapper.toPeriodEntity
 import com.talangraga.data.mapper.toTransactionEntity
 import com.talangraga.data.mapper.toUserEntity
 import com.talangraga.data.network.TokenManager
+import com.talangraga.data.network.api.ApiService
 import com.talangraga.data.network.api.Result
 import com.talangraga.data.network.model.response.DataResponse
 import com.talangraga.data.network.model.response.TokenResponse
@@ -23,15 +30,15 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class RepositoryImpl(
-    private val apiService: com.talangraga.data.network.api.ApiService,
+    private val apiService: ApiService,
     private val json: Json,
-    private val session: com.talangraga.data.local.session.Session,
+    private val session: Session,
     private val tokenManager: TokenManager,
-    private val databaseHelper: com.talangraga.data.local.database.DatabaseHelper
+    private val databaseHelper: DatabaseHelper
 ) : Repository {
 
     inline fun <T> safeApiCall(
-        crossinline apiCall: suspend () -> com.talangraga.data.network.model.response.DataResponse<T>,
+        crossinline apiCall: suspend () -> DataResponse<T>,
         crossinline onSuccess: suspend (T) -> Unit = {}
     ): Flow<Result<T>> = flow {
         try {
@@ -122,7 +129,7 @@ class RepositoryImpl(
         )
     }
 
-    override fun getListUsers(): Flow<Result<List<com.talangraga.data.local.database.model.UserEntity>>> {
+    override fun getListUsers(): Flow<Result<List<UserEntity>>> {
         return networkBoundResource(
             query = { databaseHelper.getAllUsersAsFlow() },
             fetch = { apiService.getListUsers() },
@@ -142,7 +149,22 @@ class RepositoryImpl(
         )
     }
 
-    override fun getPeriods(): Flow<Result<List<com.talangraga.data.local.database.model.PeriodEntity>>> {
+    override fun getLocalUsers(): Flow<Result<List<UserEntity>>> {
+        return flow {
+            try {
+                val cache = databaseHelper.getAllUsers()
+                if (cache.isNotEmpty()) {
+                    emit(Result.Success(cache))
+                } else {
+                    apiService.getListUsers()
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }
+    }
+
+    override fun getPeriods(): Flow<Result<List<PeriodEntity>>> {
         return networkBoundResource(
             query = { databaseHelper.getAllPeriodsAsFlow() },
             fetch = { apiService.getPeriods() },
@@ -165,7 +187,7 @@ class RepositoryImpl(
         periodId: Int?,
         status: String?,
         paymentId: Int?
-    ): Flow<Result<List<com.talangraga.data.local.database.model.TransactionEntity>>> {
+    ): Flow<Result<List<TransactionEntity>>> {
         return networkBoundResource(
             query = { databaseHelper.getAllTransactionsAsFlow() },
             fetch = { apiService.getTransactions(periodId, status, paymentId) },
@@ -188,7 +210,7 @@ class RepositoryImpl(
     }
 
     // SQL Delight
-    override fun getPayments(): Flow<Result<List<com.talangraga.data.local.database.model.PaymentEntity>>> {
+    override fun getPayments(): Flow<Result<List<PaymentEntity>>> {
         return networkBoundResource(
             query = { databaseHelper.getAllPaymentsAsFlow() },
             fetch = { apiService.getPayments() },

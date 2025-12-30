@@ -69,7 +69,9 @@ fun HomeScreen(
         },
         onFetchProfile = viewModel::getProfile,
         onSeeMoreTransaction = onNavigateToTransaction,
-        onAddTransaction = { },
+        onAddTransaction = {
+            rootNavHostController.navigate(Screen.AddTransactionRoute(false))
+        },
         onFetchAllTransaction = {
             viewModel.getTransactions()
         },

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.HomeScreen
 
 @Composable
@@ -14,9 +15,9 @@ fun HomeNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home_screen"
+        startDestination = Screen.BottomNavItem.HOME
     ) {
-        composable("home_screen") {
+        composable(Screen.BottomNavItem.HOME) {
             HomeScreen(
                 navHostController = navController,
                 rootNavHostController = rootNavController,

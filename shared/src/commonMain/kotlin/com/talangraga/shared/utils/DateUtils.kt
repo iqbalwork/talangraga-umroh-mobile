@@ -116,6 +116,35 @@ fun LocalDate.isDateInRange(
     }
 }
 
+fun LocalDate.toIndonesianDateFormat(): String {
+    val dayOfWeek = when (this.dayOfWeek.name) {
+        "MONDAY" -> "Senin"
+        "TUESDAY" -> "Selasa"
+        "WEDNESDAY" -> "Rabu"
+        "THURSDAY" -> "Kamis"
+        "FRIDAY" -> "Jumat"
+        "SATURDAY" -> "Sabtu"
+        "SUNDAY" -> "Minggu"
+        else -> ""
+    }
+    val month = when (this.month.number) {
+        1 -> "Januari"
+        2 -> "Februari"
+        3 -> "Maret"
+        4 -> "April"
+        5 -> "Mei"
+        6 -> "Juni"
+        7 -> "Juli"
+        8 -> "Agustus"
+        9 -> "September"
+        10 -> "Oktober"
+        11 -> "November"
+        12 -> "Desember"
+        else -> ""
+    }
+    return "$dayOfWeek, ${this.dayOfMonth} $month ${this.year}"
+}
+
 @OptIn(ExperimentalTime::class)
 val currentDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
 

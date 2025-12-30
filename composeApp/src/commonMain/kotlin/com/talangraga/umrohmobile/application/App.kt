@@ -5,22 +5,27 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
+import com.talangraga.data.network.TokenManager
 import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.main.MainScreen
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen
+import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionScreen
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ThemeManager
 import com.talangraga.umrohmobile.ui.ThemeMode
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 
@@ -29,6 +34,7 @@ import org.koin.compose.koinInject
 fun App() {
 
     val themeManager: ThemeManager = koinInject()
+    val tokenManager: TokenManager = koinInject()
     val themeMode by themeManager.themeMode.collectAsState()
 
     val systemDark = isSystemInDarkTheme()
@@ -40,6 +46,14 @@ fun App() {
 
     // NavController (Top-level)
     val rootNavController = rememberNavController()
+
+    LaunchedEffect(Unit) {
+        tokenManager.logoutEvent.collectLatest {
+            rootNavController.navigate(Screen.LoginRoute) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
     Crossfade(targetState = systemDark, animationSpec = tween(400)) {
         TalangragaTheme(
@@ -73,6 +87,11 @@ fun App() {
                     MainScreen(
                         rootNavHostController = rootNavController
                     )
+                }
+
+                composable<Screen.AddTransactionRoute> { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.AddTransactionRoute>()
+                    AddTransactionScreen(rootNavController, args.isCollective)
                 }
             }
 

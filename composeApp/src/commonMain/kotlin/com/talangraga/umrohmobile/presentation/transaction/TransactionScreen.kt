@@ -36,6 +36,7 @@ import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
+import com.talangraga.shared.navigation.Screen
 import com.talangraga.shared.utils.INDONESIA_TRIMMED
 import com.talangraga.shared.utils.formatDateRange
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
@@ -60,9 +61,12 @@ fun TransactionScreen(
         period = homeViewModel.selectedPeriod.value,
         onPeriodChange = homeViewModel::setSelectedPeriod,
         transactions = transactions,
-        onClickAll = {}, onShowPeriodSheet = {},
+        onClickAll = {},
+        onShowPeriodSheet = {},
         onFetchAllTransaction = { }
-    )
+    ) {
+        rootNavController.navigate(Screen.AddTransactionRoute(isCollective = true))
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,7 +77,8 @@ fun TransactionContent(
     transactions: List<TransactionUiData>,
     onFetchAllTransaction: () -> Unit,
     onClickAll: () -> Unit,
-    onShowPeriodSheet: () -> Unit
+    onShowPeriodSheet: () -> Unit,
+    onAddTransaction: () -> Unit,
 ) {
 
     Scaffold(
@@ -160,7 +165,7 @@ fun TransactionContent(
                     }
                 ) {
                     EmptyTransaction(modifier = Modifier) {
-                        // handle add transaction here
+                        onAddTransaction()
                     }
                 }
 
@@ -190,7 +195,7 @@ fun TransactionContent(
 
             if (transactions.isNotEmpty()) {
                 FloatingActionButton(
-                    onClick = { },
+                    onClick = { onAddTransaction() },
                     containerColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.BottomEnd)
                         .padding(bottom = 16.dp, end = 16.dp)
@@ -216,6 +221,8 @@ fun TransactionContentPreview() {
             onFetchAllTransaction = { },
             period = null,
             onPeriodChange = { }
-        )
+        ) {
+
+        }
     }
 }

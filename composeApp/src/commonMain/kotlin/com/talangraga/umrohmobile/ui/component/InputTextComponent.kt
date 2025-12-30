@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Security
@@ -14,6 +16,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,12 +27,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.shared.Background
+import com.talangraga.shared.BorderColor
+import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
+import com.talangraga.umrohmobile.ui.TalangragaTheme
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import talangragaumrohmobile.composeapp.generated.resources.Res
@@ -92,6 +102,97 @@ fun InputText(
     }
 }
 
+@Composable
+fun CurrencyInputText(
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    enabled: Boolean = true,
+    backgroundColor: Color = Background
+) {
+    val borderColor = if (value.isNotBlank()) Sage else BorderColor
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start
+    ) {
+        title?.let {
+            Text(
+                text = title,
+                style = TalangragaTypography.titleSmall,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = { newValue ->
+                if (newValue.all { it.isDigit() }) {
+                    onValueChange(newValue)
+                }
+            },
+            placeholder = {
+                Text(placeholder)
+            },
+            singleLine = true,
+            enabled = enabled,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            visualTransformation = CurrencyVisualTransformation(),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = borderColor,
+                unfocusedBorderColor = BorderColor
+            ),
+            modifier = Modifier.fillMaxWidth().background(color = backgroundColor)
+        )
+    }
+}
+
+class CurrencyVisualTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val originalText = text.text
+        if (originalText.isEmpty()) {
+            return TransformedText(text, OffsetMapping.Identity)
+        }
+
+        val formattedText = formatCurrency(originalText)
+        val newText = AnnotatedString(formattedText)
+
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                if (offset <= 0) return 0
+                val original = originalText.take(offset)
+                val formatted = formatCurrency(original)
+                return formatted.length
+            }
+
+            override fun transformedToOriginal(offset: Int): Int {
+                if (offset <= 0) return 0
+                val formatted = formattedText.take(offset)
+                val original = formatted.replace(".", "").replace("Rp ", "")
+                return original.length.coerceAtMost(originalText.length)
+            }
+        }
+
+        return TransformedText(newText, offsetMapping)
+    }
+
+    private fun formatCurrency(text: String): String {
+        if (text.isEmpty()) return ""
+        val reversed = text.reversed()
+        val formatted = StringBuilder()
+        for (i in reversed.indices) {
+            formatted.append(reversed[i])
+            if ((i + 1) % 3 == 0 && i != reversed.lastIndex) {
+                formatted.append(".")
+            }
+        }
+        return "Rp " + formatted.reverse().toString()
+    }
+}
+
 @Preview
 @Composable
 fun InputTextPreview() {
@@ -104,6 +205,21 @@ fun InputTextPreview() {
             onValueChange = { text = it },
             placeholder = "Enter your username or email",
             leadingIcon = Icons.Default.AccountCircle
+        )
+    }
+}
+
+@Preview
+@Composable
+fun CurrencyInputTextPreview() {
+    var text by remember { mutableStateOf("") }
+    TalangragaTheme {
+        CurrencyInputText(
+            modifier = Modifier.padding(16.dp),
+            title = "Jumlah Tabungan",
+            value = text,
+            onValueChange = { text = it },
+            placeholder = "Rp xxx.xxx.xxx"
         )
     }
 }
