@@ -46,9 +46,11 @@ fun MainScreen(rootNavHostController: NavHostController) {
     // However, since we are using Type-Safe navigation, 'route' property might be null or complex string.
     // A simpler way with type safe nav is checking the destination class name if available or similar logic.
     // For now, let's assume standard behavior where nested destinations are identifiable.
-    
+
     // Actually, simply checking if we are NOT at start destination of Member tab
-    val isMemberTabDetails = memberCurrentRoute?.contains(Screen.AddUserRoute::class.simpleName ?: "AddUserRoute") == true
+    val isMemberTabDetails = memberCurrentRoute?.contains(
+        Screen.AddUserRoute::class.simpleName ?: "AddUserRoute"
+    ) == true
 
     val showBottomBar = !isMemberTabDetails
 
@@ -88,7 +90,10 @@ fun MainScreen(rootNavHostController: NavHostController) {
                     rootNavController = rootNavHostController
                 )
 
-                BottomNavRoute.Profile -> ProfileNavHost(navController = profileNav)
+                BottomNavRoute.Profile -> ProfileNavHost(
+                    rootNavController = rootNavHostController,
+                    navController = profileNav
+                )
             }
         }
     }

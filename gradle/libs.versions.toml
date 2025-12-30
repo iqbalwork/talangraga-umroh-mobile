@@ -23,6 +23,8 @@ ktor = "3.3.2"
 ktorMonitorLogging = "1.7.5"
 materialIconsExtended = "1.7.3"
 navigationCompose = "2.9.1"
+easyMediaPicker = "2.2.0"
+imagePickerKMP = "1.0.28"
 
 kotlinx-coroutines = "1.10.2"
 kotlinParcelize = "2.2.21"
@@ -88,13 +90,13 @@ napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 # UI
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-
+image-picker-kmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "imagePickerKMP" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 # Firebase Gitlive
 firebase-app = { module = "dev.gitlive:firebase-app", version.ref = "gitlive" }
 firebase-analytic = { module = "dev.gitlive:firebase-analytics", version.ref = "gitlive" }
-firebase-crashlytic = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive"}
+firebase-crashlytic = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive" }
 
 # Database
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelight" }
@@ -119,4 +121,4 @@ android-lint = { id = "com.android.lint", version.ref = "agp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 kotzilla = { id = "io.kotzilla.kotzilla-plugin", version.ref = "kotzilla" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google" }
-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics"}
+crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }

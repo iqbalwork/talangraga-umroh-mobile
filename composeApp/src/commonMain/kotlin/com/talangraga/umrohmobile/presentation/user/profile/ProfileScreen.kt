@@ -1,37 +1,53 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package com.talangraga.umrohmobile.presentation.user.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,29 +57,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.talangraga.shared.AccentRed
+import com.talangraga.shared.Red
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ThemeManager
 import com.talangraga.umrohmobile.ui.ThemeMode
+import com.talangraga.umrohmobile.ui.ToastManager
 import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.IconBlock
+import com.talangraga.umrohmobile.ui.component.ToastType
+import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import talangragaumrohmobile.composeapp.generated.resources.Res
+import talangragaumrohmobile.composeapp.generated.resources.logout
 
 @Composable
 fun ProfileScreen(
+    rootNavHostController: NavHostController,
     navHostController: NavHostController,
     user: UserUIData?,
     isLoginUser: Boolean,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
-
 
     val profile by viewModel.profile.collectAsStateWithLifecycle()
 
@@ -82,6 +112,14 @@ fun ProfileScreen(
         isLoginUser = isLoginUser,
         user = profile,
         themeManager = themeManager,
+        onLogout = {
+            viewModel.clearSession()
+            rootNavHostController.navigate(Screen.LoginRoute) {
+                popUpTo(Screen.MainRoute.route) {
+                    inclusive = true
+                }
+            }
+        },
         onClickBack = { navHostController.popBackStack() }
     )
 }
@@ -93,9 +131,131 @@ fun ProfileContent(
     isLoginUser: Boolean,
     user: UserUIData?,
     themeManager: ThemeManager?,
+    onLogout: () -> Unit,
     onClickBack: () -> Unit
 ) {
-    Scaffold(
+
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showImagePickerSheet by remember { mutableStateOf(false) }
+    val imagePickerSheetState = rememberModalBottomSheetState()
+
+    var imagePickerMessage by remember { mutableStateOf<String?>(null) }
+    var showGallery by remember { mutableStateOf(false) }
+    var showCamera by remember { mutableStateOf(false) }
+
+    var capturedPhoto by remember { mutableStateOf<PhotoResult?>(null) }
+    var selectedImagesFile by remember { mutableStateOf<List<GalleryPhotoResult>>(emptyList()) }
+    var selectedImage by remember { mutableStateOf(user?.imageProfileUrl.orEmpty()) }
+
+    LaunchedEffect(capturedPhoto) {
+        if (capturedPhoto != null) {
+            selectedImage = capturedPhoto?.uri.orEmpty()
+        }
+    }
+
+    LaunchedEffect(selectedImagesFile) {
+        if (selectedImagesFile.isNotEmpty()) {
+            selectedImage = selectedImagesFile.first().uri
+        }
+    }
+
+    LaunchedEffect(imagePickerMessage) {
+        if (!imagePickerMessage.isNullOrEmpty()) {
+            ToastManager.show(message = imagePickerMessage.orEmpty(), type = ToastType.Error)
+            imagePickerMessage = null
+        }
+    }
+
+    if (showCamera) {
+        ImagePickerLauncher(
+            config = ImagePickerConfig(
+                onPhotoCaptured = {
+                    capturedPhoto = it
+                    showCamera = false
+                    showGallery = false
+                },
+                onError = {
+                    imagePickerMessage = it.message.orEmpty()
+                    showCamera = false
+                    showGallery = false
+                }
+            )
+        )
+    }
+
+    if (showGallery) {
+        GalleryPickerLauncher(
+            onPhotosSelected = {
+                selectedImagesFile = it
+                showCamera = false
+                showGallery = false
+            },
+            onError = {
+                imagePickerMessage = it.message.orEmpty()
+                showCamera = false
+                showGallery = false
+            }
+        )
+    }
+
+    if (showLogoutDialog) {
+        LogoutDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            onConfirmLogout = {
+                showLogoutDialog = false
+                onLogout()
+            }
+        )
+    }
+
+    if (showImagePickerSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showImagePickerSheet = false },
+            sheetState = imagePickerSheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp, top = 16.dp, start = 16.dp, end = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("Pilih Sumber Gambar", style = MaterialTheme.typography.titleLarge)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showImagePickerSheet = false
+                            showCamera = true
+                            showGallery = false
+                        }
+                        .padding(vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(Icons.Default.CameraAlt, contentDescription = "Kamera")
+                    Text("Kamera")
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showImagePickerSheet = false
+                            showCamera = false
+                            showGallery = true
+                        }
+                        .padding(vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(Icons.Default.PhotoLibrary, contentDescription = "Galeri")
+                    Text("Galeri")
+                }
+            }
+        }
+    }
+
+    TalangragaScaffold(
+        contentWindowInsets = WindowInsets.statusBars,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -103,18 +263,6 @@ fun ProfileContent(
                     Text(text = title, style = TalangragaTypography.titleLarge)
                 },
                 modifier = Modifier,
-//                navigationIcon = {
-//                    IconButton(
-//                        onClick = onClickBack,
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                            contentDescription = null,
-//                            modifier = Modifier
-//                        )
-//                    }
-//
-//                },
                 actions = {
                     TextButton(onClick = { }) {
                         Text(
@@ -126,92 +274,92 @@ fun ProfileContent(
             )
         }
     ) { paddingValues ->
-        ConstraintLayout(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(16.dp)
         ) {
-            val (imageProfileRef, fullNameRef, usernameRef, cardInfoRef, themeRef) = createRefs()
+            item {
+                ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
+                    val (imageProfileRef, fullNameRef, usernameRef) = createRefs()
 
-            BasicImage(
-                model = user?.imageProfileUrl.orEmpty(),
-                modifier = Modifier
-                    .size(124.dp)
-                    .clip(CircleShape)
-                    .constrainAs(imageProfileRef) {
-                        top.linkTo(parent.top, 8.dp)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
-            )
+                    BasicImage(
+                        model = selectedImage,
+                        modifier = Modifier
+                            .size(124.dp)
+                            .clip(CircleShape)
+                            .constrainAs(imageProfileRef) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                            }
+                    )
 
-            Icon(
-                imageVector = Icons.Filled.CameraAlt,
-                contentDescription = null,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .border(width = 1.dp, color = Color.White, shape = CircleShape)
-                    .background(color = Color.White)
-                    .padding(2.dp)
-                    .border(width = 1.dp, color = Color.DarkGray, shape = CircleShape)
-                    .padding(4.dp)
-                    .constrainAs(createRef()) {
-                        end.linkTo(imageProfileRef.end, 4.dp)
-                        bottom.linkTo(imageProfileRef.bottom, 4.dp)
-                    }
-            )
+                    Icon(
+                        imageVector = Icons.Filled.CameraAlt,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clickable {
+                                showImagePickerSheet = true
+                            }
+                            .clip(CircleShape)
+                            .border(width = 1.dp, color = Color.White, shape = CircleShape)
+                            .background(color = Color.White)
+                            .padding(2.dp)
+                            .border(width = 1.dp, color = Color.DarkGray, shape = CircleShape)
+                            .padding(4.dp)
+                            .constrainAs(createRef()) {
+                                end.linkTo(imageProfileRef.end, 4.dp)
+                                bottom.linkTo(imageProfileRef.bottom, 4.dp)
+                            }
+                    )
 
-            Text(
-                text = user?.fullname.orEmpty(),
-                style = TalangragaTypography.titleLarge,
-                modifier = Modifier.constrainAs(fullNameRef) {
-                    top.linkTo(imageProfileRef.bottom, 8.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-            )
+                    Text(
+                        text = user?.fullname.orEmpty(),
+                        style = TalangragaTypography.titleLarge,
+                        modifier = Modifier.constrainAs(fullNameRef) {
+                            top.linkTo(imageProfileRef.bottom, 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
 
-            val username = "@${user?.username.orEmpty()}"
-            Text(
-                text = username,
-                modifier = Modifier.constrainAs(usernameRef) {
-                    top.linkTo(fullNameRef.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-            )
-
-            Card(
-                modifier = Modifier.constrainAs(cardInfoRef) {
-                    top.linkTo(usernameRef.bottom, 16.dp)
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-                    width = Dimension.fillToConstraints
-                },
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    UserInfoItem(icon = Icons.Filled.Phone, text = user?.phone.orEmpty())
-                    UserInfoItem(icon = Icons.Filled.Email, text = user?.email.orEmpty())
-                    UserInfoItem(icon = Icons.Filled.Place, text = user?.domicile.orEmpty())
+                    val username = "@${user?.username.orEmpty()}"
+                    Text(
+                        text = username,
+                        modifier = Modifier.constrainAs(usernameRef) {
+                            top.linkTo(fullNameRef.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    )
                 }
             }
 
-            if (isLoginUser) {
+            item {
                 Card(
-                    modifier = Modifier.padding(16.dp).constrainAs(themeRef) {
-                        top.linkTo(cardInfoRef.bottom, 8.dp)
-                        start.linkTo(parent.start, 16.dp)
-                        end.linkTo(parent.end, 16.dp)
-                    },
+                    modifier = Modifier,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        UserInfoItem(icon = Icons.Filled.Phone, text = user?.phone.orEmpty())
+                        UserInfoItem(icon = Icons.Filled.Email, text = user?.email.orEmpty())
+                        UserInfoItem(icon = Icons.Filled.Place, text = user?.domicile.orEmpty())
+                    }
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier,
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface
@@ -253,24 +401,35 @@ fun ProfileContent(
                                     top.linkTo(iconRef.bottom, 16.dp)
                                 })
                         }
+                    }
+                }
+            }
 
-//                        Switch(
-//                            checked = isDarkMode,
-//                            onCheckedChange = onDarkModeChange,
-//                            thumbContent = {
-//                                Icon(
-//                                    imageVector = if (isDarkMode) Icons.Filled.DarkMode else Icons.Filled.LightMode,
-//                                    contentDescription = null,
-//                                    modifier = Modifier
-//                                        .size(SwitchDefaults.IconSize)
-//                                )
-//                            },
-//                            modifier = Modifier.constrainAs(switchRef) {
-//                                end.linkTo(parent.end)
-//                                top.linkTo(parent.top)
-//                                bottom.linkTo(parent.bottom)
-//                            }
-//                        )
+            item {
+                Button(
+                    onClick = {
+                        // Show Logout Dialog
+                        showLogoutDialog = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentRed),
+                    border = BorderStroke(width = 1.dp, color = Red)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = "Logout",
+                            tint = Red,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = stringResource(Res.string.logout),
+                            modifier = Modifier.padding(horizontal = 8.dp),
+                            color = Red
+                        )
                     }
                 }
             }
@@ -351,6 +510,7 @@ fun PreviewProfileContent() {
             isLoginUser = true,
             isDarkMode = false,
             themeManager = null,
+            onLogout = {}
         )
     }
 }

@@ -104,6 +104,9 @@ kotlin {
             implementation(libs.firebase.analytic)
             implementation(libs.firebase.crashlytic)
 
+            // Media Picker
+            implementation(libs.image.picker.kmp)
+
             implementation(project(":data"))
             implementation(project(":shared"))
         }

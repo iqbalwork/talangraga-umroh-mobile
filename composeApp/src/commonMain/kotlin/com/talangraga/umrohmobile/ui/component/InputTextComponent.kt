@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -58,6 +59,8 @@ fun InputText(
     backgroundColor: Color = Color.White,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
+    keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.Unspecified,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     val borderColor = if (value.isNotBlank()) Sage else BorderColor
 
@@ -82,6 +85,10 @@ fun InputText(
             },
             singleLine = true,
             enabled = enabled,
+            keyboardOptions = KeyboardOptions(
+                capitalization = keyboardCapitalization,
+                keyboardType = keyboardType
+            ),
             leadingIcon = if (leadingIcon != null) {
                 {
                     Icon(

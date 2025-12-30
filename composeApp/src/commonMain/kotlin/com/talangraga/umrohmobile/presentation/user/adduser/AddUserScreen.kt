@@ -46,8 +46,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.shared.Background
@@ -166,18 +169,18 @@ fun AddUserContent(
             LazyColumn(
                 modifier = Modifier
                     .constrainAs(inputRef) {
-                        top.linkTo(parent.top, paddingValues.calculateTopPadding())
-                        bottom.linkTo(buttonRef.top)
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
+                        height = Dimension.fillToConstraints
                     }
             ) {
                 item {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 16.dp)
-                            .padding(bottom = 64.dp),
+                            .padding(horizontal = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Profile Image Placeholder
@@ -234,6 +237,7 @@ fun AddUserContent(
                             value = fullname,
                             onValueChange = onFullnameChange,
                             placeholder = "Masukkan nama lengkap",
+                            keyboardCapitalization = KeyboardCapitalization.Words,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -243,6 +247,7 @@ fun AddUserContent(
                             value = username,
                             onValueChange = onUsernameChange,
                             placeholder = "Masukkan nama pengguna",
+                            keyboardType = KeyboardType.Uri,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -252,6 +257,7 @@ fun AddUserContent(
                             value = phoneNumber,
                             onValueChange = onPhoneNumberChange,
                             placeholder = "Masukkan nomor telepon",
+                            keyboardType = KeyboardType.Number,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -261,6 +267,7 @@ fun AddUserContent(
                             value = email,
                             onValueChange = onEmailChange,
                             placeholder = "Masukkan email",
+                            keyboardType = KeyboardType.Email,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -270,6 +277,7 @@ fun AddUserContent(
                             value = domicile,
                             onValueChange = onDomicileChange,
                             placeholder = "Masukkan domisili",
+                            keyboardCapitalization = KeyboardCapitalization.Words,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -373,15 +381,17 @@ fun AddUserContent(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(buttonHeight))
+                        Spacer(modifier = Modifier.height(buttonHeight + 16.dp))
                     }
                 }
             }
 
+            val enableButton =
+                fullname.isNotBlank() && username.isNotBlank() && domicile.isNotBlank() && (password.isNotBlank() && confirmPassword.isNotBlank() && (confirmPassword == password))
             Button(
                 onClick = onSaveClick,
                 colors = ButtonDefaults.buttonColors(containerColor = Sage),
-                enabled = !isLoading,
+                enabled = enableButton,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
@@ -391,7 +401,7 @@ fun AddUserContent(
                     .constrainAs(buttonRef) {
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
-                        end.linkTo(parent.end, margin = 16.dp)
+                        end.linkTo(parent.end)
                     }
             ) {
                 Text("Simpan Perubahan")
