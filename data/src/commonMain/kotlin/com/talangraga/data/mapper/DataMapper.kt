@@ -9,8 +9,8 @@ import com.talangraga.data.network.model.response.PeriodeResponse
 import com.talangraga.data.network.model.response.TransactionResponse
 import com.talangraga.data.network.model.response.UserResponse
 
-fun com.talangraga.data.network.model.response.UserResponse.toUserEntity(): com.talangraga.data.local.database.model.UserEntity {
-    return _root_ide_package_.com.talangraga.data.local.database.model.UserEntity(
+fun UserResponse.toUserEntity(): UserEntity {
+    return UserEntity(
         userId = this.id,
         userName = this.username.orEmpty(),
         fullname = this.fullname.orEmpty(),
@@ -22,8 +22,8 @@ fun com.talangraga.data.network.model.response.UserResponse.toUserEntity(): com.
     )
 }
 
-fun com.talangraga.data.network.model.response.PeriodeResponse.toPeriodEntity(): com.talangraga.data.local.database.model.PeriodEntity {
-    return _root_ide_package_.com.talangraga.data.local.database.model.PeriodEntity(
+fun PeriodeResponse.toPeriodEntity(): PeriodEntity {
+    return PeriodEntity(
         periodId = this.id,
         periodeName = this.periodeName,
         startDate = this.startDate,
@@ -31,8 +31,8 @@ fun com.talangraga.data.network.model.response.PeriodeResponse.toPeriodEntity():
     )
 }
 
-fun com.talangraga.data.network.model.response.TransactionResponse.toTransactionEntity(): com.talangraga.data.local.database.model.TransactionEntity {
-    return _root_ide_package_.com.talangraga.data.local.database.model.TransactionEntity(
+fun TransactionResponse.toTransactionEntity(): TransactionEntity {
+    return TransactionEntity(
         transactionId = id,
         amount = amount.toInt(),
         reportedDate = reportedDate,
@@ -46,8 +46,8 @@ fun com.talangraga.data.network.model.response.TransactionResponse.toTransaction
     )
 }
 
-fun com.talangraga.data.network.model.response.PaymentResponse.toPaymentEntity(): com.talangraga.data.local.database.model.PaymentEntity {
-    return _root_ide_package_.com.talangraga.data.local.database.model.PaymentEntity(
+fun PaymentResponse.toPaymentEntity(): PaymentEntity {
+    return PaymentEntity(
         paymentId = id,
         paymentName = paymentName,
         paymentType = paymentType,

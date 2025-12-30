@@ -73,14 +73,14 @@ fun EmptyTransaction(modifier: Modifier = Modifier, onAddTransaction: () -> Unit
             modifier = Modifier.size(128.dp)
         )
         Text(
-            text = "Belum ada data transaksi",
+            text = "Belum ada data tabungan",
             style = TalangragaTypography.titleLarge.copy(
                 textAlign = TextAlign.Center
             ),
             modifier = Modifier.fillMaxWidth()
         )
         Text(
-            text = "Semua transaksi akan muncul disini.",
+            text = "Semua tabungan akan muncul disini.",
             style = TalangragaTypography.bodyMedium.copy(
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Normal
@@ -93,7 +93,7 @@ fun EmptyTransaction(modifier: Modifier = Modifier, onAddTransaction: () -> Unit
         ) {
             Text(
 //                        text = stringResource(Res.string.login),
-                text = "Tambah Transaksi Tabungan",
+                text = "Tambah Tabungan",
             )
         }
     }

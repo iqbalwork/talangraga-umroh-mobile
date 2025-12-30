@@ -236,7 +236,7 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
                 )
             }
             Text(
-                text = "Belum ada data transaksi",
+                text = "Belum ada data tabungan",
                 style = TalangragaTypography.titleLarge.copy(
                     textAlign = TextAlign.Center
                 ),
@@ -249,7 +249,7 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
                     }
             )
             Text(
-                text = "Data tabungan, anggota, dan transaksi terakhir akan muncul di sini setelah kamu mulai menambahkan tabungan.",
+                text = "Data tabungan dan anggota akan muncul disini setelah kamu mulai menambahkan tabungan.",
                 style = TalangragaTypography.bodyMedium.copy(
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Normal

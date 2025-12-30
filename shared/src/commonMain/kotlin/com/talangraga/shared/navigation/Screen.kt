@@ -6,9 +6,10 @@ import kotlinx.serialization.Serializable
 sealed class Screen {
 
     object BottomNavItem {
-        const val HOME = "home"
-        const val MEMBER = "member"
-        const val PROFILE = "profile"
+        const val HOME = "home_screen"
+        const val TRANSACTION = "transaction_screen"
+        const val MEMBER = "member_screen"
+        const val PROFILE = "profile_screen"
     }
 
     @Serializable
@@ -22,6 +23,8 @@ sealed class Screen {
         val route = "main_route"
     }
 
+    @Serializable
+    data class AddTransactionRoute(val isCollective: Boolean = false)
 
     @Serializable
     data class HomeRoute(val justLogin: Boolean = false)
