@@ -13,8 +13,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.navigation.BottomNavRoute
 import com.talangraga.umrohmobile.navigation.HomeNavHost
 import com.talangraga.umrohmobile.navigation.MemberNavHost
@@ -22,7 +25,7 @@ import com.talangraga.umrohmobile.navigation.ProfileNavHost
 import com.talangraga.umrohmobile.navigation.TransactionNavHost
 
 @Composable
-fun MainScreen(rootNavHostController: NavHostController, modifier: Modifier = Modifier) {
+fun MainScreen(rootNavHostController: NavHostController) {
 
     // child nav controllers for tabs
     val homeNav = rememberNavController()
@@ -32,9 +35,28 @@ fun MainScreen(rootNavHostController: NavHostController, modifier: Modifier = Mo
 
     var selectedTab by remember { mutableStateOf<BottomNavRoute>(BottomNavRoute.Home) }
 
+    // Observe current route of member nav to hide bottom bar
+    val memberBackStackEntry by memberNav.currentBackStackEntryAsState()
+    val memberCurrentRoute = memberBackStackEntry?.destination?.route
+
+    // Check if the current route in member nav is AddUserRoute
+    // Note: Type-safe navigation routes might look different, 
+    // but usually contain the qualified name or the route string.
+    // For safety, we can check if it matches the AddUserRoute pattern.
+    // However, since we are using Type-Safe navigation, 'route' property might be null or complex string.
+    // A simpler way with type safe nav is checking the destination class name if available or similar logic.
+    // For now, let's assume standard behavior where nested destinations are identifiable.
+    
+    // Actually, simply checking if we are NOT at start destination of Member tab
+    val isMemberTabDetails = memberCurrentRoute?.contains(Screen.AddUserRoute::class.simpleName ?: "AddUserRoute") == true
+
+    val showBottomBar = !isMemberTabDetails
+
     Scaffold(
         bottomBar = {
-            BottomNavBar(selectedTab) { selectedTab = it }
+            if (showBottomBar) {
+                BottomNavBar(selectedTab) { selectedTab = it }
+            }
         }
     ) { paddingValues ->
 
@@ -43,7 +65,7 @@ fun MainScreen(rootNavHostController: NavHostController, modifier: Modifier = Mo
             transitionSpec = {
                 fadeIn(tween(150)) togetherWith fadeOut(tween(150))
             },
-            modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding())
+            modifier = Modifier.padding(bottom = if (showBottomBar) paddingValues.calculateBottomPadding() else 0.dp)
         ) { tab ->
             when (tab) {
 
@@ -51,7 +73,7 @@ fun MainScreen(rootNavHostController: NavHostController, modifier: Modifier = Mo
                     navController = homeNav,
                     rootNavController = rootNavHostController,
 
-                ) {
+                    ) {
                     // callback from Home tab
                     selectedTab = BottomNavRoute.Transaction
                 }
@@ -61,7 +83,10 @@ fun MainScreen(rootNavHostController: NavHostController, modifier: Modifier = Mo
                     rootNavController = rootNavHostController
                 )
 
-                BottomNavRoute.Member -> MemberNavHost(navController = memberNav)
+                BottomNavRoute.Member -> MemberNavHost(
+                    navController = memberNav,
+                    rootNavController = rootNavHostController
+                )
 
                 BottomNavRoute.Profile -> ProfileNavHost(navController = profileNav)
             }

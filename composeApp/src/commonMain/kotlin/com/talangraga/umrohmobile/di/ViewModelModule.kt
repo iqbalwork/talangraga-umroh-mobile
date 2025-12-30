@@ -6,6 +6,7 @@ import com.talangraga.umrohmobile.presentation.splash.SplashViewModel
 import com.talangraga.umrohmobile.presentation.transaction.TransactionViewModel
 import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionViewModel
 import com.talangraga.umrohmobile.presentation.user.ListUserViewModel
+import com.talangraga.umrohmobile.presentation.user.adduser.AddUserViewModel
 import com.talangraga.umrohmobile.presentation.user.profile.ProfileViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -16,6 +17,7 @@ val viewModelModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::ListUserViewModel)
     viewModelOf(::ProfileViewModel)
+    viewModelOf(::AddUserViewModel)
     viewModelOf(::TransactionViewModel)
     viewModelOf(::AddTransactionViewModel)
 }

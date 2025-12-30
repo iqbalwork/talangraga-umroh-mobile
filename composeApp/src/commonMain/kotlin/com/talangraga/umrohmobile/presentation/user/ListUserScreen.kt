@@ -29,14 +29,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,8 +46,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.ToastManager
 import com.talangraga.umrohmobile.ui.component.InputText
+import com.talangraga.umrohmobile.ui.component.ToastType
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -57,23 +59,36 @@ import talangragaumrohmobile.composeapp.generated.resources.search_username
 
 @Composable
 fun ListUserScreen(
+    rootNavController: NavHostController,
     navHostController: NavHostController,
     viewModel: ListUserViewModel = koinViewModel(),
 ) {
 
     val state = viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrEmpty()) {
+            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
+            viewModel.clearError()
+        }
+    }
 
     ListUserContent(
         state = state.value,
+        searchQuery = searchQuery,
+        onSearchQueryChange = viewModel::onSearchQueryChange,
         onBackClick = {
             navHostController.popBackStack()
         }, onUserClick = {
-            navHostController.navigate(Screen.UserRoute(userId = it.id, isLoginUser = false)) {
-                launchSingleTop = true
-                restoreState = true
-            }
+//            navHostController.navigate(Screen.UserRoute(userId = it.id, isLoginUser = false)) {
+//                launchSingleTop = true
+//                restoreState = true
+//            }
         },
-        onAddUserClick = {  }
+        onAddUserClick = { navHostController.navigate(Screen.AddUserRoute) },
+        onRefresh = viewModel::getListUser
     )
 }
 
@@ -84,8 +99,14 @@ fun ListUserContent(
     onAddUserClick: (() -> Unit),
     onUserClick: (UserUIData) -> Unit,
     state: ListUserUiState,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onRefresh: () -> Unit
 ) {
-    Scaffold(
+
+    val refreshState = rememberPullToRefreshState()
+
+    TalangragaScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Daftar Anggota", style = MaterialTheme.typography.titleLarge) },
@@ -94,16 +115,13 @@ fun ListUserContent(
                 )
             )
         },
-    ) { paddingValues ->
-
-        var username by remember { mutableStateOf("") }
-
-        Box(modifier = Modifier.fillMaxSize()) {
+        floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddUserClick,
+                onClick = {
+                    onAddUserClick()
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.align(Alignment.BottomEnd)
-                    .padding(bottom = 16.dp, end = 16.dp)
+                modifier = Modifier
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -111,7 +129,10 @@ fun ListUserContent(
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
+        }
+    ) { paddingValues ->
 
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -119,10 +140,8 @@ fun ListUserContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 InputText(
-                    value = username,
-                    onValueChange = {
-                        username = it
-                    },
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChange,
                     placeholder = stringResource(Res.string.search_username),
                     backgroundColor = MaterialTheme.colorScheme.surface,
                     modifier = Modifier
@@ -131,40 +150,54 @@ fun ListUserContent(
                         .padding(horizontal = 16.dp)
                 )
 
-                when (state) {
-                    ListUserUiState.EmptyData -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Tidak ada data.")
+                PullToRefreshBox(
+                    state = refreshState,
+                    isRefreshing = state is ListUserUiState.Loading && searchQuery.isEmpty(), // Only show refresh indicator when loading full list
+                    onRefresh = onRefresh,
+                    modifier = Modifier.weight(1f) // Fill remaining space for list
+                ) {
+                    when (state) {
+                        ListUserUiState.EmptyData -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Tidak ada data.")
+                            }
                         }
-                    }
 
-                    ListUserUiState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
+                        ListUserUiState.Loading -> {
+                            // Show loading indicator only if not refreshing (initial load)
+                            // PullToRefreshBox handles the spinner for refresh
+                            if (refreshState.isAnimating) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            } else {
+                                // Empty content while refreshing if you prefer, or keep showing list
+                                Box(modifier = Modifier.fillMaxSize())
+                            }
                         }
-                    }
 
-                    is ListUserUiState.Success -> {
-                        LazyColumn(
-                            modifier = Modifier,
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            itemsIndexed(state.users) { index, user ->
-                                UserItem(
-                                    user = user,
-                                    modifier = Modifier
-                                        .clickable {
-                                            onUserClick(user)
-                                        }
-                                        .fillMaxWidth()
-                                )
+                        is ListUserUiState.Success -> {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                itemsIndexed(state.users) { index, user ->
+                                    UserItem(
+                                        user = user,
+                                        modifier = Modifier
+                                            .clickable {
+                                                onUserClick(user)
+                                            }
+                                            .fillMaxWidth()
+                                    )
+                                }
                             }
                         }
                     }
@@ -290,7 +323,10 @@ fun ListUserContentSuccessPreview() {
             onUserClick = {},
             state = ListUserUiState.Success(users),
             onBackClick = { },
-            onAddUserClick = { }
+            onAddUserClick = { },
+            searchQuery = "",
+            onSearchQueryChange = {},
+            onRefresh = {}
         )
     }
 }

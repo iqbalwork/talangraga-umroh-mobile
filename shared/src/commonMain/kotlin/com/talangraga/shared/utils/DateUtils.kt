@@ -142,7 +142,7 @@ fun LocalDate.toIndonesianDateFormat(): String {
         12 -> "Desember"
         else -> ""
     }
-    return "$dayOfWeek, ${this.dayOfMonth} $month ${this.year}"
+    return "$dayOfWeek, $day $month ${this.year}"
 }
 
 @OptIn(ExperimentalTime::class)

@@ -22,6 +22,7 @@ import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.main.MainScreen
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen
 import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionScreen
+import com.talangraga.umrohmobile.presentation.user.adduser.AddUserScreen
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ThemeManager
 import com.talangraga.umrohmobile.ui.ThemeMode
@@ -92,6 +93,10 @@ fun App() {
                 composable<Screen.AddTransactionRoute> { backStackEntry ->
                     val args = backStackEntry.toRoute<Screen.AddTransactionRoute>()
                     AddTransactionScreen(rootNavController, args.isCollective)
+                }
+
+                composable<Screen.AddUserRoute> {
+                    AddUserScreen(navController = rootNavController)
                 }
             }
 

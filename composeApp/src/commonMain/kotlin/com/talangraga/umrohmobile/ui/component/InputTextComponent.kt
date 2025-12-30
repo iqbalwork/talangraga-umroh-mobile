@@ -1,6 +1,5 @@
 package com.talangraga.umrohmobile.ui.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,6 +59,8 @@ fun InputText(
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
 ) {
+    val borderColor = if (value.isNotBlank()) Sage else BorderColor
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
@@ -81,23 +82,30 @@ fun InputText(
             },
             singleLine = true,
             enabled = enabled,
-            leadingIcon = {
-                leadingIcon?.let {
+            leadingIcon = if (leadingIcon != null) {
+                {
                     Icon(
                         imageVector = leadingIcon,
                         contentDescription = null
                     )
                 }
-            },
-            trailingIcon = {
-                trailingIcon?.let {
+            } else null,
+            trailingIcon = if (trailingIcon != null) {
+                {
                     Icon(
                         imageVector = trailingIcon,
                         contentDescription = null
                     )
                 }
-            },
-            modifier = Modifier.fillMaxWidth().background(color = backgroundColor)
+            } else null,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = borderColor,
+                unfocusedBorderColor = BorderColor,
+                focusedContainerColor = backgroundColor,
+                unfocusedContainerColor = backgroundColor
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -143,9 +151,11 @@ fun CurrencyInputText(
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = borderColor,
-                unfocusedBorderColor = BorderColor
+                unfocusedBorderColor = BorderColor,
+                focusedContainerColor = backgroundColor,
+                unfocusedContainerColor = backgroundColor
             ),
-            modifier = Modifier.fillMaxWidth().background(color = backgroundColor)
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -193,19 +203,28 @@ class CurrencyVisualTransformation : VisualTransformation {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun InputTextPreview() {
     var text by remember { mutableStateOf("") }
     TalangragaTheme {
-        InputText(
-            modifier = Modifier.padding(16.dp),
-            title = stringResource(Res.string.label_username_or_email),
-            value = text,
-            onValueChange = { text = it },
-            placeholder = "Enter your username or email",
-            leadingIcon = Icons.Default.AccountCircle
-        )
+        Column {
+            InputText(
+                modifier = Modifier.padding(16.dp),
+                title = stringResource(Res.string.label_username_or_email),
+                value = text,
+                onValueChange = { text = it },
+                placeholder = "Enter your username or email",
+                leadingIcon = Icons.Default.AccountCircle
+            )
+            InputText(
+                modifier = Modifier.padding(16.dp),
+                title = stringResource(Res.string.label_username_or_email),
+                value = text,
+                onValueChange = { text = it },
+                placeholder = "Enter your username or email",
+            )
+        }
     }
 }
 
@@ -251,6 +270,7 @@ fun PasswordInput(
     leadingIcon: ImageVector? = null
 ) {
     var passwordVisibility by remember { mutableStateOf(false) }
+    val borderColor = if (password.isNotBlank()) Sage else BorderColor
 
     Column(
         modifier = modifier,
@@ -272,14 +292,14 @@ fun PasswordInput(
             singleLine = true,
             enabled = enabled,
             visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-            leadingIcon = {
-                leadingIcon?.let {
+            leadingIcon = if (leadingIcon != null) {
+                {
                     Icon(
                         imageVector = leadingIcon,
                         contentDescription = null
                     )
                 }
-            },
+            } else null,
             trailingIcon = {
                 val image = if (passwordVisibility)
                     Icons.Filled.VisibilityOff
@@ -295,7 +315,14 @@ fun PasswordInput(
                     Icon(imageVector = image, description)
                 }
             },
-            modifier = Modifier.fillMaxWidth().background(color = Color.White)
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = borderColor,
+                unfocusedBorderColor = BorderColor,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

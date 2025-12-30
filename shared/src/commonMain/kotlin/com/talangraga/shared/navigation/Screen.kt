@@ -27,6 +27,9 @@ sealed class Screen {
     data class AddTransactionRoute(val isCollective: Boolean = false)
 
     @Serializable
+    object AddUserRoute
+
+    @Serializable
     data class HomeRoute(val justLogin: Boolean = false)
 
     @Serializable

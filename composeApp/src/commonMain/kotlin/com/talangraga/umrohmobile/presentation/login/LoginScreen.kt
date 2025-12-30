@@ -19,8 +19,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,9 +40,12 @@ import com.talangraga.shared.Sandstone
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.ToastManager
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.PasswordInput
+import com.talangraga.umrohmobile.ui.component.ToastType
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -64,7 +65,6 @@ fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel(),
 ) {
 
-
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val loginSucceed by viewModel.loginSucceed.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
@@ -77,9 +77,15 @@ fun LoginScreen(
         }
     }
 
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrEmpty()) {
+            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
+            viewModel.clearError() // Only if you have this in your VM
+        }
+    }
+
     LoginContent(
         isLoading = isLoading,
-        errorMessage = errorMessage.orEmpty(),
         identifier = viewModel.identifier.value,
         password = viewModel.password.value,
         onIdentifierChange = viewModel::onIdentifierChange,
@@ -91,14 +97,13 @@ fun LoginScreen(
 @Composable
 fun LoginContent(
     isLoading: Boolean = false,
-    errorMessage: String,
     identifier: String,
     password: String,
     onPasswordChange: (String) -> Unit,
     onIdentifierChange: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
-    Scaffold { _ ->
+    TalangragaScaffold { _ ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -115,14 +120,14 @@ fun LoginContent(
                 .imePadding(),
             contentAlignment = Alignment.Center
         ) {
-                Image(
-                    painter = painterResource(Res.drawable.bg_screen),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer(alpha = 0.45f),
-                )
+            Image(
+                painter = painterResource(Res.drawable.bg_screen),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(alpha = 0.45f),
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -194,14 +199,6 @@ fun LoginContent(
                         )
                     }
                 }
-
-                if (errorMessage.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
             }
         }
     }
@@ -213,7 +210,6 @@ fun LoginContentPreview() {
     TalangragaTheme(darkTheme = false, useDynamicColor = false) {
         LoginContent(
             isLoading = false,
-            errorMessage = "Invalid credentials",
             identifier = "testuser",
             password = "password",
             onPasswordChange = {},
