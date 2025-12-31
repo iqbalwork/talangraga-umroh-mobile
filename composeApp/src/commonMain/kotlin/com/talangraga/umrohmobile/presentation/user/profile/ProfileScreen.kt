@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,7 +35,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -66,6 +64,7 @@ import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.ui.ModalImagePicker
 import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ThemeManager
@@ -90,7 +89,6 @@ import talangragaumrohmobile.composeapp.generated.resources.logout
 fun ProfileScreen(
     rootNavHostController: NavHostController,
     navHostController: NavHostController,
-    user: UserUIData?,
     isLoginUser: Boolean,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
@@ -111,14 +109,19 @@ fun ProfileScreen(
         isDarkMode = isDarkTheme,
         isLoginUser = isLoginUser,
         user = profile,
+        imageUrl = viewModel.imageUrl.value,
+        onImageUrlChange = viewModel::onImageChange,
         themeManager = themeManager,
         onLogout = {
             viewModel.clearSession()
             rootNavHostController.navigate(Screen.LoginRoute) {
-                popUpTo(Screen.MainRoute.route) {
+                popUpTo(Screen.MainRoute.ROUTE) {
                     inclusive = true
                 }
             }
+        },
+        onClickEdit = {
+            navHostController.navigate(Screen.EditProfileRoute(profile?.id ?: 0, true))
         },
         onClickBack = { navHostController.popBackStack() }
     )
@@ -130,12 +133,16 @@ fun ProfileContent(
     isDarkMode: Boolean,
     isLoginUser: Boolean,
     user: UserUIData?,
+    imageUrl: String?,
+    onImageUrlChange: (String) -> Unit,
     themeManager: ThemeManager?,
+    onClickEdit: () -> Unit,
     onLogout: () -> Unit,
     onClickBack: () -> Unit
 ) {
 
     var showLogoutDialog by remember { mutableStateOf(false) }
+
     var showImagePickerSheet by remember { mutableStateOf(false) }
     val imagePickerSheetState = rememberModalBottomSheetState()
 
@@ -145,17 +152,16 @@ fun ProfileContent(
 
     var capturedPhoto by remember { mutableStateOf<PhotoResult?>(null) }
     var selectedImagesFile by remember { mutableStateOf<List<GalleryPhotoResult>>(emptyList()) }
-    var selectedImage by remember { mutableStateOf(user?.imageProfileUrl.orEmpty()) }
 
     LaunchedEffect(capturedPhoto) {
         if (capturedPhoto != null) {
-            selectedImage = capturedPhoto?.uri.orEmpty()
+            onImageUrlChange(capturedPhoto?.uri.orEmpty())
         }
     }
 
     LaunchedEffect(selectedImagesFile) {
         if (selectedImagesFile.isNotEmpty()) {
-            selectedImage = selectedImagesFile.first().uri
+            onImageUrlChange(selectedImagesFile.first().uri)
         }
     }
 
@@ -209,49 +215,20 @@ fun ProfileContent(
     }
 
     if (showImagePickerSheet) {
-        ModalBottomSheet(
+        ModalImagePicker(
             onDismissRequest = { showImagePickerSheet = false },
+            onCameraClick = {
+                showImagePickerSheet = false
+                showCamera = true
+                showGallery = false
+            },
+            onGalleryClick = {
+                showImagePickerSheet = false
+                showCamera = false
+                showGallery = true
+            },
             sheetState = imagePickerSheetState
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp, top = 16.dp, start = 16.dp, end = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text("Pilih Sumber Gambar", style = MaterialTheme.typography.titleLarge)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            showImagePickerSheet = false
-                            showCamera = true
-                            showGallery = false
-                        }
-                        .padding(vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = "Kamera")
-                    Text("Kamera")
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            showImagePickerSheet = false
-                            showCamera = false
-                            showGallery = true
-                        }
-                        .padding(vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Icon(Icons.Default.PhotoLibrary, contentDescription = "Galeri")
-                    Text("Galeri")
-                }
-            }
-        }
+        )
     }
 
     TalangragaScaffold(
@@ -264,7 +241,7 @@ fun ProfileContent(
                 },
                 modifier = Modifier,
                 actions = {
-                    TextButton(onClick = { }) {
+                    TextButton(onClick = onClickEdit) {
                         Text(
                             text = "Edit",
                             style = TalangragaTypography.bodyMedium.copy(color = MaterialTheme.colorScheme.tertiary)
@@ -285,7 +262,7 @@ fun ProfileContent(
                     val (imageProfileRef, fullNameRef, usernameRef) = createRefs()
 
                     BasicImage(
-                        model = selectedImage,
+                        model = imageUrl.orEmpty(),
                         modifier = Modifier
                             .size(124.dp)
                             .clip(CircleShape)
@@ -510,7 +487,12 @@ fun PreviewProfileContent() {
             isLoginUser = true,
             isDarkMode = false,
             themeManager = null,
-            onLogout = {}
+            onLogout = {},
+            imageUrl = "",
+            onImageUrlChange = {
+
+            },
+            onClickEdit = {  }
         )
     }
 }

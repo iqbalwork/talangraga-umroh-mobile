@@ -1,5 +1,6 @@
 package com.talangraga.umrohmobile.presentation.user.profile
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.local.session.Session
@@ -16,6 +17,12 @@ class ProfileViewModel(
 
     private val _profile = MutableStateFlow(session.getProfile()?.toUiData())
     val profile = _profile.asStateFlow()
+
+    val imageUrl = mutableStateOf(profile.value?.imageProfileUrl)
+
+    fun onImageChange(uri: String) {
+        imageUrl.value = uri
+    }
 
     fun clearSession() {
         viewModelScope.launch {

@@ -20,7 +20,7 @@ sealed class Screen {
 
     @Serializable
     object MainRoute {
-        val route = "main_route"
+        const val ROUTE = "main_route"
     }
 
     @Serializable
@@ -28,6 +28,9 @@ sealed class Screen {
 
     @Serializable
     object AddUserRoute
+
+    @Serializable
+    data class EditProfileRoute(val userId: Int, val isLoginUser: Boolean)
 
     @Serializable
     data class HomeRoute(val justLogin: Boolean = false)

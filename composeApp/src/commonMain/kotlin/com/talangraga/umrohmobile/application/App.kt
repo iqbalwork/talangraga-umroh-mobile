@@ -84,7 +84,7 @@ fun App() {
                 }
 
                 // MAIN CONTENT AREA (Persistent)
-                composable(Screen.MainRoute.route) {
+                composable(Screen.MainRoute.ROUTE) {
                     MainScreen(
                         rootNavHostController = rootNavController
                     )

@@ -25,6 +25,11 @@ class AddUserViewModel : ViewModel() {
     var userType = mutableStateOf("Member")
     var password = mutableStateOf("")
     var confirmPassword = mutableStateOf("")
+    val imageUrl = mutableStateOf("")
+
+    fun onImageChange(uri: String) {
+        imageUrl.value = uri
+    }
 
     fun onFullnameChange(newValue: String) {
         fullname.value = newValue

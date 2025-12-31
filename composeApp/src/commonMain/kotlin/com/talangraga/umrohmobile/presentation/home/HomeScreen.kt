@@ -80,7 +80,7 @@ fun HomeScreen(
     ) {
         viewModel.clearSession()
         rootNavHostController.navigate(Screen.LoginRoute) {
-            popUpTo(Screen.MainRoute.route) {
+            popUpTo(Screen.MainRoute.ROUTE) {
                 inclusive = true
             }
         }

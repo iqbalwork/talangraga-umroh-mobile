@@ -1,3 +1,5 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package com.talangraga.umrohmobile.presentation.main
 
 import androidx.compose.animation.AnimatedContent
@@ -38,6 +40,8 @@ fun MainScreen(rootNavHostController: NavHostController) {
     // Observe current route of member nav to hide bottom bar
     val memberBackStackEntry by memberNav.currentBackStackEntryAsState()
     val memberCurrentRoute = memberBackStackEntry?.destination?.route
+    val profileBackStackEntry by profileNav.currentBackStackEntryAsState()
+    val profileCurrentRoute = profileBackStackEntry?.destination?.route
 
     // Check if the current route in member nav is AddUserRoute
     // Note: Type-safe navigation routes might look different, 
@@ -48,11 +52,15 @@ fun MainScreen(rootNavHostController: NavHostController) {
     // For now, let's assume standard behavior where nested destinations are identifiable.
 
     // Actually, simply checking if we are NOT at start destination of Member tab
-    val isMemberTabDetails = memberCurrentRoute?.contains(
+    val isSubScreen = memberCurrentRoute?.contains(
         Screen.AddUserRoute::class.simpleName ?: "AddUserRoute"
+    ) == true || memberCurrentRoute?.contains(
+        Screen.EditProfileRoute::class.simpleName ?: "EditProfileRoute"
+    ) == true || profileCurrentRoute?.contains(
+        Screen.EditProfileRoute::class.simpleName ?: "EditProfileRoute"
     ) == true
 
-    val showBottomBar = !isMemberTabDetails
+    val showBottomBar = !isSubScreen
 
     Scaffold(
         bottomBar = {

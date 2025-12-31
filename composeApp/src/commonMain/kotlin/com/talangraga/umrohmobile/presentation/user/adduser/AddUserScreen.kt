@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
+@file:Suppress("AssignedValueIsNeverRead")
 
 package com.talangraga.umrohmobile.presentation.user.adduser
 
@@ -21,7 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -30,9 +30,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,12 +56,20 @@ import androidx.navigation.NavHostController
 import com.talangraga.shared.Background
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
+import com.talangraga.umrohmobile.ui.ModalImagePicker
+import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ToastManager
+import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.PasswordInput
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import com.talangraga.umrohmobile.ui.component.ToastType
+import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -107,7 +115,9 @@ fun AddUserScreen(
         confirmPassword = viewModel.confirmPassword.value,
         onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
         onSaveClick = viewModel::saveUser,
-        isLoading = isLoading
+        isLoading = isLoading,
+        imageUrl = viewModel.imageUrl.value,
+        onImageUrlChange = viewModel::onImageChange
     )
 }
 
@@ -130,13 +140,94 @@ fun AddUserContent(
     onPasswordChange: (String) -> Unit,
     confirmPassword: String,
     onConfirmPasswordChange: (String) -> Unit,
+    imageUrl: String?,
+    onImageUrlChange: (String) -> Unit,
     onSaveClick: () -> Unit,
     isLoading: Boolean
 ) {
+
     var buttonHeight by remember { mutableStateOf(0.dp) }
     val localDensity = LocalDensity.current
 
-    Scaffold(
+    var showImagePickerSheet by remember { mutableStateOf(false) }
+    val imagePickerSheetState = rememberModalBottomSheetState()
+
+    var imagePickerMessage by remember { mutableStateOf<String?>(null) }
+    var showGallery by remember { mutableStateOf(false) }
+    var showCamera by remember { mutableStateOf(false) }
+
+    var capturedPhoto by remember { mutableStateOf<PhotoResult?>(null) }
+    var selectedImagesFile by remember { mutableStateOf<List<GalleryPhotoResult>>(emptyList()) }
+
+    LaunchedEffect(capturedPhoto) {
+        if (capturedPhoto != null) {
+            onImageUrlChange(capturedPhoto?.uri.orEmpty())
+        }
+    }
+
+    LaunchedEffect(selectedImagesFile) {
+        if (selectedImagesFile.isNotEmpty()) {
+            onImageUrlChange(selectedImagesFile.first().uri)
+        }
+    }
+
+    LaunchedEffect(imagePickerMessage) {
+        if (!imagePickerMessage.isNullOrEmpty()) {
+            ToastManager.show(message = imagePickerMessage.orEmpty(), type = ToastType.Error)
+            imagePickerMessage = null
+        }
+    }
+
+    if (showCamera) {
+        ImagePickerLauncher(
+            config = ImagePickerConfig(
+                onPhotoCaptured = {
+                    capturedPhoto = it
+                    showCamera = false
+                    showGallery = false
+                },
+                onError = {
+                    imagePickerMessage = it.message.orEmpty()
+                    showCamera = false
+                    showGallery = false
+                }
+            )
+        )
+    }
+
+    if (showGallery) {
+        GalleryPickerLauncher(
+            onPhotosSelected = {
+                selectedImagesFile = it
+                showCamera = false
+                showGallery = false
+            },
+            onError = {
+                imagePickerMessage = it.message.orEmpty()
+                showCamera = false
+                showGallery = false
+            }
+        )
+    }
+
+    if (showImagePickerSheet) {
+        ModalImagePicker(
+            onDismissRequest = { showImagePickerSheet = false },
+            onCameraClick = {
+                showImagePickerSheet = false
+                showCamera = true
+                showGallery = false
+            },
+            onGalleryClick = {
+                showImagePickerSheet = false
+                showCamera = false
+                showGallery = true
+            },
+            sheetState = imagePickerSheetState
+        )
+    }
+
+    TalangragaScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -183,34 +274,35 @@ fun AddUserContent(
                             .padding(horizontal = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+
                         // Profile Image Placeholder
                         Box(
                             modifier = Modifier
-                                .size(100.dp)
                                 .padding(vertical = 16.dp)
                         ) {
                             Box(
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.Gray.copy(alpha = 0.3f)),
+                                modifier = Modifier,
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(60.dp),
-                                    tint = Color.Gray
+                                BasicImage(
+                                    model = imageUrl.orEmpty(),
+                                    modifier = Modifier
+                                        .size(124.dp)
+                                        .clip(CircleShape)
                                 )
                             }
+
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
+                                    .padding(bottom = 8.dp, end = 8.dp)
                                     .size(32.dp)
                                     .clip(CircleShape)
                                     .background(Color.White)
                                     .border(1.dp, Color.LightGray, CircleShape)
-                                    .clickable { /* Pick Image */ },
+                                    .clickable {
+                                        showImagePickerSheet = true
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -222,7 +314,7 @@ fun AddUserContent(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+//                        Spacer(modifier = Modifier.height(24.dp))
 
                         // Data Pengguna Section
                         Text(
@@ -433,7 +525,9 @@ fun AddUserScreenPreview() {
             confirmPassword = "",
             onConfirmPasswordChange = {},
             onSaveClick = {},
-            isLoading = false
+            isLoading = false,
+            imageUrl = "",
+            onImageUrlChange = { }
         )
     }
 }

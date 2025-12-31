@@ -38,7 +38,7 @@ fun SplashScreen(
             }
         } else {
             // navigate to MainRoute’s HOME tab
-            navHostController.navigate(Screen.MainRoute.route) {
+            navHostController.navigate(Screen.MainRoute.ROUTE) {
                 popUpTo(Screen.SplashRoute) { inclusive = true }
             }
         }

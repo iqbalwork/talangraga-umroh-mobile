@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,6 +31,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -83,13 +85,17 @@ fun ListUserScreen(
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onBackClick = {
             navHostController.popBackStack()
-        }, onUserClick = {
+        },
+        onUserClick = {
 //            navHostController.navigate(Screen.UserRoute(userId = it.id, isLoginUser = false)) {
 //                launchSingleTop = true
 //                restoreState = true
 //            }
         },
         onAddUserClick = { navHostController.navigate(Screen.AddUserRoute) },
+        onEditUser = {
+            navHostController.navigate(Screen.EditProfileRoute(userId = it, isLoginUser = false))
+        },
         onRefresh = viewModel::getListUser
     )
 }
@@ -99,6 +105,7 @@ fun ListUserScreen(
 fun ListUserContent(
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit),
+    onEditUser: (Int) -> Unit,
     onUserClick: (UserUIData) -> Unit,
     state: ListUserUiState,
     searchQuery: String,
@@ -194,6 +201,7 @@ fun ListUserContent(
                                 itemsIndexed(state.users) { index, user ->
                                     UserItem(
                                         user = user,
+                                        onEditUser = onEditUser,
                                         modifier = Modifier
                                             .clickable {
                                                 onUserClick(user)
@@ -213,6 +221,7 @@ fun ListUserContent(
 @Composable
 fun UserItem(
     user: UserUIData,
+    onEditUser: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -290,6 +299,18 @@ fun UserItem(
                     fontSize = 12.sp
                 )
             }
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            IconButton(
+                modifier = Modifier,
+                onClick = { onEditUser(user.id) }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = null,
+                )
+            }
         }
     }
 }
@@ -327,6 +348,7 @@ fun ListUserContentSuccessPreview() {
             state = ListUserUiState.Success(users),
             onBackClick = { },
             onAddUserClick = { },
+            onEditUser = {},
             searchQuery = "",
             onSearchQueryChange = {},
             onRefresh = {}
