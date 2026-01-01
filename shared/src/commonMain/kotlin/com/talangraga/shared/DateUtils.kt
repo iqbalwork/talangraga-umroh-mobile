@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.talangraga.shared.utils
+package com.talangraga.shared
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime

@@ -17,7 +17,7 @@ import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
 import com.talangraga.data.network.TokenManager
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.main.MainScreen
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen

@@ -48,11 +48,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ToastManager
+import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.ToastType
 import org.jetbrains.compose.resources.stringResource
@@ -246,12 +247,21 @@ fun UserItem(
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "User Avatar",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(30.dp)
-                )
+                if (user.imageProfileUrl.isNotBlank()) {
+                    BasicImage(
+                        model = user.imageProfileUrl,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "User Avatar",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

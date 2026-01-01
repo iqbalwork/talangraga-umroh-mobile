@@ -40,6 +40,7 @@ fun ProfileSection(
     modifier: Modifier,
     userType: String?,
     state: SectionState<UserUIData>,
+    onClickImage: (String) -> Unit = {},
     onRetry: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -102,6 +103,7 @@ fun ProfileSection(
                 BasicImage(
                     model = user.imageProfileUrl,
                     modifier = Modifier
+                        .clickable { onClickImage(user.imageProfileUrl) }
                         .size(60.dp)
                         .clip(CircleShape)
                         .constrainAs(imageProfileRef) {

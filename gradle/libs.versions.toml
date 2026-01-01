@@ -44,7 +44,10 @@ assertk = "0.28.1"
 turbine = "1.2.0"
 
 [libraries]
+# Coil Image Loader
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilCompose" }
+
 constraintlayout-compose-multiplatform = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayoutComposeMultiplatform" }
 inspektify-ktor3 = { module = "io.github.bvantur:inspektify-ktor3", version.ref = "inspektifyKtor3" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -76,6 +79,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 # Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" } # For Android/JVM with OkHttp
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "coilCompose" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" } # For iOS
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-monitor-logging = { module = "ro.cosminmihu.ktor:ktor-monitor-logging", version.ref = "ktorMonitorLogging" }

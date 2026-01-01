@@ -5,12 +5,18 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -25,8 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.talangraga.umrohmobile.ui.component.ToastComponent
 import com.talangraga.umrohmobile.ui.component.ToastType
+import com.talangraga.umrohmobile.ui.component.ZoomableCoilImage
 import kotlinx.coroutines.delay
 
 /**
@@ -34,6 +42,33 @@ import kotlinx.coroutines.delay
  * Email: work.iqbalfauzi@gmail.com
  * Github: https://github.com/iqbalwork
  */
+
+object ImageViewerManager {
+    // Holds the callback to update the Scaffold state
+    private var updateImageState: ((Any?) -> Unit)? = null
+
+    /**
+     * Called by the Scaffold to start listening for show requests.
+     */
+    fun register(updateState: (Any?) -> Unit) {
+        updateImageState = updateState
+    }
+
+    /**
+     * Call this from any screen to show the image.
+     * @param model The image URL, File, or Resource (supported by Coil).
+     */
+    fun show(model: Any?) {
+        updateImageState?.invoke(model)
+    }
+
+    /**
+     * Programmatically close the viewer.
+     */
+    fun hide() {
+        updateImageState?.invoke(null)
+    }
+}
 
 object ToastManager {
     private var showToast: ((String?, String, ToastType, String?, (() -> Unit)?) -> Unit)? = null
@@ -66,11 +101,19 @@ fun TalangragaScaffold(
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     content: @Composable (PaddingValues) -> Unit,
 ) {
+
     var toastState by remember { mutableStateOf<ToastData?>(null) }
+
+    var activeImageModel by remember { mutableStateOf<Any?>(null) }
+    var backgroundAlpha by remember { mutableStateOf(1f) }
 
     LaunchedEffect(Unit) {
         ToastManager.register { title, message, type, actionText, actionClick ->
             toastState = ToastData(title, message, type, actionText, actionClick)
+        }
+
+        ImageViewerManager.register { model ->
+            activeImageModel = model
         }
     }
 
@@ -102,7 +145,11 @@ fun TalangragaScaffold(
                 exit = slideOutVertically { -it } + fadeOut(),
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = paddingValues.calculateTopPadding() + 16.dp, start = 16.dp, end = 16.dp)
+                    .padding(
+                        top = paddingValues.calculateTopPadding() + 16.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
             ) {
                 toastState?.let { data ->
                     ToastComponent(
@@ -113,6 +160,52 @@ fun TalangragaScaffold(
                         onActionClick = data.onActionClick,
                         onDismiss = { toastState = null }
                     )
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(activeImageModel) {
+        if (activeImageModel != null) backgroundAlpha = 1f
+    }
+
+    AnimatedVisibility(
+        visible = activeImageModel != null,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier
+            .fillMaxSize()
+            .zIndex(2f)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = backgroundAlpha))
+        ) {
+            // This is the "Robust" ZoomableCoilImage component we built previously
+            if (activeImageModel != null) {
+                ZoomableCoilImage(
+                    model = activeImageModel,
+                    onDismiss = {
+                        activeImageModel = null // Close the viewer locally
+                    },
+                    onDragChange = { progress ->
+                        /* Optional: Handle background dimming */
+                        backgroundAlpha = (1f - progress * 4).coerceIn(0f, 1f)
+                    }
+                )
+            }
+
+            // Optional: Close button overlay
+            if (backgroundAlpha > 0.8f) {
+                IconButton(
+                    onClick = { activeImageModel = null },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                        .statusBarsPadding()
+                ) {
+                    Icon(Icons.Default.Close, "Close", tint = Color.White)
                 }
             }
         }

@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.talangraga.data.local.session.SessionKey
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource

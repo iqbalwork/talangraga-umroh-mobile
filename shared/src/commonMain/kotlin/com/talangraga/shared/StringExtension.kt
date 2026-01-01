@@ -1,4 +1,4 @@
-package com.talangraga.shared.utils
+package com.talangraga.shared
 
 //fun Double.formatToIDR(): String {
 //    val amountString = this.toString()

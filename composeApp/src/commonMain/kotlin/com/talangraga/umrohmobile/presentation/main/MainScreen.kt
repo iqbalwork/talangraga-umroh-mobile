@@ -19,11 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.talangraga.shared.navigation.Screen
 import com.talangraga.umrohmobile.navigation.BottomNavRoute
 import com.talangraga.umrohmobile.navigation.HomeNavHost
 import com.talangraga.umrohmobile.navigation.MemberNavHost
 import com.talangraga.umrohmobile.navigation.ProfileNavHost
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.navigation.TransactionNavHost
 
 @Composable
@@ -58,6 +58,8 @@ fun MainScreen(rootNavHostController: NavHostController) {
         Screen.EditProfileRoute::class.simpleName ?: "EditProfileRoute"
     ) == true || profileCurrentRoute?.contains(
         Screen.EditProfileRoute::class.simpleName ?: "EditProfileRoute"
+    ) == true || profileCurrentRoute?.contains(
+        Screen.ChangePasswordRoute::class.simpleName ?: "ChangePasswordRoute"
     ) == true
 
     val showBottomBar = !isSubScreen

@@ -27,12 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.data.local.database.model.PeriodEntity
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.section.HomeInfoTransactionSection
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
 import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.ui.ImageViewerManager
 import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
@@ -190,6 +191,9 @@ fun HomeContent(
                         userType = userType,
                         state = uiState.profile,
                         onRetry = onFetchProfile,
+                        onClickImage = {
+                            ImageViewerManager.show(it)
+                        },
                         onLogout = { showLogoutDialog = true },
                     )
                 }

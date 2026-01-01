@@ -43,7 +43,7 @@ import com.talangraga.shared.MediumPurple
 import com.talangraga.shared.PorcelainDark
 import com.talangraga.shared.RosePink
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.shared.utils.formatToIDR
+import com.talangraga.shared.formatToIDR
 import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.ui.TalangragaTheme

@@ -39,7 +39,7 @@ import com.talangraga.shared.SageDark
 import com.talangraga.shared.Sandstone
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.ToastManager

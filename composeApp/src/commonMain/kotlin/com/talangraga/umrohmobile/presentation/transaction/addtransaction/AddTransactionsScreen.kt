@@ -74,7 +74,7 @@ import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.shared.utils.toIndonesianDateFormat
+import com.talangraga.shared.toIndonesianDateFormat
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.component.CurrencyInputText
 import com.talangraga.umrohmobile.ui.component.TextButtonOption

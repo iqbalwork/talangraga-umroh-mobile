@@ -5,7 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.presentation.user.changepassword.ChangePasswordScreen
 import com.talangraga.umrohmobile.presentation.user.editprofile.EditProfileScreen
 import com.talangraga.umrohmobile.presentation.user.profile.ProfileScreen
 
@@ -28,6 +28,13 @@ fun ProfileNavHost(rootNavController: NavHostController, navController: NavHostC
                 navHostController = navController,
                 userId = args.userId,
                 isLoginUser = args.isLoginUser,
+            )
+        }
+        composable<Screen.ChangePasswordRoute> { backStackEntry ->
+            val args = backStackEntry.toRoute<Screen.ChangePasswordRoute>()
+            ChangePasswordScreen(
+                navHostController = navController,
+                userId = args.userId
             )
         }
     }

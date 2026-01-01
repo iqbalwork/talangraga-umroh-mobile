@@ -23,8 +23,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
@@ -37,7 +40,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,9 +63,10 @@ import com.talangraga.shared.AccentRed
 import com.talangraga.shared.Red
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.ui.ImageViewerManager
 import com.talangraga.umrohmobile.ui.ModalImagePicker
 import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.TalangragaTheme
@@ -123,6 +126,9 @@ fun ProfileScreen(
         onClickEdit = {
             navHostController.navigate(Screen.EditProfileRoute(profile?.id ?: 0, true))
         },
+        onChangePassword = {
+            navHostController.navigate(Screen.ChangePasswordRoute(profile?.id ?: 0))
+        },
         onClickBack = { navHostController.popBackStack() }
     )
 }
@@ -137,6 +143,7 @@ fun ProfileContent(
     onImageUrlChange: (String) -> Unit,
     themeManager: ThemeManager?,
     onClickEdit: () -> Unit,
+    onChangePassword: () -> Unit,
     onLogout: () -> Unit,
     onClickBack: () -> Unit
 ) {
@@ -240,14 +247,6 @@ fun ProfileContent(
                     Text(text = title, style = TalangragaTypography.titleLarge)
                 },
                 modifier = Modifier,
-                actions = {
-                    TextButton(onClick = onClickEdit) {
-                        Text(
-                            text = "Edit",
-                            style = TalangragaTypography.bodyMedium.copy(color = MaterialTheme.colorScheme.tertiary)
-                        )
-                    }
-                }
             )
         }
     ) { paddingValues ->
@@ -264,6 +263,9 @@ fun ProfileContent(
                     BasicImage(
                         model = imageUrl.orEmpty(),
                         modifier = Modifier
+                            .clickable {
+                                ImageViewerManager.show(imageUrl)
+                            }
                             .size(124.dp)
                             .clip(CircleShape)
                             .constrainAs(imageProfileRef) {
@@ -325,11 +327,11 @@ fun ProfileContent(
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        UserInfoItem(icon = Icons.Filled.Phone, text = user?.phone.orEmpty())
-                        UserInfoItem(icon = Icons.Filled.Email, text = user?.email.orEmpty())
-                        UserInfoItem(icon = Icons.Filled.Place, text = user?.domicile.orEmpty())
+                        UserMenuItem(icon = Icons.Filled.Phone, text = user?.phone.orEmpty())
+                        UserMenuItem(icon = Icons.Filled.Email, text = user?.email.orEmpty())
+                        UserMenuItem(icon = Icons.Filled.Place, text = user?.domicile.orEmpty())
                     }
                 }
             }
@@ -344,7 +346,38 @@ fun ProfileContent(
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
                     ConstraintLayout(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        val (iconRef, modeRef, switchRef) = createRefs()
+                        val (settingLabelRef, settingRef, iconRef, modeRef, switchRef) = createRefs()
+
+                        Text(
+                            text = "Pengaturan",
+                            style = TalangragaTypography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            ),
+                            modifier = Modifier.constrainAs(settingLabelRef) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                            }
+                        )
+
+                        Column(modifier = Modifier.constrainAs(settingRef) {
+                            top.linkTo(settingLabelRef.bottom, 8.dp)
+                            start.linkTo(parent.start); end.linkTo(parent.end)
+                        }, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            UserMenuItem(
+                                icon = Icons.Default.Edit,
+                                text = "Ubah Profil",
+                                showArrow = true,
+                                modifier = Modifier.clickable(onClick = onClickEdit)
+                            )
+                            UserMenuItem(
+                                icon = Icons.Default.Password,
+                                text = "Ganti Kata Sandi",
+                                showArrow = true,
+                                modifier = Modifier.clickable(onClick = onChangePassword)
+                            )
+                        }
+
                         IconBlock(
                             icon = Icons.Filled.LightMode,
                             startColor = Sage,
@@ -352,7 +385,7 @@ fun ProfileContent(
                             size = 40.dp,
                             iconSize = 24.dp,
                             modifier = Modifier.constrainAs(iconRef) {
-                                top.linkTo(parent.top)
+                                top.linkTo(settingRef.bottom, 8.dp)
                                 start.linkTo(parent.start)
                             }
                         )
@@ -361,7 +394,7 @@ fun ProfileContent(
                             text = "Mode $mode",
                             style = TalangragaTypography.titleLarge.copy(
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 20.sp
+                                fontSize = 18.sp
                             ),
                             modifier = Modifier.constrainAs(modeRef) {
                                 top.linkTo(iconRef.top)
@@ -415,28 +448,45 @@ fun ProfileContent(
 }
 
 @Composable
-fun UserInfoItem(icon: ImageVector, text: String) {
+fun UserMenuItem(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    text: String,
+    showArrow: Boolean = false
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        IconBlock(
-            icon = icon,
-            startColor = Sage,
-            endColor = Sage,
-            size = 40.dp,
-            iconSize = 24.dp,
-            modifier = Modifier
-        )
-        Text(
-            text = text,
-            style = TalangragaTypography.titleLarge.copy(
-                fontWeight = FontWeight.Medium,
-                fontSize = 20.sp
-            ),
-            modifier = Modifier
-        )
+        Row(
+            modifier = Modifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            IconBlock(
+                icon = icon,
+                startColor = Sage,
+                endColor = Sage,
+                size = 40.dp,
+                iconSize = 24.dp,
+                modifier = Modifier
+            )
+            Text(
+                text = text,
+                style = TalangragaTypography.titleLarge.copy(
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 18.sp
+                ),
+                modifier = Modifier
+            )
+        }
+        if (showArrow) {
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null
+            )
+        }
     }
 }
 
@@ -492,7 +542,8 @@ fun PreviewProfileContent() {
             onImageUrlChange = {
 
             },
-            onClickEdit = {  }
+            onClickEdit = { },
+            onChangePassword = {}
         )
     }
 }
