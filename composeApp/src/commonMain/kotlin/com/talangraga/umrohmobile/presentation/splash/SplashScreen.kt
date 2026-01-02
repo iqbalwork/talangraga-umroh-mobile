@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.talangraga.data.local.session.SessionKey
 import com.talangraga.umrohmobile.navigation.Screen
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview

@@ -33,8 +33,8 @@ import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
 import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
-import com.talangraga.umrohmobile.ui.ImageViewerManager
-import com.talangraga.umrohmobile.ui.TalangragaScaffold
+import com.talangraga.umrohmobile.ui.component.ImageViewerManager
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
 import kotlinx.coroutines.launch

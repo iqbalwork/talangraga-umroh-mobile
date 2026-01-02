@@ -42,10 +42,10 @@ import com.talangraga.shared.formatDateRange
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
-import com.talangraga.umrohmobile.ui.TalangragaScaffold
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButton
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 

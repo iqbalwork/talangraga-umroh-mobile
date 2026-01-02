@@ -46,10 +46,10 @@ import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.formatToIDR
 import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
-import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.umrohmobile.ui.component.IconBlock
 import com.talangraga.umrohmobile.ui.component.TransactionItem
 import com.talangraga.umrohmobile.ui.section.CardInfoSection
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable

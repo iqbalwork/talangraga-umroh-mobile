@@ -39,7 +39,7 @@ import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import talangragaumrohmobile.composeapp.generated.resources.Res

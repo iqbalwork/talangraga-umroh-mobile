@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.ui
+package com.talangraga.umrohmobile.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -32,9 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.talangraga.umrohmobile.ui.component.ToastComponent
-import com.talangraga.umrohmobile.ui.component.ToastType
-import com.talangraga.umrohmobile.ui.component.ZoomableCoilImage
 import kotlinx.coroutines.delay
 
 /**

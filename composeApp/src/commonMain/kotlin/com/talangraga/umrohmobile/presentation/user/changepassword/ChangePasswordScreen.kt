@@ -31,8 +31,8 @@ import androidx.navigation.NavHostController
 import com.talangraga.shared.Background
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.umrohmobile.ui.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.PasswordInput
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 

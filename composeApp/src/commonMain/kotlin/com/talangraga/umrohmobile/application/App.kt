@@ -23,9 +23,9 @@ import com.talangraga.umrohmobile.presentation.main.MainScreen
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen
 import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionScreen
 import com.talangraga.umrohmobile.presentation.user.adduser.AddUserScreen
-import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.ThemeManager
-import com.talangraga.umrohmobile.ui.ThemeMode
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import com.talangraga.umrohmobile.ui.theme.ThemeManager
+import com.talangraga.umrohmobile.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject

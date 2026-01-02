@@ -36,7 +36,7 @@ import com.talangraga.shared.Sage
 import com.talangraga.shared.currentDate
 import com.talangraga.shared.formatDateRange
 import com.talangraga.shared.isDateInRange
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview

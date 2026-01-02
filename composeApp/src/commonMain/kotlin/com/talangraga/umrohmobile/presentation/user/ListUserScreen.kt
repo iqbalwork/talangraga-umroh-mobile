@@ -50,12 +50,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
-import com.talangraga.umrohmobile.ui.TalangragaScaffold
-import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.ToastManager
 import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.InputText
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
+import com.talangraga.umrohmobile.ui.component.ToastManager
 import com.talangraga.umrohmobile.ui.component.ToastType
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel

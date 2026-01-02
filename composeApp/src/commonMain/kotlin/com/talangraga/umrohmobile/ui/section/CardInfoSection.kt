@@ -19,11 +19,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.talangraga.shared.Aqua
 import com.talangraga.shared.Green
 import com.talangraga.shared.Sage
-import com.talangraga.umrohmobile.ui.TalangragaTheme
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextOnColor
 import com.talangraga.umrohmobile.ui.component.IconBlock
 import com.talangraga.umrohmobile.ui.component.TitleTextIcon
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
