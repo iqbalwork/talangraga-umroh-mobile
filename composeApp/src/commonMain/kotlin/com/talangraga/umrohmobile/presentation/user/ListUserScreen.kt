@@ -88,10 +88,7 @@ fun ListUserScreen(
             navHostController.popBackStack()
         },
         onUserClick = {
-//            navHostController.navigate(Screen.UserRoute(userId = it.id, isLoginUser = false)) {
-//                launchSingleTop = true
-//                restoreState = true
-//            }
+            navHostController.navigate(Screen.MemberDetailRoute(it.id))
         },
         onAddUserClick = { navHostController.navigate(Screen.AddUserRoute) },
         onEditUser = {
@@ -279,35 +276,29 @@ fun UserItem(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    text = user.phone,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            }
-
-            // Role Badge
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(
-                        if (user.userType == "Admin")
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                // Role Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            if (user.userType == "admin")
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            else
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = user.userType.replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = if (user.userType == "admin")
+                            MaterialTheme.colorScheme.primary
                         else
-                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                            MaterialTheme.colorScheme.secondary,
+                        fontSize = 12.sp
                     )
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = user.userType,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Medium,
-                    color = if (user.userType == "Admin")
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.secondary,
-                    fontSize = 12.sp
-                )
+                }
             }
 
             Spacer(modifier = Modifier.width(4.dp))

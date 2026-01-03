@@ -16,5 +16,6 @@ interface Repository {
     fun getTransactions(periodId: Int? = null, status: String? = null, paymentId: Int? = null): Flow<Result<List<TransactionEntity>>>
     fun getPayments(): Flow<Result<List<PaymentEntity>>>
     fun getListUsers(): Flow<Result<List<UserEntity>>>
+    fun getUser(userId: Int): Flow<Result<UserEntity>>
     fun getLocalUsers(): Flow<Result<List<UserEntity>>>
 }

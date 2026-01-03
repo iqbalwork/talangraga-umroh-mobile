@@ -1,6 +1,7 @@
 package com.talangraga.umrohmobile.di
 
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
+import com.talangraga.umrohmobile.presentation.home.member.MemberDetailViewModel
 import com.talangraga.umrohmobile.presentation.login.LoginViewModel
 import com.talangraga.umrohmobile.presentation.splash.SplashViewModel
 import com.talangraga.umrohmobile.presentation.transaction.TransactionViewModel
@@ -21,6 +22,7 @@ val viewModelModule = module {
     viewModelOf(::ProfileViewModel)
     viewModelOf(::AddUserViewModel)
     viewModelOf(::EditProfileViewModel)
+    viewModelOf(::MemberDetailViewModel)
     viewModelOf(::ChangePasswordViewModel)
     viewModelOf(::TransactionViewModel)
     viewModelOf(::AddTransactionViewModel)

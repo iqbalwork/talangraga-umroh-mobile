@@ -55,6 +55,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun HomeInfoTransactionSection(
     modifier: Modifier = Modifier,
+    isHomeAdminDashboard: Boolean,
     state: SectionState<List<TransactionUiData>>,
     onAddTransaction: () -> Unit,
     onClickSeeMore: () -> Unit
@@ -96,17 +97,19 @@ fun HomeInfoTransactionSection(
                     )
                     val totalMember = transactions.distinctBy { it.reportedBy }.size
                     val average = transactions.map { it.amount }.average()
-                    CardInfoSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        title = "Anggota yang Menabung",
-                        value = if (transactionAvailable) totalMember.toString() else "Belum ada yang menabung",
-                        notes = if (transactionAvailable) "Bulan ini" else "",
-                        notesColor = PorcelainDark,
-                        icon = Icons.Default.People,
-                        illustrationIcon = Icons.Default.AccountCircle,
-                        startIconColor = MediumPurple,
-                        endIconColor = MediumPurple
-                    )
+                    if (isHomeAdminDashboard) {
+                        CardInfoSection(
+                            modifier = Modifier.fillMaxWidth(),
+                            title = "Anggota yang Menabung",
+                            value = if (transactionAvailable) totalMember.toString() else "Belum ada yang menabung",
+                            notes = if (transactionAvailable) "Bulan ini" else "",
+                            notesColor = PorcelainDark,
+                            icon = Icons.Default.People,
+                            illustrationIcon = Icons.Default.AccountCircle,
+                            startIconColor = MediumPurple,
+                            endIconColor = MediumPurple
+                        )
+                    }
                     CardInfoSection(
                         modifier = Modifier.fillMaxWidth(),
                         title = "Rata-rata Tabungan",
@@ -119,6 +122,7 @@ fun HomeInfoTransactionSection(
 
                     HomeInfoTransactionSection(
                         modifier = Modifier,
+                        isHomeAdminDashboard = isHomeAdminDashboard,
                         transactions = transactions,
                         onClickSeeMore = onClickSeeMore
                     )
@@ -132,6 +136,7 @@ fun HomeInfoTransactionSection(
 fun HomeInfoTransactionSection(
     modifier: Modifier = Modifier,
     transactions: List<TransactionUiData>,
+    isHomeAdminDashboard: Boolean,
     onClickSeeMore: () -> Unit
 ) {
     Column(
@@ -171,26 +176,32 @@ fun HomeInfoTransactionSection(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                transactions.take(3).forEach { transaction ->
-                    TransactionItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        username = transaction.reportedBy,
-                        paymentName = transaction.paymentName,
-                        paymentMethod = transaction.paymentType,
-                        date = transaction.transactionDate,
-                        amount = transaction.amount
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onClickSeeMore()
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("Semua transaksi", style = TalangragaTypography.bodySmall)
-                    Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
+                transactions.take(if (isHomeAdminDashboard) transactions.size else 3)
+                    .forEach { transaction ->
+                        TransactionItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            username = transaction.reportedBy,
+                            paymentName = transaction.paymentName,
+                            paymentMethod = transaction.paymentType,
+                            date = transaction.transactionDate,
+                            amount = transaction.amount
+                        )
+                    }
+                if (isHomeAdminDashboard) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onClickSeeMore()
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Semua transaksi", style = TalangragaTypography.bodySmall)
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         }
@@ -292,7 +303,7 @@ fun PreviewEmptyTransactionSection() {
     EmptyTransactionSection { }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PreviewTransactionSection() {
     val dummyTransactions = listOf(
@@ -335,8 +346,14 @@ fun PreviewTransactionSection() {
     )
     TalangragaTheme(useDynamicColor = false) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            HomeInfoTransactionSection(transactions = dummyTransactions) {}
-            HomeInfoTransactionSection(transactions = emptyList()) {} // Preview for empty state
+            HomeInfoTransactionSection(
+                transactions = dummyTransactions,
+                isHomeAdminDashboard = true
+            ) {}
+            HomeInfoTransactionSection(
+                transactions = emptyList(),
+                isHomeAdminDashboard = false
+            ) {} // Preview for empty state
         }
     }
 }

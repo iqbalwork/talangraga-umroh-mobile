@@ -33,6 +33,9 @@ sealed class Screen {
     data class EditProfileRoute(val userId: Int, val isLoginUser: Boolean)
 
     @Serializable
+    data class MemberDetailRoute(val userId: Int)
+
+    @Serializable
     data class ChangePasswordRoute(val userId: Int)
 
     @Serializable

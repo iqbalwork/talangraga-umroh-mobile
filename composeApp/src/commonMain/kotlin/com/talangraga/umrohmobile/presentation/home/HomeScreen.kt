@@ -55,10 +55,6 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.getProfileIfNecessary(justLogin)
-    }
-
     HomeContent(
         userType = userType.orEmpty(),
         onUserTypeChange = viewModel::setUserType,
@@ -215,6 +211,7 @@ fun HomeContent(
                 item {
                     HomeInfoTransactionSection(
                         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
+                        isHomeAdminDashboard = true,
                         state = uiState.transactions,
                         onAddTransaction = onAddTransaction,
                         onClickSeeMore = onSeeMoreTransaction

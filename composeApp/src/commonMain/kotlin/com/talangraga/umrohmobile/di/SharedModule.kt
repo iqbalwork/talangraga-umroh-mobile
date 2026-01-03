@@ -19,8 +19,8 @@ val sharedModule = module {
     single<Json> {
         Json {
             isLenient = true // Optional: if you want to be lenient with JSON parsing
-            ignoreUnknownKeys =
-                true // Optional: if you want to ignore keys not defined in your data classes
+            ignoreUnknownKeys = true
+            // Optional: if you want to ignore keys not defined in your data classes
             // Add other Json configurations as needed
         }
     }

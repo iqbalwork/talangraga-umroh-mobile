@@ -39,8 +39,6 @@ class HomeViewModel(
     private val _userType = MutableStateFlow<String?>(null)
     val userType: StateFlow<String?> = _userType.asStateFlow()
 
-    private var isProfileInitialized = false
-
     val selectedPeriod = mutableStateOf<PeriodEntity?>(null)
 
     private val _uiState = MutableStateFlow(
@@ -55,6 +53,7 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        getProfile()
         getPeriods()
     }
 
@@ -64,15 +63,6 @@ class HomeViewModel(
 
     fun setUserType(type: String) {
         _userType.update { type }
-    }
-
-    fun getProfileIfNecessary(justLogin: Boolean) {
-        if (justLogin) {
-            getProfile()
-        } else {
-            getLocalProfile()
-        }
-        isProfileInitialized = true
     }
 
     fun getProfile() {

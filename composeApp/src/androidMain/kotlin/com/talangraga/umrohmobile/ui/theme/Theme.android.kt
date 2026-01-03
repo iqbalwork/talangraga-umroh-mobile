@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.ui
+package com.talangraga.umrohmobile.ui.theme
 
 import android.os.Build
 import androidx.compose.material3.ColorScheme

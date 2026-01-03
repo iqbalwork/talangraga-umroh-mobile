@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.talangraga.umrohmobile.presentation.home.member.MemberDetailScreen
 import com.talangraga.umrohmobile.presentation.user.ListUserScreen
 import com.talangraga.umrohmobile.presentation.user.adduser.AddUserScreen
 import com.talangraga.umrohmobile.presentation.user.editprofile.EditProfileScreen
@@ -28,6 +29,13 @@ fun MemberNavHost(navController: NavHostController, rootNavController: NavHostCo
                 navHostController = navController,
                 userId = args.userId,
                 isLoginUser = args.isLoginUser,
+            )
+        }
+        composable<Screen.MemberDetailRoute> { backStackEntry ->
+            val args = backStackEntry.toRoute<Screen.MemberDetailRoute>()
+            MemberDetailScreen(
+                navHostController = navController,
+                userId = args.userId,
             )
         }
     }

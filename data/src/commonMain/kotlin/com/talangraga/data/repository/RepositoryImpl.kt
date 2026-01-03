@@ -23,9 +23,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -127,6 +129,29 @@ class RepositoryImpl(
                 session.saveProfile(it)
             }
         )
+    }
+
+    override fun getUser(userId: Int): Flow<Result<UserEntity>> {
+        return channelFlow {
+            try {
+                databaseHelper.getAllUsersAsFlow()
+                    .catch {
+                        send(Result.Error(Exception(it.cause)))
+                    }
+                    .map { list ->
+                        list.find { it.userId == userId }
+                    }
+                    .collectLatest {
+                        if (it != null) {
+                            send(Result.Success(it))
+                        } else {
+                            send(Result.Error(Exception("User not found")))
+                        }
+                    }
+            } catch (ex: Exception) {
+                send(Result.Error(ex))
+            }
+        }
     }
 
     override fun getListUsers(): Flow<Result<List<UserEntity>>> {
