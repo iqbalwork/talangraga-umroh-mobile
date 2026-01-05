@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -129,6 +130,39 @@ class RepositoryImpl(
                 session.saveProfile(it)
             }
         )
+    }
+
+    override fun registerNewUser(
+        fullname: String,
+        username: String,
+        email: String,
+        phone: String?,
+        password: String,
+        domicile: String?,
+        userType: String,
+        imageProfile: ByteArray?
+    ): Flow<Result<UserResponse>> {
+        return flow {
+            try {
+                val response = apiService.registerUser(
+                    fullname,
+                    username,
+                    email,
+                    phone,
+                    password,
+                    domicile,
+                    userType,
+                    imageProfile
+                )
+                if (response.data != null) {
+                    emit(Result.Success(response.data))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }.flowOn(Dispatchers.IO)
     }
 
     override fun getUser(userId: Int): Flow<Result<UserEntity>> {

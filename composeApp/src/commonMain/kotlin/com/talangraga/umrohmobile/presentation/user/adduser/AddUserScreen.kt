@@ -1,5 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-@file:Suppress("AssignedValueIsNeverRead")
+@file:OptIn(ExperimentalMaterial3Api::class) @file:Suppress("AssignedValueIsNeverRead")
 
 package com.talangraga.umrohmobile.presentation.user.adduser
 
@@ -22,8 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -38,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,19 +43,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.shared.Background
-import com.talangraga.shared.Sage
+import com.talangraga.shared.Red
 import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.mandatory
+import com.talangraga.umrohmobile.presentation.utils.rememberSharedFileReader
 import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.InputText
+import com.talangraga.umrohmobile.ui.component.InputTextWithStylingTitle
+import com.talangraga.umrohmobile.ui.component.LoadingButton
 import com.talangraga.umrohmobile.ui.component.ModalImagePicker
 import com.talangraga.umrohmobile.ui.component.PasswordInput
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
@@ -70,13 +75,13 @@ import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AddUserScreen(
-    navController: NavHostController,
-    viewModel: AddUserViewModel = koinViewModel()
+    navController: NavHostController, viewModel: AddUserViewModel = koinViewModel()
 ) {
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -114,10 +119,10 @@ fun AddUserScreen(
         onPasswordChange = viewModel::onPasswordChange,
         confirmPassword = viewModel.confirmPassword.value,
         onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
-        onSaveClick = viewModel::saveUser,
+        imageUrl = viewModel.imageUri.value,
+        onImageUrlChange = viewModel::onImageChange,
         isLoading = isLoading,
-        imageUrl = viewModel.imageUrl.value,
-        onImageUrlChange = viewModel::onImageChange
+        onSaveClick = viewModel::registerUser,
     )
 }
 
@@ -140,11 +145,14 @@ fun AddUserContent(
     onPasswordChange: (String) -> Unit,
     confirmPassword: String,
     onConfirmPasswordChange: (String) -> Unit,
-    imageUrl: String?,
-    onImageUrlChange: (String) -> Unit,
-    onSaveClick: () -> Unit,
-    isLoading: Boolean
+    imageUrl: ByteArray?,
+    onImageUrlChange: (ByteArray) -> Unit,
+    isLoading: Boolean,
+    onSaveClick: () -> Unit
 ) {
+
+    val fileReader = rememberSharedFileReader() // See helper below
+    val scope = rememberCoroutineScope()
 
     var buttonHeight by remember { mutableStateOf(0.dp) }
     val localDensity = LocalDensity.current
@@ -161,13 +169,27 @@ fun AddUserContent(
 
     LaunchedEffect(capturedPhoto) {
         if (capturedPhoto != null) {
-            onImageUrlChange(capturedPhoto?.uri.orEmpty())
+            scope.launch {
+                val bytes = fileReader.readBytes(capturedPhoto?.uri.orEmpty())
+                if (bytes != null) {
+                    onImageUrlChange(bytes)
+                } else {
+                    return@launch
+                }
+            }
         }
     }
 
     LaunchedEffect(selectedImagesFile) {
         if (selectedImagesFile.isNotEmpty()) {
-            onImageUrlChange(selectedImagesFile.first().uri)
+            scope.launch {
+                val bytes = fileReader.readBytes(selectedImagesFile.first().uri)
+                if (bytes != null) {
+                    onImageUrlChange(bytes)
+                } else {
+                    return@launch
+                }
+            }
         }
     }
 
@@ -178,52 +200,29 @@ fun AddUserContent(
         }
     }
 
-    if (showCamera) {
-        ImagePickerLauncher(
-            config = ImagePickerConfig(
-                onPhotoCaptured = {
-                    capturedPhoto = it
-                    showCamera = false
-                    showGallery = false
-                },
-                onError = {
-                    imagePickerMessage = it.message.orEmpty()
-                    showCamera = false
-                    showGallery = false
-                }
-            )
-        )
-    }
-
     if (showGallery) {
-        GalleryPickerLauncher(
-            onPhotosSelected = {
-                selectedImagesFile = it
-                showCamera = false
-                showGallery = false
-            },
-            onError = {
-                imagePickerMessage = it.message.orEmpty()
-                showCamera = false
-                showGallery = false
-            }
-        )
+        GalleryPickerLauncher(onPhotosSelected = {
+            selectedImagesFile = it
+            showCamera = false
+            showGallery = false
+        }, onError = {
+            imagePickerMessage = it.message.orEmpty()
+            showCamera = false
+            showGallery = false
+        })
     }
 
     if (showImagePickerSheet) {
         ModalImagePicker(
-            onDismissRequest = { showImagePickerSheet = false },
-            onCameraClick = {
+            onDismissRequest = { showImagePickerSheet = false }, onCameraClick = {
                 showImagePickerSheet = false
                 showCamera = true
                 showGallery = false
-            },
-            onGalleryClick = {
+            }, onGalleryClick = {
                 showImagePickerSheet = false
                 showCamera = false
                 showGallery = true
-            },
-            sheetState = imagePickerSheetState
+            }, sheetState = imagePickerSheetState
         )
     }
 
@@ -232,78 +231,59 @@ fun AddUserContent(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Tambah Pengguna Baru",
-                        style = TalangragaTypography.titleLarge
+                        text = "Tambah Pengguna Baru", style = TalangragaTypography.titleLarge
                     )
-                },
-                navigationIcon = {
+                }, navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Background)
+                }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Background)
             )
-        },
-        containerColor = Background
+        }, containerColor = Background
     ) { paddingValues ->
 
         ConstraintLayout(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier = Modifier.fillMaxSize().padding(paddingValues)
         ) {
             val (inputRef, buttonRef) = createRefs()
 
             LazyColumn(
-                modifier = Modifier
-                    .constrainAs(inputRef) {
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        height = Dimension.fillToConstraints
-                    }
-            ) {
+                modifier = Modifier.constrainAs(inputRef) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                    height = Dimension.fillToConstraints
+                }) {
                 item {
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
                         // Profile Image Placeholder
                         Box(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp)
+                            modifier = Modifier.padding(vertical = 16.dp)
                         ) {
                             Box(
-                                modifier = Modifier,
-                                contentAlignment = Alignment.Center
+                                modifier = Modifier, contentAlignment = Alignment.Center
                             ) {
                                 BasicImage(
-                                    model = imageUrl.orEmpty(),
-                                    modifier = Modifier
-                                        .size(124.dp)
-                                        .clip(CircleShape)
+                                    model = imageUrl,
+                                    modifier = Modifier.size(124.dp).clip(CircleShape)
                                 )
                             }
 
                             Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .padding(bottom = 8.dp, end = 8.dp)
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White)
-                                    .border(1.dp, Color.LightGray, CircleShape)
-                                    .clickable {
+                                modifier = Modifier.align(Alignment.BottomEnd)
+                                    .padding(bottom = 8.dp, end = 8.dp).size(32.dp)
+                                    .clip(CircleShape).background(Color.White)
+                                    .border(1.dp, Color.LightGray, CircleShape).clickable {
                                         showImagePickerSheet = true
-                                    },
-                                contentAlignment = Alignment.Center
+                                    }, contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.CameraAlt,
@@ -324,8 +304,8 @@ fun AddUserContent(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        InputText(
-                            title = "Nama Lengkap",
+                        InputTextWithStylingTitle(
+                            title = "Nama Lengkap".mandatory(),
                             value = fullname,
                             onValueChange = onFullnameChange,
                             placeholder = "Masukkan nama lengkap",
@@ -334,8 +314,8 @@ fun AddUserContent(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        InputText(
-                            title = "Nama Pengguna",
+                        InputTextWithStylingTitle(
+                            title = "Nama Pengguna".mandatory(),
                             value = username,
                             onValueChange = onUsernameChange,
                             placeholder = "Masukkan nama pengguna",
@@ -354,8 +334,14 @@ fun AddUserContent(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        InputText(
-                            title = "Email",
+                        val emailLabel = buildAnnotatedString {
+                            append("Email")
+                            withStyle(style = SpanStyle(color = Red)) {
+                                append("*")
+                            }
+                        }
+                        InputTextWithStylingTitle(
+                            title = emailLabel,
                             value = email,
                             onValueChange = onEmailChange,
                             placeholder = "Masukkan email",
@@ -364,8 +350,8 @@ fun AddUserContent(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        InputText(
-                            title = "Domisili",
+                        InputTextWithStylingTitle(
+                            title = "Domisili".mandatory(),
                             value = domicile,
                             onValueChange = onDomicileChange,
                             placeholder = "Masukkan domisili",
@@ -375,7 +361,7 @@ fun AddUserContent(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = "Jenis User",
+                            text = "Jenis User".mandatory(),
                             style = TalangragaTypography.titleSmall,
                             modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
                         )
@@ -387,27 +373,20 @@ fun AddUserContent(
                                 placeholder = "Pilih Jenis User",
                                 trailingIcon = Icons.Default.ArrowDropDown,
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = { expanded = true }
-                            )
+                                onClick = { expanded = true })
                             DropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
                                 modifier = Modifier.background(Color.White)
                             ) {
-                                DropdownMenuItem(
-                                    text = { Text("Member") },
-                                    onClick = {
-                                        onUserTypeChange("Member")
-                                        expanded = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Admin") },
-                                    onClick = {
-                                        onUserTypeChange("Admin")
-                                        expanded = false
-                                    }
-                                )
+                                DropdownMenuItem(text = { Text("Member") }, onClick = {
+                                    onUserTypeChange("Member")
+                                    expanded = false
+                                })
+                                DropdownMenuItem(text = { Text("Admin") }, onClick = {
+                                    onUserTypeChange("Admin")
+                                    expanded = false
+                                })
                             }
                         }
 
@@ -479,25 +458,39 @@ fun AddUserContent(
             }
 
             val enableButton =
-                fullname.isNotBlank() && username.isNotBlank() && domicile.isNotBlank() && (password.isNotBlank() && confirmPassword.isNotBlank() && (confirmPassword == password))
-            Button(
-                onClick = onSaveClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Sage),
-                enabled = enableButton,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                fullname.isNotBlank() && username.isNotBlank() && email.isNotBlank() && domicile.isNotBlank() && (password.isNotBlank() && confirmPassword.isNotBlank() && (confirmPassword == password))
+            LoadingButton(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                     .onGloballyPositioned { coordinates ->
                         buttonHeight = with(localDensity) { coordinates.size.height.toDp() }
-                    }
-                    .constrainAs(buttonRef) {
+                    }.constrainAs(buttonRef) {
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
+                    },
+                isLoading = isLoading,
+                text = if (isLoading) "Sedang mengirim data..." else "Simpan Perubahan",
+                enabled = enableButton,
+                onClick = {
+                    if (!isLoading) {
+                        onSaveClick()
                     }
-            ) {
-                Text("Simpan Perubahan")
-            }
+                }
+            )
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        if (showCamera) {
+            ImagePickerLauncher(config = ImagePickerConfig(onPhotoCaptured = {
+                capturedPhoto = it
+                showCamera = false
+                showGallery = false
+            }, onError = {
+                imagePickerMessage = it.message.orEmpty()
+                showCamera = false
+                showGallery = false
+            }))
         }
     }
 }
@@ -525,9 +518,8 @@ fun AddUserScreenPreview() {
             confirmPassword = "",
             onConfirmPasswordChange = {},
             onSaveClick = {},
+            imageUrl = null,
             isLoading = false,
-            imageUrl = "",
-            onImageUrlChange = { }
-        )
+            onImageUrlChange = { })
     }
 }

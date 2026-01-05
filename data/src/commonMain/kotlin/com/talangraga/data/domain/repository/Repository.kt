@@ -18,4 +18,14 @@ interface Repository {
     fun getListUsers(): Flow<Result<List<UserEntity>>>
     fun getUser(userId: Int): Flow<Result<UserEntity>>
     fun getLocalUsers(): Flow<Result<List<UserEntity>>>
+    fun registerNewUser(
+        fullname: String,
+        username: String,
+        email: String,
+        phone: String?,
+        password: String,
+        domicile: String?,
+        userType: String,
+        imageProfile: ByteArray?
+    ): Flow<Result<UserResponse>>
 }

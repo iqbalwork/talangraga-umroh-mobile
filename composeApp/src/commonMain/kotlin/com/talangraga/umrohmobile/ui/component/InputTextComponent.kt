@@ -118,6 +118,75 @@ fun InputText(
 }
 
 @Composable
+fun InputTextWithStylingTitle(
+    modifier: Modifier = Modifier,
+    title: AnnotatedString? = null,
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    enabled: Boolean = true,
+    backgroundColor: Color = Color.White,
+    leadingIcon: ImageVector? = null,
+    trailingIcon: ImageVector? = null,
+    keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.Unspecified,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    val borderColor = if (value.isNotBlank()) Sage else BorderColor
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start
+    ) {
+        title?.let {
+            Text(
+                text = title,
+                style = TalangragaTypography.titleSmall,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = {
+                Text(placeholder)
+            },
+            singleLine = true,
+            enabled = enabled,
+            keyboardOptions = KeyboardOptions(
+                capitalization = keyboardCapitalization,
+                keyboardType = keyboardType
+            ),
+            leadingIcon = if (leadingIcon != null) {
+                {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null
+                    )
+                }
+            } else null,
+            trailingIcon = if (trailingIcon != null) {
+                {
+                    Icon(
+                        imageVector = trailingIcon,
+                        contentDescription = null
+                    )
+                }
+            } else null,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = borderColor,
+                unfocusedBorderColor = BorderColor,
+                focusedContainerColor = backgroundColor,
+                unfocusedContainerColor = backgroundColor
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
 fun CurrencyInputText(
     modifier: Modifier = Modifier,
     title: String? = null,

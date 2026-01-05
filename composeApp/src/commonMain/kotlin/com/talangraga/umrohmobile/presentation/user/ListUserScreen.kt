@@ -40,9 +40,14 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -111,6 +116,9 @@ fun ListUserContent(
     onRefresh: () -> Unit
 ) {
 
+    val localDensity = LocalDensity.current
+    var buttonHeight by remember { mutableStateOf(0.dp) }
+
     val refreshState = rememberPullToRefreshState()
 
     TalangragaScaffold(
@@ -130,6 +138,9 @@ fun ListUserContent(
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
+                    .onGloballyPositioned { coordinates ->
+                        buttonHeight = with(localDensity) { coordinates.size.height.toDp() }
+                    }
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -200,7 +211,7 @@ fun ListUserContent(
                                     UserItem(
                                         user = user,
                                         onEditUser = onEditUser,
-                                        modifier = Modifier
+                                        modifier = Modifier.padding(bottom = if (index == state.users.lastIndex) buttonHeight + 16.dp else 0.dp)
                                             .clickable {
                                                 onUserClick(user)
                                             }

@@ -1,12 +1,10 @@
 package com.talangraga.umrohmobile.presentation.login
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,8 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,11 +32,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.shared.SageDark
-import com.talangraga.shared.Sandstone
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.ui.component.InputText
+import com.talangraga.umrohmobile.ui.component.LoadingButton
 import com.talangraga.umrohmobile.ui.component.PasswordInput
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.ToastManager
@@ -176,29 +172,13 @@ fun LoginContent(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = {
-                        if (!isLoading) onLoginClick()
-                    },
+                LoadingButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    isLoading = isLoading,
+                    text = stringResource(Res.string.login),
                     enabled = identifier.isNotBlank() && password.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        AnimatedVisibility(visible = isLoading) {
-                            CircularProgressIndicator(
-                                color = Sandstone,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Text(
-                            stringResource(Res.string.login),
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                    }
-                }
+                    onClick = onLoginClick
+                )
             }
         }
     }
