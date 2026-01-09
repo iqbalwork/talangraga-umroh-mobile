@@ -1,4 +1,9 @@
-package com.talangraga.shared.utils
+package com.talangraga.shared
+
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 
 //fun Double.formatToIDR(): String {
 //    val amountString = this.toString()
@@ -26,4 +31,13 @@ fun Int.formatToIDR(): String {
         }
     }
     return "Rp ${stringBuilder.reverse()}"
+}
+
+fun String.mandatory(): AnnotatedString {
+    return buildAnnotatedString {
+        append(this@mandatory)
+        withStyle(style = SpanStyle(color = Red)) {
+            append("*")
+        }
+    }
 }

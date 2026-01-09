@@ -8,8 +8,8 @@ import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
-import com.talangraga.shared.utils.currentDate
-import com.talangraga.shared.utils.isDateInRange
+import com.talangraga.shared.currentDate
+import com.talangraga.shared.isDateInRange
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.presentation.utils.toUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val session: Session,
+    val session: Session,
     private val tokenManager: TokenManager,
     private val repository: Repository,
 ) : ViewModel() {
@@ -39,8 +39,6 @@ class HomeViewModel(
     private val _userType = MutableStateFlow<String?>(null)
     val userType: StateFlow<String?> = _userType.asStateFlow()
 
-    private var isProfileInitialized = false
-
     val selectedPeriod = mutableStateOf<PeriodEntity?>(null)
 
     private val _uiState = MutableStateFlow(
@@ -55,6 +53,7 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        getProfile()
         getPeriods()
     }
 
@@ -64,15 +63,6 @@ class HomeViewModel(
 
     fun setUserType(type: String) {
         _userType.update { type }
-    }
-
-    fun getProfileIfNecessary(justLogin: Boolean) {
-        if (justLogin) {
-            getProfile()
-        } else {
-            getLocalProfile()
-        }
-        isProfileInitialized = true
     }
 
     fun getProfile() {
@@ -87,7 +77,6 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         _uiState.update { it.copy(profile = SectionState.Success(response.data.toUiData())) }
-                        getLocalProfile()
                     }
                 }
             }
@@ -97,13 +86,14 @@ class HomeViewModel(
     fun getLocalProfile() {
         _uiState.update { it.copy(profile = SectionState.Loading) }
         viewModelScope.launch {
-            val profile = session.getProfile()
-            if (profile?.username.isNullOrBlank()) {
-                getProfile()
-            } else {
-                _uiState.update { it.copy(profile = SectionState.Success(profile.toUiData())) }
+            session.userProfile.value?.let { userResponse ->
+                _uiState.update {
+                    it.copy(
+                        profile = SectionState.Success(userResponse.toUiData())
+                    )
+                }
                 if (_userType.value.isNullOrBlank()) {
-                    _userType.update { profile.userType }
+                    _userType.update { userResponse.userType }
                 }
             }
         }

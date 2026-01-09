@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package com.talangraga.shared.utils
+package com.talangraga.shared
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -109,7 +109,7 @@ fun LocalDate.isDateInRange(
     return try {
         val startDate = LocalDate.parse(startDateString)
         val endDate = LocalDate.parse(endDateString)
-        this >= startDate && this <= endDate
+        this in startDate..endDate
     } catch (e: Exception) {
         println("Error parsing dates: ${e.message}")
         false
@@ -142,7 +142,7 @@ fun LocalDate.toIndonesianDateFormat(): String {
         12 -> "Desember"
         else -> ""
     }
-    return "$dayOfWeek, ${this.dayOfMonth} $month ${this.year}"
+    return "$dayOfWeek, $day $month ${this.year}"
 }
 
 @OptIn(ExperimentalTime::class)

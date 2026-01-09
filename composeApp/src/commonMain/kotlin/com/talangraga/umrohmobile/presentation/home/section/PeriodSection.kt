@@ -12,8 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.talangraga.data.local.database.model.PeriodEntity
-import com.talangraga.shared.utils.INDONESIA_TRIMMED
-import com.talangraga.shared.utils.formatDateRange
+import com.talangraga.shared.INDONESIA_TRIMMED
+import com.talangraga.shared.formatDateRange
 import com.talangraga.umrohmobile.ui.component.TextButton
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import org.jetbrains.compose.ui.tooling.preview.Preview

@@ -1,4 +1,4 @@
-package com.talangraga.shared.navigation
+package com.talangraga.umrohmobile.navigation
 
 import kotlinx.serialization.Serializable
 
@@ -20,11 +20,23 @@ sealed class Screen {
 
     @Serializable
     object MainRoute {
-        val route = "main_route"
+        const val ROUTE = "main_route"
     }
 
     @Serializable
     data class AddTransactionRoute(val isCollective: Boolean = false)
+
+    @Serializable
+    data class AddUserRoute(val userId: Int, val isEdit: Boolean, val isLoginUser: Boolean)
+
+    @Serializable
+    data class EditProfileRoute(val userId: Int, val isLoginUser: Boolean)
+
+    @Serializable
+    data class MemberDetailRoute(val userId: Int)
+
+    @Serializable
+    data class ChangePasswordRoute(val userId: Int)
 
     @Serializable
     data class HomeRoute(val justLogin: Boolean = false)
