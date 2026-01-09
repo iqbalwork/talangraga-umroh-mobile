@@ -27,7 +27,7 @@ sealed class Screen {
     data class AddTransactionRoute(val isCollective: Boolean = false)
 
     @Serializable
-    object AddUserRoute
+    data class AddUserRoute(val userId: Int, val isEdit: Boolean, val isLoginUser: Boolean)
 
     @Serializable
     data class EditProfileRoute(val userId: Int, val isLoginUser: Boolean)

@@ -14,11 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,11 +35,11 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 fun ProfileSection(
     modifier: Modifier,
+    user: UserUIData?,
     userType: String?,
     state: SectionState<UserUIData>,
     onClickImage: (String) -> Unit = {},
     onRetry: () -> Unit,
-    onLogout: () -> Unit
 ) {
 
     when (state) {
@@ -95,15 +92,14 @@ fun ProfileSection(
         }
 
         is SectionState.Success -> {
-            val user = state.data
             ConstraintLayout(
                 modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 val (imageProfileRef, nameRef, userTypeRef, listUserRef, settingsRef, logoutButtonRef) = createRefs()
                 BasicImage(
-                    model = user.imageProfileUrl,
+                    model = user?.imageProfileUrl,
                     modifier = Modifier
-                        .clickable { onClickImage(user.imageProfileUrl) }
+                        .clickable { onClickImage(user?.imageProfileUrl.orEmpty()) }
                         .size(60.dp)
                         .clip(CircleShape)
                         .constrainAs(imageProfileRef) {
@@ -114,7 +110,7 @@ fun ProfileSection(
                 )
 
                 Text(
-                    text = user.fullname,
+                    text = user?.fullname.orEmpty(),
                     style = TalangragaTypography.bodyMedium,
                     modifier = Modifier
                         .constrainAs(nameRef) {
@@ -153,27 +149,6 @@ fun ProfileSection(
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
-
-                // Logout Button
-                Box(
-                    modifier = Modifier
-                        .constrainAs(logoutButtonRef) {
-                            top.linkTo(imageProfileRef.top)
-                            bottom.linkTo(imageProfileRef.bottom)
-                            end.linkTo(parent.end)
-                        }
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onLogout() }
-                        .background(Color.Red) // Red background
-                        .padding(4.dp) // Adjusted padding
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Logout,
-                        contentDescription = "Logout",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
             }
         }
     }
@@ -197,25 +172,25 @@ fun PreviewProfileSection() {
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
+            user = dummyUser,
             state = SectionState.Success(dummyUser),
             onRetry = {},
-            onLogout = {},
         )
         HorizontalDivider()
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Admin",
+            user = dummyUser,
             state = SectionState.Loading,
             onRetry = {},
-            onLogout = {},
         )
         HorizontalDivider()
         ProfileSection(
             modifier = Modifier.fillMaxWidth(),
             userType = "Member",
+            user = dummyUser,
             state = SectionState.Error("Failed to load"),
             onRetry = {},
-            onLogout = {},
         )
     }
 }

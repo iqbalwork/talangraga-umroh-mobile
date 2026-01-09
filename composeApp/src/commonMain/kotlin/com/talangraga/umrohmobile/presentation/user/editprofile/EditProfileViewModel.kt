@@ -4,11 +4,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.network.api.Result
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.presentation.utils.toUiData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 /**
  * iqbalfauzi
@@ -17,7 +20,7 @@ import kotlinx.coroutines.launch
  */
 class EditProfileViewModel(
     private val repository: Repository
-): ViewModel() {
+) : ViewModel() {
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
@@ -58,16 +61,32 @@ class EditProfileViewModel(
 
     fun onSaveClick() {
         // TODO: Implement save logic
+        if (isLoginUser.value) {
+
+        } else {
+
+        }
     }
 
     fun getUser(userId: Int) {
-        viewModelScope.launch {
-            if (isLoginUser.value) {
-                // TODO: Fetch from session
-            } else {
-                // TODO: Fetch from local database
-            }
-        }
+        repository.getUser(userId)
+            .onEach { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _errorMessage.update { result.t.message }
+                    }
+
+                    is Result.Success -> {
+                        val data = result.data.toUiData()
+                        onFullnameChange(data.fullname)
+                        onPhoneNumberChange(data.phone)
+                        onEmailChange(data.email)
+                        onDomicileChange(data.domicile)
+                        onImageChange(data.imageProfileUrl)
+                        _user.update { result.data.toUiData() }
+                    }
+                }
+            }.launchIn(viewModelScope)
     }
 
     fun clearError() {

@@ -95,9 +95,24 @@ fun ListUserScreen(
         onUserClick = {
             navHostController.navigate(Screen.MemberDetailRoute(it.id))
         },
-        onAddUserClick = { navHostController.navigate(Screen.AddUserRoute) },
+        onAddUserClick = {
+            navHostController.navigate(
+                Screen.AddUserRoute(
+                    userId = 0,
+                    isEdit = false,
+                    isLoginUser = false
+                )
+            )
+        },
         onEditUser = {
-            navHostController.navigate(Screen.EditProfileRoute(userId = it, isLoginUser = false))
+            navHostController.navigate(
+                Screen.AddUserRoute(
+                    userId = it,
+                    isEdit = true,
+                    isLoginUser = false
+                )
+            )
+//            navHostController.navigate(Screen.EditProfileRoute(userId = it, isLoginUser = false))
         },
         onRefresh = viewModel::getListUser
     )

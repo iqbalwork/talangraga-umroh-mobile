@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,7 +19,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,10 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.shared.Background
-import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
+import com.talangraga.umrohmobile.ui.component.LoadingButton
 import com.talangraga.umrohmobile.ui.component.PasswordInput
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
+import com.talangraga.umrohmobile.ui.component.ToastManager
+import com.talangraga.umrohmobile.ui.component.ToastType
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -50,9 +54,29 @@ fun ChangePasswordScreen(
     val currentPassword by viewModel.currentPassword.collectAsStateWithLifecycle()
     val newPassword by viewModel.newPassword.collectAsStateWithLifecycle()
     val confirmPassword by viewModel.confirmPassword.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val isPasswordChanged by viewModel.isPasswordChanged.collectAsStateWithLifecycle()
+
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(errorMessage) {
+        ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
+    }
+
+    LaunchedEffect(isPasswordChanged) {
+        if (isPasswordChanged == true) {
+            scope.launch {
+                ToastManager.show(message = "Kata sandi berhasil diubah", type = ToastType.Success)
+                delay(2000)
+                navHostController.popBackStack()
+            }
+        }
+    }
 
     ChangePasswordContent(
         onBackClick = { navHostController.popBackStack() },
+        isLoading = isLoading,
         currentPassword = currentPassword,
         onCurrentPasswordChange = viewModel::onCurrentPasswordChange,
         newPassword = newPassword,
@@ -68,6 +92,7 @@ fun ChangePasswordScreen(
 @Composable
 fun ChangePasswordContent(
     onBackClick: () -> Unit,
+    isLoading: Boolean = false,
     currentPassword: String,
     onCurrentPasswordChange: (String) -> Unit,
     newPassword: String,
@@ -92,16 +117,15 @@ fun ChangePasswordContent(
         },
         containerColor = Background,
         bottomBar = {
-            Button(
+            LoadingButton(
                 onClick = onClickChangePassword,
-                colors = ButtonDefaults.buttonColors(containerColor = Sage),
                 enabled = currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword.isNotBlank() && (confirmPassword == newPassword),
+                isLoading = isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text("Simpan kata sandi")
-            }
+                    .padding(16.dp),
+                text = "Simpan kata sandi"
+            )
         }
     ) { paddingValues ->
         Column(

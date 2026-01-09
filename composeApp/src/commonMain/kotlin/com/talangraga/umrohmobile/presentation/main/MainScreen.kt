@@ -62,6 +62,8 @@ fun MainScreen(rootNavHostController: NavHostController) {
         Screen.ChangePasswordRoute::class.simpleName ?: "ChangePasswordRoute"
     ) == true || memberCurrentRoute?.contains(
         Screen.MemberDetailRoute::class.simpleName ?: "MemberDetailRoute"
+    ) == true || profileCurrentRoute?.contains(
+        Screen.AddUserRoute::class.simpleName ?: "AddUserRoute"
     ) == true
 
     val showBottomBar = !isSubScreen

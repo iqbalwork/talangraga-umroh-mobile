@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.talangraga.umrohmobile.presentation.user.adduser.AddUserScreen
 import com.talangraga.umrohmobile.presentation.user.changepassword.ChangePasswordScreen
 import com.talangraga.umrohmobile.presentation.user.editprofile.EditProfileScreen
 import com.talangraga.umrohmobile.presentation.user.profile.ProfileScreen
@@ -20,6 +21,15 @@ fun ProfileNavHost(rootNavController: NavHostController, navController: NavHostC
                 rootNavHostController = rootNavController,
                 navHostController = navController,
                 isLoginUser = true
+            )
+        }
+        composable<Screen.AddUserRoute> { backStackEntry ->
+            val args = backStackEntry.toRoute<Screen.AddUserRoute>()
+            AddUserScreen(
+                navController = navController,
+                isEdit = args.isEdit,
+                userId = args.userId,
+                isLoginUser = args.isLoginUser
             )
         }
         composable<Screen.EditProfileRoute> { backStackEntry ->

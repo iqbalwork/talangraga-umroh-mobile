@@ -3,6 +3,7 @@ package com.talangraga.umrohmobile.presentation.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
@@ -17,7 +18,8 @@ import kotlinx.coroutines.flow.update
 
 @OptIn(FlowPreview::class)
 class ListUserViewModel(
-    private val repository: Repository
+    private val repository: Repository,
+    private val session: Session,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ListUserUiState>(ListUserUiState.Loading)
@@ -57,16 +59,16 @@ class ListUserViewModel(
         }
 
         if (query.isBlank()) {
-             _uiState.update { ListUserUiState.Success(allUsers) }
+            _uiState.update { ListUserUiState.Success(allUsers) }
         } else {
             val filtered = allUsers.filter {
                 it.fullname.contains(query, ignoreCase = true) ||
-                it.username.contains(query, ignoreCase = true)
+                        it.username.contains(query, ignoreCase = true)
             }
-             _uiState.update { 
-                 if (filtered.isEmpty()) ListUserUiState.EmptyData 
-                 else ListUserUiState.Success(filtered) 
-             }
+            _uiState.update {
+                if (filtered.isEmpty()) ListUserUiState.EmptyData
+                else ListUserUiState.Success(filtered)
+            }
         }
     }
 
@@ -86,6 +88,7 @@ class ListUserViewModel(
 
                     is Result.Success -> {
                         val listUser = result.data.map { it.toUiData() }
+                            .filter { it.id != session.userProfile.value?.id }
                         allUsers = listUser
                         // Apply current filter if any
                         filterUsers(_searchQuery.value)

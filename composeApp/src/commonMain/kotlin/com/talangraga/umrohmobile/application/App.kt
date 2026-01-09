@@ -95,8 +95,14 @@ fun App() {
                     AddTransactionScreen(rootNavController, args.isCollective)
                 }
 
-                composable<Screen.AddUserRoute> {
-                    AddUserScreen(navController = rootNavController)
+                composable<Screen.AddUserRoute> { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.AddUserRoute>()
+                    AddUserScreen(
+                        navController = rootNavController,
+                        isEdit = args.isEdit,
+                        userId = args.userId,
+                        isLoginUser = args.isLoginUser
+                    )
                 }
             }
 

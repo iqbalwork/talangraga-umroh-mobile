@@ -109,7 +109,7 @@ fun LocalDate.isDateInRange(
     return try {
         val startDate = LocalDate.parse(startDateString)
         val endDate = LocalDate.parse(endDateString)
-        this >= startDate && this <= endDate
+        this in startDate..endDate
     } catch (e: Exception) {
         println("Error parsing dates: ${e.message}")
         false

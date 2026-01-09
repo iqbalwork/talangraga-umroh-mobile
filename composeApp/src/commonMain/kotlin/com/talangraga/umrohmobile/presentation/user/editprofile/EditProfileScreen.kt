@@ -72,6 +72,7 @@ fun EditProfileScreen(
 
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val isSuccess by viewModel.isSuccess.collectAsStateWithLifecycle()
+    val user by viewModel.user.collectAsStateWithLifecycle()
 
     LaunchedEffect(userId) {
         viewModel.isLoginUser.value = isLoginUser
@@ -104,7 +105,7 @@ fun EditProfileScreen(
         onDomicileChange = viewModel::onDomicileChange,
         imageUrl = viewModel.imageUrl.value,
         onImageUrlChange = viewModel::onImageChange,
-        onSaveClick = { },
+        onSaveClick = viewModel::onSaveClick,
         isLoading = false
     )
 }

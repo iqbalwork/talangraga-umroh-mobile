@@ -166,7 +166,7 @@ fun HomeMemberContent(
 
             item {
                 HomeInfoTransactionSection(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.background(color = Background).padding(16.dp),
                     isHomeAdminDashboard = false,
                     state = transactionState,
                     onAddTransaction = {},

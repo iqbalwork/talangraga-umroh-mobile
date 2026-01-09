@@ -165,6 +165,74 @@ class RepositoryImpl(
         }.flowOn(Dispatchers.IO)
     }
 
+    override fun updateMe(
+        fullname: String,
+        username: String,
+        email: String,
+        phone: String?,
+        password: String,
+        domicile: String?,
+        userType: String,
+        imageProfile: ByteArray?
+    ): Flow<Result<UserResponse>> {
+        return flow {
+            try {
+                val response = apiService.updateMe(
+                    fullname,
+                    username,
+                    email,
+                    phone,
+                    password,
+                    domicile,
+                    userType,
+                    imageProfile
+                )
+                if (response.data != null) {
+                    emit(Result.Success(response.data))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun updateUser(
+        userId: Int,
+        fullname: String,
+        username: String,
+        email: String,
+        phone: String?,
+        password: String,
+        domicile: String?,
+        userType: String,
+        imageProfile: ByteArray?
+    ): Flow<Result<UserResponse>> {
+        return flow {
+            try {
+                val response = apiService.updateUser(
+                    userId,
+                    fullname,
+                    username,
+                    email,
+                    phone,
+                    password,
+                    domicile,
+                    userType,
+                    imageProfile
+                )
+                if (response.data != null) {
+                    emit(Result.Success(response.data))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
     override fun getUser(userId: Int): Flow<Result<UserEntity>> {
         return channelFlow {
             try {
@@ -217,6 +285,23 @@ class RepositoryImpl(
                 } else {
                     apiService.getListUsers()
                 }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }
+    }
+
+    override fun getLocalUser(userId: Int): Flow<Result<UserEntity>> {
+        return flow {
+            try {
+                databaseHelper.getUserById(userId.toLong())
+                    .collectLatest {
+                        if (it.isNotEmpty()) {
+                            emit(Result.Success(it.first()))
+                        } else {
+                            emit(Result.Error(Exception("User not found")))
+                        }
+                    }
             } catch (ex: Exception) {
                 emit(Result.Error(ex))
             }
@@ -287,6 +372,29 @@ class RepositoryImpl(
                 it.map { paymentResponse -> paymentResponse.toPaymentEntity() }
             }
         )
+    }
+
+    override fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmNewPassword: String
+    ): Flow<Result<Unit>> {
+        return flow {
+            try {
+                val response = apiService.changePassword(
+                    currentPassword,
+                    newPassword,
+                    confirmNewPassword
+                )
+                if (response.code == 200) {
+                    emit(Result.Success(Unit))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }
     }
 
 }

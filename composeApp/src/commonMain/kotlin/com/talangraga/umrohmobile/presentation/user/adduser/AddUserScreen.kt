@@ -58,8 +58,10 @@ import com.talangraga.shared.Background
 import com.talangraga.shared.Red
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.mandatory
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.rememberSharedFileReader
 import com.talangraga.umrohmobile.ui.component.BasicImage
+import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.InputTextWithStylingTitle
 import com.talangraga.umrohmobile.ui.component.LoadingButton
@@ -81,12 +83,26 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun AddUserScreen(
-    navController: NavHostController, viewModel: AddUserViewModel = koinViewModel()
+    navController: NavHostController,
+    isEdit: Boolean,
+    userId: Int,
+    isLoginUser: Boolean,
+    viewModel: AddUserViewModel = koinViewModel()
 ) {
 
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val isSuccess by viewModel.isSuccess.collectAsStateWithLifecycle()
+    val user by viewModel.user.collectAsStateWithLifecycle()
+
+    LaunchedEffect(isLoginUser) {
+        viewModel.isLoginUser.value = isLoginUser
+        viewModel.isEdit.value = isEdit
+        if (userId > 0) {
+            viewModel.userId.value = userId
+            viewModel.getUser(userId)
+        }
+    }
 
     LaunchedEffect(errorMessage) {
         if (!errorMessage.isNullOrEmpty()) {
@@ -103,6 +119,8 @@ fun AddUserScreen(
 
     AddUserContent(
         onBackClick = { navController.popBackStack() },
+        isEdit = isEdit,
+        isLoginUser = isLoginUser,
         fullname = viewModel.fullname.value,
         onFullnameChange = viewModel::onFullnameChange,
         username = viewModel.username.value,
@@ -121,14 +139,17 @@ fun AddUserScreen(
         onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
         imageUrl = viewModel.imageUri.value,
         onImageUrlChange = viewModel::onImageChange,
+        user = user,
         isLoading = isLoading,
-        onSaveClick = viewModel::registerUser,
+        onSaveClick = viewModel::saveUser,
     )
 }
 
 @Composable
 fun AddUserContent(
     onBackClick: () -> Unit,
+    isEdit: Boolean,
+    isLoginUser: Boolean,
     fullname: String,
     onFullnameChange: (String) -> Unit,
     username: String,
@@ -147,6 +168,7 @@ fun AddUserContent(
     onConfirmPasswordChange: (String) -> Unit,
     imageUrl: ByteArray?,
     onImageUrlChange: (ByteArray) -> Unit,
+    user: UserUIData? = null,
     isLoading: Boolean,
     onSaveClick: () -> Unit
 ) {
@@ -228,10 +250,11 @@ fun AddUserContent(
 
     TalangragaScaffold(
         topBar = {
+            val titleLabel = if (isEdit) "Ubah Pengguna" else "Tambah Pengguna Baru"
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Tambah Pengguna Baru", style = TalangragaTypography.titleLarge
+                        text = titleLabel, style = TalangragaTypography.titleLarge
                     )
                 }, navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -272,8 +295,11 @@ fun AddUserContent(
                                 modifier = Modifier, contentAlignment = Alignment.Center
                             ) {
                                 BasicImage(
-                                    model = imageUrl,
+                                    model = if (isEdit) user?.imageProfileUrl else imageUrl,
                                     modifier = Modifier.size(124.dp).clip(CircleShape)
+                                        .clickable {
+                                            ImageViewerManager.show(if (isEdit) user?.imageProfileUrl else imageUrl)
+                                        }
                                 )
                             }
 
@@ -358,97 +384,98 @@ fun AddUserContent(
                             keyboardCapitalization = KeyboardCapitalization.Words,
                             modifier = Modifier.fillMaxWidth()
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        if (!isLoginUser) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Jenis User".mandatory(),
+                                style = TalangragaTypography.titleSmall,
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                            )
 
-                        Text(
-                            text = "Jenis User".mandatory(),
-                            style = TalangragaTypography.titleSmall,
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
-                        )
-
-                        var expanded by remember { mutableStateOf(false) }
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            TextButtonOption(
-                                text = userType,
-                                placeholder = "Pilih Jenis User",
-                                trailingIcon = Icons.Default.ArrowDropDown,
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = { expanded = true })
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                                modifier = Modifier.background(Color.White)
-                            ) {
-                                DropdownMenuItem(text = { Text("Member") }, onClick = {
-                                    onUserTypeChange("Member")
-                                    expanded = false
-                                })
-                                DropdownMenuItem(text = { Text("Admin") }, onClick = {
-                                    onUserTypeChange("Admin")
-                                    expanded = false
-                                })
+                            var expanded by remember { mutableStateOf(false) }
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                TextButtonOption(
+                                    text = userType.replaceFirstChar { it.uppercase() },
+                                    placeholder = "Pilih Jenis User",
+                                    trailingIcon = Icons.Default.ArrowDropDown,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = { expanded = true })
+                                DropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                    modifier = Modifier.background(Color.White)
+                                ) {
+                                    DropdownMenuItem(text = { Text("Member") }, onClick = {
+                                        onUserTypeChange("Member")
+                                        expanded = false
+                                    })
+                                    DropdownMenuItem(text = { Text("Admin") }, onClick = {
+                                        onUserTypeChange("Admin")
+                                        expanded = false
+                                    })
+                                }
                             }
-                        }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
 
-                        // Kata Sandi Section
-                        Text(
-                            text = "Kata Sandi",
-                            style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+                            // Kata Sandi Section
+                            Text(
+                                text = "Kata Sandi",
+                                style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                        PasswordInput(
-                            title = "Kata sandi baru",
-                            password = password,
-                            onPasswordChange = onPasswordChange,
-                            placeholder = "Masukkan kata sandi baru Anda",
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        if (password.isNotEmpty() && password.length < 8) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Error,
-                                    contentDescription = null,
-                                    tint = Color.Red,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = " Kata sandi minimal 8 karakter",
-                                    style = TalangragaTypography.bodySmall.copy(color = Color.Red)
-                                )
+                            PasswordInput(
+                                title = "Kata sandi baru",
+                                password = password,
+                                onPasswordChange = onPasswordChange,
+                                placeholder = "Masukkan kata sandi baru Anda",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            if (password.isNotEmpty() && password.length < 8) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Error,
+                                        contentDescription = null,
+                                        tint = Color.Red,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = " Kata sandi minimal 8 karakter",
+                                        style = TalangragaTypography.bodySmall.copy(color = Color.Red)
+                                    )
+                                }
                             }
-                        }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                        PasswordInput(
-                            title = "Konfirmasi kata sandi baru",
-                            password = confirmPassword,
-                            onPasswordChange = onConfirmPasswordChange,
-                            placeholder = "Konfirmasi kata sandi baru Anda",
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        if (confirmPassword.isNotEmpty() && confirmPassword.length < 8) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Error,
-                                    contentDescription = null,
-                                    tint = Color.Red,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = " Kata sandi minimal 8 karakter",
-                                    style = TalangragaTypography.bodySmall.copy(color = Color.Red)
-                                )
+                            PasswordInput(
+                                title = "Konfirmasi kata sandi baru",
+                                password = confirmPassword,
+                                onPasswordChange = onConfirmPasswordChange,
+                                placeholder = "Konfirmasi kata sandi baru Anda",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            if (confirmPassword.isNotEmpty() && confirmPassword.length < 8) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Error,
+                                        contentDescription = null,
+                                        tint = Color.Red,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = " Kata sandi minimal 8 karakter",
+                                        style = TalangragaTypography.bodySmall.copy(color = Color.Red)
+                                    )
+                                }
                             }
                         }
 
@@ -457,8 +484,10 @@ fun AddUserContent(
                 }
             }
 
-            val enableButton =
+            val enableRegisterButton =
                 fullname.isNotBlank() && username.isNotBlank() && email.isNotBlank() && domicile.isNotBlank() && (password.isNotBlank() && confirmPassword.isNotBlank() && (confirmPassword == password))
+            val enableSaveButton =
+                (fullname != user?.fullname) || (username != user.username) || (email != user.email) || (phoneNumber != user.phone) || (domicile != user.domicile)
             LoadingButton(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                     .onGloballyPositioned { coordinates ->
@@ -469,8 +498,8 @@ fun AddUserContent(
                         end.linkTo(parent.end)
                     },
                 isLoading = isLoading,
-                text = if (isLoading) "Sedang mengirim data..." else "Simpan Perubahan",
-                enabled = enableButton,
+                text = if (isLoading) "Sedang mengirim data..." else if (isEdit) "Simpan Perubahan" else "Daftarkan Anggota",
+                enabled = if (isEdit) enableSaveButton else enableRegisterButton,
                 onClick = {
                     if (!isLoading) {
                         onSaveClick()
@@ -501,6 +530,39 @@ fun AddUserScreenPreview() {
     TalangragaTheme {
         AddUserContent(
             onBackClick = {},
+            isEdit = false,
+            isLoginUser = false,
+            fullname = "",
+            onFullnameChange = {},
+            username = "",
+            onUsernameChange = {},
+            phoneNumber = "",
+            onPhoneNumberChange = {},
+            email = "",
+            onEmailChange = {},
+            domicile = "",
+            onDomicileChange = {},
+            userType = "Member",
+            onUserTypeChange = {},
+            password = "",
+            onPasswordChange = {},
+            confirmPassword = "",
+            onConfirmPasswordChange = {},
+            onSaveClick = {},
+            imageUrl = null,
+            isLoading = false,
+            onImageUrlChange = { })
+    }
+}
+
+@Preview
+@Composable
+fun EditserScreenPreview() {
+    TalangragaTheme {
+        AddUserContent(
+            onBackClick = {},
+            isEdit = true,
+            isLoginUser = true,
             fullname = "",
             onFullnameChange = {},
             username = "",

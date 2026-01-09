@@ -15,13 +15,19 @@ fun MemberNavHost(navController: NavHostController, rootNavController: NavHostCo
 
     NavHost(
         navController = navController,
-        startDestination = Screen.BottomNavItem.MEMBER
+        startDestination = Screen.BottomNavItem.MEMBER,
     ) {
         composable(Screen.BottomNavItem.MEMBER) {
             ListUserScreen(rootNavController = rootNavController, navHostController = navController)
         }
-        composable<Screen.AddUserRoute> {
-            AddUserScreen(navController = navController)
+        composable<Screen.AddUserRoute> { backStackEntry ->
+            val args = backStackEntry.toRoute<Screen.AddUserRoute>()
+            AddUserScreen(
+                navController = navController,
+                isEdit = args.isEdit,
+                userId = args.userId,
+                isLoginUser = args.isLoginUser
+            )
         }
         composable<Screen.EditProfileRoute> { backStackEntry ->
             val args = backStackEntry.toRoute<Screen.EditProfileRoute>()

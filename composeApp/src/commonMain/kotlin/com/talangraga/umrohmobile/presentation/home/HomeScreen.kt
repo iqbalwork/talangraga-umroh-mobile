@@ -29,10 +29,10 @@ import androidx.navigation.NavHostController
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.section.HomeInfoTransactionSection
-import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
 import com.talangraga.umrohmobile.presentation.home.section.PeriodSection
 import com.talangraga.umrohmobile.presentation.home.section.ProfileSection
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.presentation.utils.toUiData
 import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
@@ -45,18 +45,18 @@ import org.koin.compose.viewmodel.koinViewModel
 fun HomeScreen(
     navHostController: NavHostController,
     rootNavHostController: NavHostController,
-    justLogin: Boolean,
     onNavigateToTransaction: () -> Unit,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
 
     val periods by viewModel.periods.collectAsStateWithLifecycle()
-    val userType by viewModel.userType.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val userProfile by viewModel.session.userProfile.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     HomeContent(
-        userType = userType.orEmpty(),
+        user = userProfile?.toUiData(),
+        userType = userProfile?.userType.orEmpty(),
         onUserTypeChange = viewModel::setUserType,
         periods = periods,
         selectedPeriod = viewModel.selectedPeriod.value,
@@ -74,19 +74,13 @@ fun HomeScreen(
         onFetchAllTransaction = {
             viewModel.getTransactions()
         },
-    ) {
-        viewModel.clearSession()
-        rootNavHostController.navigate(Screen.LoginRoute) {
-            popUpTo(Screen.MainRoute.ROUTE) {
-                inclusive = true
-            }
-        }
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
+    user: UserUIData?,
     userType: String,
     onUserTypeChange: (String) -> Unit,
     periods: List<PeriodEntity>,
@@ -98,10 +92,8 @@ fun HomeContent(
     onAddTransaction: () -> Unit,
     onFetchProfile: () -> Unit,
     onFetchAllTransaction: () -> Unit,
-    onLogout: () -> Unit
 ) {
 
-    var showLogoutDialog by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
 
     val userTypeSheetState = rememberModalBottomSheetState()
@@ -118,16 +110,6 @@ fun HomeContent(
         scope.launch {
             if (errorMessage.isNotEmpty()) snackbarHostState.showSnackbar(errorMessage)
         }
-    }
-
-    if (showLogoutDialog) {
-        LogoutDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            onConfirmLogout = {
-                showLogoutDialog = false
-                onLogout()
-            }
-        )
     }
 
     TalangragaScaffold(
@@ -185,12 +167,12 @@ fun HomeContent(
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(top = paddingValues.calculateTopPadding()),
                         userType = userType,
+                        user = user,
                         state = uiState.profile,
                         onRetry = onFetchProfile,
                         onClickImage = {
                             ImageViewerManager.show(it)
                         },
-                        onLogout = { showLogoutDialog = true },
                     )
                 }
 
@@ -231,6 +213,17 @@ fun PreviewHomeContent() {
         periods = listOf(
             PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
         ),
+        user = UserUIData(
+            id = 1,
+            username = "iqbalf",
+            fullname = "Iqbal Fauzi",
+            email = "",
+            phone = "",
+            domicile = "",
+            userType = "Admin",
+            imageProfileUrl = "",
+            isActive = true
+        ),
         uiState = HomeUiState(
             profile = SectionState.Success(
                 UserUIData(
@@ -252,7 +245,6 @@ fun PreviewHomeContent() {
         ),
         errorMessage = "",
         onFetchProfile = {},
-        onLogout = {},
         onPeriodChange = {},
         userType = "Admin",
         onUserTypeChange = { },

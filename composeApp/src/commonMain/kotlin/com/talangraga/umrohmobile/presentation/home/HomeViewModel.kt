@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val session: Session,
+    val session: Session,
     private val tokenManager: TokenManager,
     private val repository: Repository,
 ) : ViewModel() {
@@ -77,7 +77,6 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         _uiState.update { it.copy(profile = SectionState.Success(response.data.toUiData())) }
-                        getLocalProfile()
                     }
                 }
             }
@@ -87,13 +86,14 @@ class HomeViewModel(
     fun getLocalProfile() {
         _uiState.update { it.copy(profile = SectionState.Loading) }
         viewModelScope.launch {
-            val profile = session.getProfile()
-            if (profile?.username.isNullOrBlank()) {
-                getProfile()
-            } else {
-                _uiState.update { it.copy(profile = SectionState.Success(profile.toUiData())) }
+            session.userProfile.value?.let { userResponse ->
+                _uiState.update {
+                    it.copy(
+                        profile = SectionState.Success(userResponse.toUiData())
+                    )
+                }
                 if (_userType.value.isNullOrBlank()) {
-                    _userType.update { profile.userType }
+                    _userType.update { userResponse.userType }
                 }
             }
         }
