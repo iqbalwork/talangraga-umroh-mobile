@@ -18,8 +18,8 @@ import com.talangraga.shared.BorderColor
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
-import com.talangraga.shared.utils.formatIsoTimestampToCustom
-import com.talangraga.shared.utils.formatToIDR
+import com.talangraga.shared.formatIsoTimestampToCustom
+import com.talangraga.shared.formatToIDR
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable

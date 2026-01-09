@@ -13,8 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.talangraga.data.local.session.SessionKey
-import com.talangraga.shared.navigation.Screen
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.navigation.Screen
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -38,7 +38,7 @@ fun SplashScreen(
             }
         } else {
             // navigate to MainRoute’s HOME tab
-            navHostController.navigate(Screen.MainRoute.route) {
+            navHostController.navigate(Screen.MainRoute.ROUTE) {
                 popUpTo(Screen.SplashRoute) { inclusive = true }
             }
         }

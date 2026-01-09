@@ -2,12 +2,18 @@ package com.talangraga.data.local.session
 
 import com.russhwolf.settings.Settings
 import com.talangraga.data.network.model.response.UserResponse
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 
 class Session(
     private val settings: Settings,
     private val json: Json
 ) {
+
+    private val _userProfile = MutableStateFlow(getProfile())
+    val userProfile: StateFlow<UserResponse?> = _userProfile
 
     fun saveBoolean(key: String, value: Boolean) = settings.putBoolean(key, value)
 
@@ -39,6 +45,7 @@ class Session(
 
     fun saveProfile(user: UserResponse) {
         val profileString = json.encodeToString(UserResponse.serializer(), user)
+        _userProfile.update { user }
         settings.putString(SessionKey.PROFILE_KEY, profileString)
     }
 

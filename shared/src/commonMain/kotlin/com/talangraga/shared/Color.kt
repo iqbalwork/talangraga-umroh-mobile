@@ -13,6 +13,8 @@ val Aqua = Color(0xFF6dd5ed)
 val Teal = Color(0xFF2193b0)
 val MediumPurple = Color(0xFF6A82FB)
 val RosePink = Color(0xFFFC5C7D)
+val AccentRed = Color(0xFFFFD4D6)
+val Red = Color(0xFFFF3A50)
 
 // Supporting shades
 val SageDark = Color(0xFF9FB7A1)

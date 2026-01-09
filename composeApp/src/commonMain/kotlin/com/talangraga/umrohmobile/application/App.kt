@@ -17,14 +17,15 @@ import androidx.savedstate.SavedState
 import androidx.savedstate.read
 import androidx.savedstate.write
 import com.talangraga.data.network.TokenManager
-import com.talangraga.shared.navigation.Screen
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.main.MainScreen
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen
 import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionScreen
-import com.talangraga.umrohmobile.ui.TalangragaTheme
-import com.talangraga.umrohmobile.ui.ThemeManager
-import com.talangraga.umrohmobile.ui.ThemeMode
+import com.talangraga.umrohmobile.presentation.user.adduser.AddUserScreen
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import com.talangraga.umrohmobile.ui.theme.ThemeManager
+import com.talangraga.umrohmobile.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
@@ -83,7 +84,7 @@ fun App() {
                 }
 
                 // MAIN CONTENT AREA (Persistent)
-                composable(Screen.MainRoute.route) {
+                composable(Screen.MainRoute.ROUTE) {
                     MainScreen(
                         rootNavHostController = rootNavController
                     )
@@ -92,6 +93,16 @@ fun App() {
                 composable<Screen.AddTransactionRoute> { backStackEntry ->
                     val args = backStackEntry.toRoute<Screen.AddTransactionRoute>()
                     AddTransactionScreen(rootNavController, args.isCollective)
+                }
+
+                composable<Screen.AddUserRoute> { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.AddUserRoute>()
+                    AddUserScreen(
+                        navController = rootNavController,
+                        isEdit = args.isEdit,
+                        userId = args.userId,
+                        isLoginUser = args.isLoginUser
+                    )
                 }
             }
 

@@ -72,7 +72,10 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
             implementation(libs.navigation.compose)
+            implementation(libs.compose.ui.backhandler)
             implementation(libs.material.icons.extended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
@@ -86,7 +89,6 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.coil.compose)
             implementation(libs.constraintlayout.compose.multiplatform)
             implementation(libs.napier)
             implementation(libs.kotlinx.datetime)
@@ -103,6 +105,9 @@ kotlin {
             implementation(libs.firebase.app)
             implementation(libs.firebase.analytic)
             implementation(libs.firebase.crashlytic)
+
+            // Media Picker
+            implementation(libs.image.picker.kmp)
 
             implementation(project(":data"))
             implementation(project(":shared"))

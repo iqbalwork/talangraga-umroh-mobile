@@ -38,6 +38,10 @@ INSERT OR REPLACE INTO UserData(
 selectAllUserData:
 SELECT * FROM UserData;
 
+selectUser:
+SELECT * FROM UserData
+WHERE userId = ?;
+
 -- Delete a single record by id
 deleteUserDataById:
 DELETE FROM UserData
