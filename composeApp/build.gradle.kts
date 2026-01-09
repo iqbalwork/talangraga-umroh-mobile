@@ -10,29 +10,26 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.kotlinParcelize)
-    alias(libs.plugins.buildKonfig)
-    alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotzilla)
+    alias(libs.plugins.buildKonfig)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.crashlytics)
 }
 
 buildkonfig {
     packageName = "com.talangraga.umrohmobile"
 
-    val stagingUrl = project.findProperty("stagingUrl") ?: ""
-    val productionUrl = project.findProperty("productionUrl") ?: ""
+    val kotzillaStagingKey = project.findProperty("kotzillaStagingKey") ?: ""
+    val kotzillaProductionKey = project.findProperty("kotzillaProductionKey") ?: ""
 
     defaultConfigs {
         buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
-    }
-    defaultConfigs("staging") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", "$stagingUrl")
+        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaStagingKey")
     }
     // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("release") {
+    defaultConfigs("production") {
         buildConfigField(BOOLEAN, "IS_DEBUG", "false")
-        buildConfigField(STRING, "BASE_URL", "$productionUrl")
+        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaProductionKey")
     }
 
 }
@@ -67,7 +64,6 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.android.driver)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -76,7 +72,10 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
             implementation(libs.navigation.compose)
+            implementation(libs.compose.ui.backhandler)
             implementation(libs.material.icons.extended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
@@ -90,9 +89,7 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.coil.compose)
             implementation(libs.constraintlayout.compose.multiplatform)
-            implementation(libs.ktor.monitor.logging)
             implementation(libs.napier)
             implementation(libs.kotlinx.datetime)
             implementation(libs.inspektify.ktor3)
@@ -103,13 +100,22 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.multiplatform.settings.serialization)
             implementation(libs.multiplatform.settings.coroutines)
+
+            // Gitlive Firebase
+            implementation(libs.firebase.app)
+            implementation(libs.firebase.analytic)
+            implementation(libs.firebase.crashlytic)
+
+            // Media Picker
+            implementation(libs.image.picker.kmp)
+
+            implementation(project(":data"))
+            implementation(project(":shared"))
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-            implementation(libs.native.driver)
         }
         nativeMain.dependencies {
-            implementation(libs.native.driver)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -140,9 +146,24 @@ android {
     }
     buildTypes {
         getByName("release") {
+            isMinifyEnabled = true
+        }
+        getByName("debug") {
             isMinifyEnabled = false
         }
     }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("staging") {
+            dimension = "version"
+            applicationIdSuffix = ".staging"
+        }
+        create("production") {
+            dimension = "version"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -151,14 +172,4 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
-}
-
-sqldelight {
-    databases {
-        create("TalangragaDatabase") {
-            packageName.set("com.talangraga.umrohmobile")
-            // optional: specify srcDirs if you place .sq files outside default
-            // srcDirs.setFrom("src/commonMain/sqldelight")
-        }
-    }
 }

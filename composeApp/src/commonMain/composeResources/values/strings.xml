@@ -8,4 +8,6 @@
     <string name="input_here">Input here</string>
     <string name="input_password_here">Input password here</string>
     <string name="login">Login</string>
+    <string name="logout">Keluar</string>
+    <string name="tambah_transaksi">Tambah Transaksi</string>
 </resources>

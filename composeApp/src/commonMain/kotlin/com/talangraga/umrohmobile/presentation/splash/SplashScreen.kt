@@ -12,11 +12,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.talangraga.umrohmobile.data.local.session.SessionKey
-import com.talangraga.umrohmobile.presentation.navigation.LoginRoute
-import com.talangraga.umrohmobile.presentation.navigation.MainRoute
-import com.talangraga.umrohmobile.presentation.navigation.SplashRoute
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.data.local.session.SessionKey
+import com.talangraga.umrohmobile.navigation.Screen
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -35,13 +33,13 @@ fun SplashScreen(
     LaunchedEffect(isLogin) {
         delay(1000)
         if (!isLogin) {
-            navHostController.navigate(LoginRoute) {
-                popUpTo(SplashRoute) { inclusive = true }
+            navHostController.navigate(Screen.LoginRoute) {
+                popUpTo(Screen.SplashRoute) { inclusive = true }
             }
         } else {
             // navigate to MainRoute’s HOME tab
-            navHostController.navigate(MainRoute.route) {
-                popUpTo(SplashRoute) { inclusive = true }
+            navHostController.navigate(Screen.MainRoute.ROUTE) {
+                popUpTo(Screen.SplashRoute) { inclusive = true }
             }
         }
     }

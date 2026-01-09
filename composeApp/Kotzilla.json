@@ -2,6 +2,12 @@
   "sdkVersion": "1.2.2",
   "keys": [
     {
+      "appId": "019b4b1f-f229-739c-bd0f-7aedcbe97a65",
+      "applicationPackageName": "com.talangraga.umrohmobile.staging",
+      "keyId": "019b4b20-1463-7705-93b1-ac0d0ca85b40",
+      "apiKey": "ktz-sdk-DZMH3UFugdk5m6UV2gMBr876g8uoFkhPBFb1A28lojM"
+    },
+    {
       "appId": "23b2f0c0-499d-4e79-b105-320f24fa2428",
       "applicationPackageName": "com.talangraga.umrohmobile",
       "keyId": "019a2004-6951-7dbd-8d06-dacefa2bff24",

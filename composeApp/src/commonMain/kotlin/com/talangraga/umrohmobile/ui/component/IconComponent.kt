@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.talangraga.umrohmobile.ui.Aqua
-import com.talangraga.umrohmobile.ui.Green
+import com.talangraga.shared.Aqua
+import com.talangraga.shared.Green
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable

@@ -3,26 +3,28 @@ agp = "8.13.1"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "35"
-androidx-activity = "1.11.0"
+androidx-activity = "1.12.0"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
 androidx-espresso = "3.7.0"
-androidx-lifecycle = "2.9.5"
+androidx-lifecycle = "2.9.6"
 androidx-testExt = "1.3.0"
 coilCompose = "3.3.0"
-composeMultiplatform = "1.9.2"
+composeMultiplatform = "1.9.3"
 constraintlayoutComposeMultiplatform = "0.6.1"
 inspektifyKtor3 = "1.0.0-beta09"
 junit = "4.13.2"
 kotlin = "2.2.21"
 koin = "4.1.1"
-kotzilla = "1.3.0"
+kotzilla = "1.4.0"
 kotlinx-serialization = "1.9.0"
 kotlinxDatetime = "0.7.1-0.6.x-compat"
 ktor = "3.3.2"
 ktorMonitorLogging = "1.7.5"
 materialIconsExtended = "1.7.3"
 navigationCompose = "2.9.1"
+easyMediaPicker = "2.2.0"
+imagePickerKMP = "1.0.28"
 
 kotlinx-coroutines = "1.10.2"
 kotlinParcelize = "2.2.21"
@@ -31,11 +33,21 @@ napier = "2.7.1"
 kotlinStdlib = "2.2.20"
 runner = "1.7.0"
 core = "1.7.0"
-sqlDelight = "2.1.0"
+sqlDelight = "2.2.1"
 settings = "1.3.0"
+# Firebase
+gitlive = "2.4.0"
+crashlytics = "3.0.6"
+google = "4.4.4"
+
+assertk = "0.28.1"
+turbine = "1.2.0"
 
 [libraries]
+# Coil Image Loader
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilCompose" }
+
 constraintlayout-compose-multiplatform = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayoutComposeMultiplatform" }
 inspektify-ktor3 = { module = "io.github.bvantur:inspektify-ktor3", version.ref = "inspektifyKtor3" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -48,6 +60,10 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+
+# Test
+assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # Koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -63,13 +79,14 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 # Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" } # For Android/JVM with OkHttp
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "coilCompose" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" } # For iOS
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-monitor-logging = { module = "ro.cosminmihu.ktor:ktor-monitor-logging", version.ref = "ktorMonitorLogging" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
-ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor"}
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 # Logging
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
@@ -77,17 +94,23 @@ napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 # UI
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-
+compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
+image-picker-kmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "imagePickerKMP" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+# Firebase Gitlive
+firebase-app = { module = "dev.gitlive:firebase-app", version.ref = "gitlive" }
+firebase-analytic = { module = "dev.gitlive:firebase-analytics", version.ref = "gitlive" }
+firebase-crashlytic = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive" }
 
 # Database
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelight" }
 native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "sqlDelight" }
 runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqlDelight" }
 coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqlDelight" }
-multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings"}
-multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings"}
-multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings"}
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
+multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings" }
+multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -97,8 +120,10 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlinParcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlinParcelize" }
-buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig"}
+buildKonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
-sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight"}
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 kotzilla = { id = "io.kotzilla.kotzilla-plugin", version.ref = "kotzilla" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google" }
+crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }

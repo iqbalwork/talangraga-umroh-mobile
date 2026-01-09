@@ -3,9 +3,8 @@ package com.talangraga.umrohmobile.presentation.login
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.talangraga.umrohmobile.data.network.api.ApiResponse
-import com.talangraga.umrohmobile.data.network.api.Result
-import com.talangraga.umrohmobile.domain.repository.Repository
+import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.network.api.Result
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -27,6 +26,10 @@ class LoginViewModel(
 
     var identifier = mutableStateOf("")
     var password = mutableStateOf("")
+
+    fun clearError() {
+        _errorMessage.update { null }
+    }
 
     fun onIdentifierChange(newUsername: String) {
         identifier.value = newUsername
