@@ -30,11 +30,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 
 class RepositoryImpl(
     private val apiService: ApiService,
-    private val json: Json,
     private val session: Session,
     private val tokenManager: TokenManager,
     private val databaseHelper: DatabaseHelper

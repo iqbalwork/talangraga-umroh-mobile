@@ -18,10 +18,8 @@ expect val platformModule: Module
 val sharedModule = module {
     single<Json> {
         Json {
-            isLenient = true // Optional: if you want to be lenient with JSON parsing
+            isLenient = true
             ignoreUnknownKeys = true
-            // Optional: if you want to ignore keys not defined in your data classes
-            // Add other Json configurations as needed
         }
     }
     single { Settings() }
@@ -35,7 +33,6 @@ val sharedModule = module {
     single<Repository> {
         RepositoryImpl(
             apiService = get(),
-            json = get(),
             session = get(),
             tokenManager = get(),
             databaseHelper = get(),
