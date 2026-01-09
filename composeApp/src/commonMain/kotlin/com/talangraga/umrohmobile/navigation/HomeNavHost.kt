@@ -21,7 +21,6 @@ fun HomeNavHost(
             HomeScreen(
                 navHostController = navController,
                 rootNavHostController = rootNavController,
-                justLogin = false,
                 onNavigateToTransaction = onNavigateToTransaction
             )
         }

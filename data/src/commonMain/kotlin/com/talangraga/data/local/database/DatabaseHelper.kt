@@ -154,4 +154,12 @@ class DatabaseHelper(factory: DriverFactory) {
                 data.map { it.toUserEntity() }
             }
 
+    fun getUserById(userId: Long): Flow<List<UserEntity>> {
+        return usersQueries.selectUser(userId).asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { data ->
+                data.map { it.toUserEntity() }
+            }
+    }
+
 }

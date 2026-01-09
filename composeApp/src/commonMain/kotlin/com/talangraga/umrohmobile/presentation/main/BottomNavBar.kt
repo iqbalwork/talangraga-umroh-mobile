@@ -25,7 +25,7 @@ fun BottomNavBar(
 
     val session: Session = koinInject()
     val isLogin = session.getBoolean(SessionKey.IS_LOGGED_IN)
-    val userType = session.getProfile()?.userType.orEmpty()
+    val userType = session.userProfile.value?.userType.orEmpty()
 
     NavigationBar {
         NavigationBarItem(

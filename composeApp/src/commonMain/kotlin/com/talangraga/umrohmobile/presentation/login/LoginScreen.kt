@@ -1,12 +1,10 @@
 package com.talangraga.umrohmobile.presentation.login
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,10 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,13 +32,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.talangraga.shared.SageDark
-import com.talangraga.shared.Sandstone
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
-import com.talangraga.shared.navigation.Screen
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.ui.component.InputText
+import com.talangraga.umrohmobile.ui.component.LoadingButton
 import com.talangraga.umrohmobile.ui.component.PasswordInput
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
+import com.talangraga.umrohmobile.ui.component.ToastManager
+import com.talangraga.umrohmobile.ui.component.ToastType
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -64,22 +61,27 @@ fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel(),
 ) {
 
-
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val loginSucceed by viewModel.loginSucceed.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     LaunchedEffect(loginSucceed) {
         if (loginSucceed == true) {
-            navHostController.navigate(Screen.MainRoute.route) {
+            navHostController.navigate(Screen.MainRoute.ROUTE) {
                 popUpTo(Screen.LoginRoute) { inclusive = true }
             }
         }
     }
 
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrEmpty()) {
+            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
+            viewModel.clearError() // Only if you have this in your VM
+        }
+    }
+
     LoginContent(
         isLoading = isLoading,
-        errorMessage = errorMessage.orEmpty(),
         identifier = viewModel.identifier.value,
         password = viewModel.password.value,
         onIdentifierChange = viewModel::onIdentifierChange,
@@ -91,14 +93,13 @@ fun LoginScreen(
 @Composable
 fun LoginContent(
     isLoading: Boolean = false,
-    errorMessage: String,
     identifier: String,
     password: String,
     onPasswordChange: (String) -> Unit,
     onIdentifierChange: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
-    Scaffold { _ ->
+    TalangragaScaffold { _ ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -115,14 +116,14 @@ fun LoginContent(
                 .imePadding(),
             contentAlignment = Alignment.Center
         ) {
-                Image(
-                    painter = painterResource(Res.drawable.bg_screen),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer(alpha = 0.45f),
-                )
+            Image(
+                painter = painterResource(Res.drawable.bg_screen),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(alpha = 0.45f),
+            )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -171,37 +172,13 @@ fun LoginContent(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = {
-                        if (!isLoading) onLoginClick()
-                    },
+                LoadingButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    isLoading = isLoading,
+                    text = stringResource(Res.string.login),
                     enabled = identifier.isNotBlank() && password.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        AnimatedVisibility(visible = isLoading) {
-                            CircularProgressIndicator(
-                                color = Sandstone,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Text(
-                            stringResource(Res.string.login),
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                    }
-                }
-
-                if (errorMessage.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
+                    onClick = onLoginClick
+                )
             }
         }
     }
@@ -213,7 +190,6 @@ fun LoginContentPreview() {
     TalangragaTheme(darkTheme = false, useDynamicColor = false) {
         LoginContent(
             isLoading = false,
-            errorMessage = "Invalid credentials",
             identifier = "testuser",
             password = "password",
             onPasswordChange = {},

@@ -7,8 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -19,7 +21,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,16 +35,17 @@ import androidx.navigation.NavHostController
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
+import com.talangraga.shared.INDONESIA_TRIMMED
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
-import com.talangraga.shared.navigation.Screen
-import com.talangraga.shared.utils.INDONESIA_TRIMMED
-import com.talangraga.shared.utils.formatDateRange
+import com.talangraga.shared.formatDateRange
+import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
-import com.talangraga.umrohmobile.ui.TalangragaTheme
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButton
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -81,7 +83,8 @@ fun TransactionContent(
     onAddTransaction: () -> Unit,
 ) {
 
-    Scaffold(
+    TalangragaScaffold(
+        contentWindowInsets = WindowInsets.statusBars,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {

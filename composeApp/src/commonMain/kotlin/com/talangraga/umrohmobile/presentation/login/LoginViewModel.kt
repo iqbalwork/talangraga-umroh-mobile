@@ -27,6 +27,10 @@ class LoginViewModel(
     var identifier = mutableStateOf("")
     var password = mutableStateOf("")
 
+    fun clearError() {
+        _errorMessage.update { null }
+    }
+
     fun onIdentifierChange(newUsername: String) {
         identifier.value = newUsername
     }

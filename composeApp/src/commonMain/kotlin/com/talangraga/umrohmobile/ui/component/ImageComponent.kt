@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.Placeholder
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
@@ -15,7 +14,7 @@ import talangragaumrohmobile.composeapp.generated.resources.compose_multiplatfor
 
 @Composable
 fun BasicImage(
-    model: String,
+    model: Any?,
     placeholder: Painter? = painterResource(Res.drawable.compose_multiplatform),
     error: Painter? = painterResource(Res.drawable.compose_multiplatform),
     contentScale: ContentScale = ContentScale.Crop,

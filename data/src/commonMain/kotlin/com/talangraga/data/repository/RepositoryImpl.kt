@@ -23,15 +23,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 
 class RepositoryImpl(
     private val apiService: ApiService,
-    private val json: Json,
     private val session: Session,
     private val tokenManager: TokenManager,
     private val databaseHelper: DatabaseHelper
@@ -129,6 +130,130 @@ class RepositoryImpl(
         )
     }
 
+    override fun registerNewUser(
+        fullname: String,
+        username: String,
+        email: String,
+        phone: String?,
+        password: String,
+        domicile: String?,
+        userType: String,
+        imageProfile: ByteArray?
+    ): Flow<Result<UserResponse>> {
+        return flow {
+            try {
+                val response = apiService.registerUser(
+                    fullname,
+                    username,
+                    email,
+                    phone,
+                    password,
+                    domicile,
+                    userType,
+                    imageProfile
+                )
+                if (response.data != null) {
+                    emit(Result.Success(response.data))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun updateMe(
+        fullname: String,
+        username: String,
+        email: String,
+        phone: String?,
+        password: String,
+        domicile: String?,
+        userType: String,
+        imageProfile: ByteArray?
+    ): Flow<Result<UserResponse>> {
+        return flow {
+            try {
+                val response = apiService.updateMe(
+                    fullname,
+                    username,
+                    email,
+                    phone,
+                    password,
+                    domicile,
+                    userType,
+                    imageProfile
+                )
+                if (response.data != null) {
+                    emit(Result.Success(response.data))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun updateUser(
+        userId: Int,
+        fullname: String,
+        username: String,
+        email: String,
+        phone: String?,
+        password: String,
+        domicile: String?,
+        userType: String,
+        imageProfile: ByteArray?
+    ): Flow<Result<UserResponse>> {
+        return flow {
+            try {
+                val response = apiService.updateUser(
+                    userId,
+                    fullname,
+                    username,
+                    email,
+                    phone,
+                    password,
+                    domicile,
+                    userType,
+                    imageProfile
+                )
+                if (response.data != null) {
+                    emit(Result.Success(response.data))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun getUser(userId: Int): Flow<Result<UserEntity>> {
+        return channelFlow {
+            try {
+                databaseHelper.getAllUsersAsFlow()
+                    .catch {
+                        send(Result.Error(Exception(it.cause)))
+                    }
+                    .map { list ->
+                        list.find { it.userId == userId }
+                    }
+                    .collectLatest {
+                        if (it != null) {
+                            send(Result.Success(it))
+                        } else {
+                            send(Result.Error(Exception("User not found")))
+                        }
+                    }
+            } catch (ex: Exception) {
+                send(Result.Error(ex))
+            }
+        }
+    }
+
     override fun getListUsers(): Flow<Result<List<UserEntity>>> {
         return networkBoundResource(
             query = { databaseHelper.getAllUsersAsFlow() },
@@ -158,6 +283,23 @@ class RepositoryImpl(
                 } else {
                     apiService.getListUsers()
                 }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }
+    }
+
+    override fun getLocalUser(userId: Int): Flow<Result<UserEntity>> {
+        return flow {
+            try {
+                databaseHelper.getUserById(userId.toLong())
+                    .collectLatest {
+                        if (it.isNotEmpty()) {
+                            emit(Result.Success(it.first()))
+                        } else {
+                            emit(Result.Error(Exception("User not found")))
+                        }
+                    }
             } catch (ex: Exception) {
                 emit(Result.Error(ex))
             }
@@ -228,6 +370,29 @@ class RepositoryImpl(
                 it.map { paymentResponse -> paymentResponse.toPaymentEntity() }
             }
         )
+    }
+
+    override fun changePassword(
+        currentPassword: String,
+        newPassword: String,
+        confirmNewPassword: String
+    ): Flow<Result<Unit>> {
+        return flow {
+            try {
+                val response = apiService.changePassword(
+                    currentPassword,
+                    newPassword,
+                    confirmNewPassword
+                )
+                if (response.code == 200) {
+                    emit(Result.Success(Unit))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (ex: Exception) {
+                emit(Result.Error(ex))
+            }
+        }
     }
 
 }

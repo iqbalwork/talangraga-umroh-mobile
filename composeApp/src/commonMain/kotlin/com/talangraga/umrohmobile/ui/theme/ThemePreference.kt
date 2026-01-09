@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.ui
+package com.talangraga.umrohmobile.ui.theme
 
 import com.russhwolf.settings.ExperimentalSettingsApi
 import com.russhwolf.settings.ObservableSettings

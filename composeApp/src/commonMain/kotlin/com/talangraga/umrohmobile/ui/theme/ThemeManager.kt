@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile.ui
+package com.talangraga.umrohmobile.ui.theme
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
