@@ -168,7 +168,7 @@ fun HomeContent(
                             .padding(top = paddingValues.calculateTopPadding()),
                         userType = userType,
                         user = user,
-                        state = uiState.profile,
+//                        state = uiState.profile,
                         onRetry = onFetchProfile,
                         onClickImage = {
                             ImageViewerManager.show(it)

@@ -1,28 +1,19 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class) @file:Suppress("AssignedValueIsNeverRead")
 
 package com.talangraga.umrohmobile.presentation.transaction.addtransaction
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -30,11 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -42,19 +29,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -66,18 +50,32 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.talangraga.shared.Background
-import com.talangraga.shared.BorderColor
-import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.toIndonesianDateFormat
+import com.talangraga.umrohmobile.presentation.transaction.addtransaction.section.PaymentSelectionSection
+import com.talangraga.umrohmobile.presentation.transaction.addtransaction.section.UserSelectionSection
+import com.talangraga.umrohmobile.presentation.transaction.model.PaymentGroupUIData
+import com.talangraga.umrohmobile.presentation.transaction.model.PaymentUIData
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.presentation.utils.rememberSharedFileReader
+import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.CurrencyInputText
+import com.talangraga.umrohmobile.ui.component.ImageViewerManager
+import com.talangraga.umrohmobile.ui.component.LoadingButton
+import com.talangraga.umrohmobile.ui.component.ModalImagePicker
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
+import com.talangraga.umrohmobile.ui.component.ToastManager
+import com.talangraga.umrohmobile.ui.component.ToastType
+import io.github.aakira.napier.Napier
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -85,6 +83,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
+import talangragaumrohmobile.composeapp.generated.resources.sending_data
 import talangragaumrohmobile.composeapp.generated.resources.tambah_transaksi
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -94,10 +93,8 @@ import kotlin.time.Instant
  * Email: work.iqbalfauzi@gmail.com
  * Github: https://github.com/iqbalwork
  */
-
 data class CollectiveMember(
-    val user: UserUIData,
-    val amount: String
+    val user: UserUIData, val amount: String
 )
 
 @Composable
@@ -107,46 +104,152 @@ fun AddTransactionScreen(
     viewModel: AddTransactionViewModel = koinViewModel()
 ) {
 
-    val users by viewModel.users.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val users by viewModel.users.collectAsStateWithLifecycle()
+    val payments by viewModel.paymentGroup.collectAsStateWithLifecycle()
+
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrBlank()) {
+            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
+        }
+    }
 
     AddTransactionsContent(
         onBackClick = { navController.popBackStack() },
         userList = users,
-        isCollective = isCollective
+        paymentList = payments,
+        isCollective = isCollective,
+        isLoading = false,
+        imageUri = viewModel.imageUri.value,
+        onImageChange = viewModel::onImageChange,
+        user = viewModel.user.value,
+        onUserChange = viewModel::onUserChange,
+        tabungan = viewModel.tabungan.value,
+        onChangeTabungan = viewModel::onTabunganChange,
+        date = viewModel.date.value,
+        onDateChange = viewModel::onDateChange,
+        time = viewModel.time.value,
+        onTimeChange = viewModel::onTimeChange,
+        selectedPayment = viewModel.payment.value,
+        onPaymentChange = viewModel::onPaymentChange,
+        addTransaction = viewModel::addTransaction
     )
 }
 
+@Suppress("VariableNeverRead")
 @OptIn(ExperimentalTime::class)
 @Composable
 fun AddTransactionsContent(
     onBackClick: () -> Unit,
-    userList: List<UserUIData> = emptyList(),
-    isCollective: Boolean = false
+    userList: List<UserUIData>,
+    paymentList: List<PaymentGroupUIData>,
+    isLoading: Boolean = false,
+    isCollective: Boolean = false,
+    imageUri: ByteArray?,
+    onImageChange: (ByteArray) -> Unit,
+    user: UserUIData? = null,
+    onUserChange: (UserUIData) -> Unit,
+    tabungan: String?,
+    onChangeTabungan: (String) -> Unit,
+    date: String,
+    onDateChange: (String) -> Unit,
+    time: String,
+    onTimeChange: (String) -> Unit,
+    selectedPayment: PaymentUIData? = null,
+    onPaymentChange: (PaymentUIData) -> Unit,
+    addTransaction: () -> Unit
 ) {
+
+    val fileReader = rememberSharedFileReader() // See helper below
+    var showImagePickerSheet by remember { mutableStateOf(false) }
+    val imagePickerSheetState = rememberModalBottomSheetState()
+
+    var imagePickerMessage by remember { mutableStateOf<String?>(null) }
+    var showGallery by remember { mutableStateOf(false) }
+    var showCamera by remember { mutableStateOf(false) }
+
+    var capturedPhoto by remember { mutableStateOf<PhotoResult?>(null) }
+    var selectedImagesFile by remember { mutableStateOf<List<GalleryPhotoResult>>(emptyList()) }
+
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showUserBottomSheet by remember { mutableStateOf(false) }
+    var showPaymentBottomSheet by remember { mutableStateOf(false) }
 
     // State for Add Member Transaction Modal
     var showAddMemberSheet by remember { mutableStateOf(false) }
 
-    var selectedDate by remember { mutableStateOf("") }
-    var selectedTime by remember { mutableStateOf("") }
     var tempDateMillis by remember { mutableStateOf<Long?>(null) }
-    var selectedUser by remember { mutableStateOf<UserUIData?>(null) }
-
-    // Collective Mode State
-    val collectiveMembers = remember { mutableStateListOf<CollectiveMember>() }
-    var tempMemberUser by remember { mutableStateOf<UserUIData?>(null) }
-    var tempMemberAmount by remember { mutableStateOf("") }
-    var isUserSelectionForCollective by remember { mutableStateOf(false) }
 
     val sheetState = rememberModalBottomSheetState()
+    val paymentSheetState = rememberModalBottomSheetState()
     val addMemberSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
-    Scaffold(
+    LaunchedEffect(date, time) {
+        Napier.i(tag = "KMP", message = "Date: $date, Time: $time")
+    }
+
+    LaunchedEffect(capturedPhoto) {
+        if (capturedPhoto != null) {
+            scope.launch {
+                val bytes = fileReader.readBytes(capturedPhoto?.uri.orEmpty())
+                if (bytes != null) {
+                    onImageChange(bytes)
+                } else {
+                    return@launch
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(selectedImagesFile) {
+        if (selectedImagesFile.isNotEmpty()) {
+            scope.launch {
+                val bytes = fileReader.readBytes(selectedImagesFile.first().uri)
+                if (bytes != null) {
+                    onImageChange(bytes)
+                } else {
+                    return@launch
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(imagePickerMessage) {
+        if (!imagePickerMessage.isNullOrEmpty()) {
+            ToastManager.show(message = imagePickerMessage.orEmpty(), type = ToastType.Error)
+            imagePickerMessage = null
+        }
+    }
+
+    if (showGallery) {
+        GalleryPickerLauncher(onPhotosSelected = {
+            selectedImagesFile = it
+            showCamera = false
+            showGallery = false
+        }, onError = {
+            imagePickerMessage = it.message.orEmpty()
+            showCamera = false
+            showGallery = false
+        })
+    }
+
+    if (showImagePickerSheet) {
+        ModalImagePicker(
+            onDismissRequest = { showImagePickerSheet = false }, onCameraClick = {
+                showImagePickerSheet = false
+                showCamera = true
+                showGallery = false
+            }, onGalleryClick = {
+                showImagePickerSheet = false
+                showCamera = false
+                showGallery = true
+            }, sheetState = imagePickerSheetState
+        )
+    }
+
+    TalangragaScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -165,33 +268,26 @@ fun AddTransactionsContent(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Background),
                 modifier = Modifier.fillMaxWidth(),
             )
-        },
-        bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Background)
-                    .padding(16.dp)
-            ) {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* Handle submit */ },
-                ) {
-                    Text(
-                        stringResource(Res.string.tambah_transaksi),
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+        }, bottomBar = {
+
+            LoadingButton(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                isLoading = isLoading,
+                text = if (isLoading) stringResource(Res.string.sending_data) else stringResource(
+                    Res.string.tambah_transaksi
+                ),
+                enabled = imageUri != null && user != null && !tabungan.isNullOrBlank() && selectedPayment != null && date.isNotBlank() && time.isNotBlank(),
+                onClick = {
+                    if (!isLoading) {
+                        addTransaction()
+                    }
                 }
-            }
-        },
-        containerColor = Background
+            )
+        }, containerColor = Background
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = paddingValues.calculateTopPadding())
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().padding(top = paddingValues.calculateTopPadding())
+                .padding(horizontal = 16.dp).verticalScroll(rememberScrollState()),
         ) {
 
             // Upload Bukti Transfer
@@ -202,40 +298,46 @@ fun AddTransactionsContent(
             )
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .clickable { /* Handle upload click */ },
+                modifier = Modifier.fillMaxWidth().height(150.dp).clip(RoundedCornerShape(12.dp))
+                    .background(Color.White).clickable { showImagePickerSheet = true },
                 contentAlignment = Alignment.Center
             ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val stroke = Stroke(
-                        width = 2f,
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                    )
-                    drawRoundRect(
-                        color = Color.LightGray,
-                        style = stroke,
-                        cornerRadius = CornerRadius(12.dp.toPx())
-                    )
-                }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CloudUpload,
-                        contentDescription = "Upload",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Tekan disini untuk unggah file",
-                        style = TalangragaTypography.bodySmall.copy(color = Color.Gray)
-                    )
+                if (imageUri != null) {
+                    BasicImage(
+                        model = imageUri,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().clickable {
+                            ImageViewerManager.show(imageUri)
+                        })
+                } else {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val stroke = Stroke(
+                            width = 2f,
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                        )
+                        drawRoundRect(
+                            color = Color.LightGray,
+                            style = stroke,
+                            cornerRadius = CornerRadius(12.dp.toPx())
+                        )
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CloudUpload,
+                            contentDescription = "Upload",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Tekan disini untuk unggah file",
+                            style = TalangragaTypography.bodySmall.copy(color = Color.Gray)
+                        )
+                    }
                 }
             }
 
@@ -248,24 +350,21 @@ fun AddTransactionsContent(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             TextButtonOption(
-                text = selectedUser?.fullname ?: "",
+                text = user?.fullname ?: "",
                 placeholder = "Pilih Anggota",
                 trailingIcon = Icons.Default.ArrowDropDown,
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    isUserSelectionForCollective = false
                     showUserBottomSheet = true
-                }
-            )
+                })
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Jumlah Tabungan Input
-            var amount by remember { mutableStateOf("") }
             CurrencyInputText(
                 title = "Jumlah Tabungan",
-                value = amount,
-                onValueChange = { amount = it },
+                value = tabungan ?: "",
+                onValueChange = onChangeTabungan,
                 placeholder = "Rp xxx.xxx.xxx",
                 modifier = Modifier.fillMaxWidth()
             )
@@ -279,12 +378,11 @@ fun AddTransactionsContent(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             TextButtonOption(
-                text = "",
+                text = selectedPayment?.paymentName ?: "",
                 placeholder = "Pilih metode pembayaran",
                 trailingIcon = Icons.Default.ArrowDropDown,
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { /* Show payment method dropdown */ }
-            )
+                onClick = { showPaymentBottomSheet = true })
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -295,203 +393,187 @@ fun AddTransactionsContent(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            val displayDateTime = if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
-                "$selectedDate $selectedTime"
-            } else ""
-
             TextButtonOption(
-                text = displayDateTime,
+                text = "$date $time",
                 placeholder = "dd/mm/yyyy HH:mm",
                 trailingIcon = Icons.Default.CalendarToday,
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { showDatePicker = true }
-            )
+                onClick = { showDatePicker = true })
 
             // Collective Section
-            if (isCollective) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Tambahkan Anggota",
-                    style = TalangragaTypography.titleSmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                TextButtonOption(
-                    text = "",
-                    placeholder = "Tambahkan anggota",
-                    trailingIcon = Icons.Default.ArrowDropDown,
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        // Reset temp fields
-                        tempMemberUser = null
-                        tempMemberAmount = ""
-                        showAddMemberSheet = true
-                    }
-                )
-
-                if (collectiveMembers.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Daftar anggota",
-                        style = TalangragaTypography.titleSmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        collectiveMembers.forEach { member ->
-                            Card(
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    BorderColor
-                                ),
-                                colors = CardDefaults.cardColors(containerColor = Background),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = member.user.fullname ?: "Unknown",
-                                        style = TalangragaTypography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                                    )
-                                    Text(
-                                        text = member.amount,
-                                        style = TalangragaTypography.bodyMedium.copy(
-                                            color = Sage,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            if (isCollective) {
+//                Spacer(modifier = Modifier.height(16.dp))
+//
+//                Text(
+//                    text = "Tambahkan Anggota",
+//                    style = TalangragaTypography.titleSmall,
+//                    modifier = Modifier.padding(bottom = 8.dp)
+//                )
+//                TextButtonOption(
+//                    text = "",
+//                    placeholder = "Tambahkan anggota",
+//                    trailingIcon = Icons.Default.ArrowDropDown,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    onClick = {
+//                        // Reset temp fields
+//                        tempMemberUser = null
+//                        tempMemberAmount = ""
+//                        showAddMemberSheet = true
+//                    }
+//                )
+//
+//                if (collectiveMembers.isNotEmpty()) {
+//                    Spacer(modifier = Modifier.height(16.dp))
+//                    Text(
+//                        text = "Daftar anggota",
+//                        style = TalangragaTypography.titleSmall,
+//                        modifier = Modifier.padding(bottom = 8.dp)
+//                    )
+//
+//                    Column(
+//                        verticalArrangement = Arrangement.spacedBy(8.dp)
+//                    ) {
+//                        collectiveMembers.forEach { member ->
+//                            Card(
+//                                shape = RoundedCornerShape(8.dp),
+//                                border = BorderStroke(
+//                                    1.dp,
+//                                    BorderColor
+//                                ),
+//                                colors = CardDefaults.cardColors(containerColor = Background),
+//                                modifier = Modifier.fillMaxWidth()
+//                            ) {
+//                                Row(
+//                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+//                                    horizontalArrangement = Arrangement.SpaceBetween,
+//                                    verticalAlignment = Alignment.CenterVertically
+//                                ) {
+//                                    Text(
+//                                        text = member.user.fullname ?: "Unknown",
+//                                        style = TalangragaTypography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+//                                    )
+//                                    Text(
+//                                        text = member.amount,
+//                                        style = TalangragaTypography.bodyMedium.copy(
+//                                            color = Sage,
+//                                            fontWeight = FontWeight.Bold
+//                                        )
+//                                    )
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
 
         if (showDatePicker) {
             val datePickerState = rememberDatePickerState()
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let { millis ->
-                                tempDateMillis = millis
-                                val instant = Instant.fromEpochMilliseconds(millis)
-                                val date = instant.toLocalDateTime(TimeZone.UTC).date
-                                selectedDate = date.toIndonesianDateFormat()
-                            }
-                            showDatePicker = false
-                            showTimePicker = true
+            DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            tempDateMillis = millis
+                            val instant = Instant.fromEpochMilliseconds(millis)
+                            val date = instant.toLocalDateTime(TimeZone.UTC).date
+                            onDateChange(date.toIndonesianDateFormat())
                         }
-                    ) {
-                        Text("OK")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel")
-                    }
+                        showDatePicker = false
+                        showTimePicker = true
+                    }) {
+                    Text("OK")
                 }
-            ) {
+            }, dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }) {
                 DatePicker(state = datePickerState)
             }
         }
 
         if (showTimePicker) {
             val timePickerState = rememberTimePickerState()
-            AlertDialog(
-                onDismissRequest = { showTimePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            val hour = timePickerState.hour.toString().padStart(2, '0')
-                            val minute = timePickerState.minute.toString().padStart(2, '0')
-                            selectedTime = "$hour:$minute"
-                            showTimePicker = false
-                        }
-                    ) {
-                        Text("OK")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showTimePicker = false }) {
-                        Text("Cancel")
-                    }
-                },
-                text = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        TimeInput(state = timePickerState)
-                    }
+            AlertDialog(onDismissRequest = { showTimePicker = false }, confirmButton = {
+                TextButton(
+                    onClick = {
+                        val hour = timePickerState.hour.toString().padStart(2, '0')
+                        val minute = timePickerState.minute.toString().padStart(2, '0')
+                        onTimeChange("$hour:$minute")
+                        showTimePicker = false
+                    }) {
+                    Text("OK")
                 }
-            )
+            }, dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            }, text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    TimeInput(state = timePickerState)
+                }
+            })
         }
 
         // Add Member Transaction Modal
         if (showAddMemberSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showAddMemberSheet = false },
-                sheetState = addMemberSheetState,
-                containerColor = Background
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp).padding(bottom = 24.dp)
-                ) {
-                    Text(
-                        text = "Tambahkan Transaksi Anggota",
-                        style = TalangragaTypography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-
-                    TextButtonOption(
-                        text = tempMemberUser?.fullname ?: "",
-                        placeholder = "Pilih Anggota",
-                        trailingIcon = Icons.Default.ArrowDropDown,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            isUserSelectionForCollective = true
-                            showUserBottomSheet = true
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    CurrencyInputText(
-                        title = "Jumlah",
-                        value = tempMemberAmount,
-                        onValueChange = { tempMemberAmount = it },
-                        placeholder = "Masukkan jumlah setoran",
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = tempMemberUser != null && tempMemberAmount.isNotEmpty(),
-                        onClick = {
-                            tempMemberUser?.let { user ->
-                                collectiveMembers.add(CollectiveMember(user, tempMemberAmount))
-                                scope.launch { addMemberSheetState.hide() }.invokeOnCompletion {
-                                    if (!addMemberSheetState.isVisible) {
-                                        showAddMemberSheet = false
-                                    }
-                                }
-                            }
-                        }
-                    ) {
-                        Text("Tambahkan Transaksi")
-                    }
-                }
-            }
+//            ModalBottomSheet(
+//                onDismissRequest = { showAddMemberSheet = false },
+//                sheetState = addMemberSheetState,
+//                containerColor = Background
+//            ) {
+//                Column(
+//                    modifier = Modifier.fillMaxWidth().padding(16.dp).padding(bottom = 24.dp)
+//                ) {
+//                    Text(
+//                        text = "Tambahkan Transaksi Anggota",
+//                        style = TalangragaTypography.titleLarge,
+//                        modifier = Modifier.padding(bottom = 16.dp)
+//                    )
+//
+//                    TextButtonOption(
+//                        text = tempMemberUser?.fullname ?: "",
+//                        placeholder = "Pilih Anggota",
+//                        trailingIcon = Icons.Default.ArrowDropDown,
+//                        modifier = Modifier.fillMaxWidth(),
+//                        onClick = {
+//                            isUserSelectionForCollective = true
+//                            showUserBottomSheet = true
+//                        }
+//                    )
+//
+//                    Spacer(modifier = Modifier.height(16.dp))
+//
+//                    CurrencyInputText(
+//                        title = "Jumlah",
+//                        value = tempMemberAmount,
+//                        onValueChange = { tempMemberAmount = it },
+//                        placeholder = "Masukkan jumlah setoran",
+//                        modifier = Modifier.fillMaxWidth()
+//                    )
+//
+//                    Spacer(modifier = Modifier.height(24.dp))
+//
+//                    Button(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        enabled = tempMemberUser != null && tempMemberAmount.isNotEmpty(),
+//                        onClick = {
+//                            tempMemberUser?.let { user ->
+//                                collectiveMembers.add(CollectiveMember(user, tempMemberAmount))
+//                                scope.launch { addMemberSheetState.hide() }.invokeOnCompletion {
+//                                    if (!addMemberSheetState.isVisible) {
+//                                        showAddMemberSheet = false
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    ) {
+//                        Text("Tambahkan Transaksi")
+//                    }
+//                }
+//            }
         }
 
         // User Selection Modal
@@ -501,17 +583,32 @@ fun AddTransactionsContent(
                 sheetState = sheetState,
                 containerColor = Background
             ) {
-                UserSelectionContent(
-                    userList = userList,
-                    onUserSelected = { user ->
-                        if (isUserSelectionForCollective) {
-                            tempMemberUser = user
-                        } else {
-                            selectedUser = user
-                        }
+                UserSelectionSection(
+                    userList = userList, onUserSelected = { selected ->
+                        onUserChange(selected)
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
                                 showUserBottomSheet = false
+                            }
+                        }
+                    })
+            }
+        }
+
+        // Payment Selection Modal
+        if (showPaymentBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showPaymentBottomSheet = false },
+                sheetState = paymentSheetState,
+                containerColor = Background
+            ) {
+                PaymentSelectionSection(
+                    paymentGroups = paymentList,
+                    onPaymentSelected = { payment ->
+                        onPaymentChange(payment)
+                        scope.launch { paymentSheetState.hide() }.invokeOnCompletion {
+                            if (!paymentSheetState.isVisible) {
+                                showPaymentBottomSheet = false
                             }
                         }
                     }
@@ -521,133 +618,25 @@ fun AddTransactionsContent(
     }
 }
 
-@Composable
-fun UserSelectionContent(
-    userList: List<UserUIData>,
-    onUserSelected: (UserUIData) -> Unit
-) {
-    var searchQuery by remember { mutableStateOf("") }
-    val filteredUsers = userList.filter {
-        it.fullname.contains(searchQuery, ignoreCase = true) || it.username.contains(
-            searchQuery,
-            ignoreCase = true
-        )
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(bottom = 16.dp)
-    ) {
-        // Search Bar
-        TextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            placeholder = { Text("Search Username") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, Sage, RoundedCornerShape(8.dp))
-                .clip(RoundedCornerShape(8.dp)),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Background,
-                unfocusedContainerColor = Background,
-                disabledContainerColor = Background,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(filteredUsers) { user ->
-                UserItem(user = user, onClick = { onUserSelected(user) })
-            }
-        }
-    }
-}
-
-@Composable
-fun UserItem(
-    user: UserUIData,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = Background),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // User Avatar Placeholder
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE0E0E0)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = Sage
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = user.fullname,
-                    style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = user.phone,
-                    style = TalangragaTypography.bodySmall.copy(color = Color.Gray)
-                )
-            }
-
-            if (user.userType == "admin") {
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFFF0E0D0), RoundedCornerShape(12.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "admin",
-                        style = TalangragaTypography.bodySmall.copy(color = Color(0xFF8B4513))
-                    )
-                }
-            }
-        }
-    }
-}
-
-
 @Preview
 @Composable
 fun PreviewAddTransactionContent() {
     val mockUsers = listOf(
         UserUIData(
-            id = 1, fullname = "Iqbal Fauzi", phone = "087822882668", userType = "admin",
+            id = 1,
+            fullname = "Iqbal Fauzi",
+            phone = "087822882668",
+            userType = "admin",
             username = "iqbalfauzi",
             email = "work.iqbalfauzi@gmail.com",
             domicile = "Bandung",
             imageProfileUrl = "",
             isActive = true
-        ),
-        UserUIData(
-            id = 2, fullname = "Jane Doe", phone = "081234567890", userType = "member",
+        ), UserUIData(
+            id = 2,
+            fullname = "Jane Doe",
+            phone = "081234567890",
+            userType = "member",
             username = "janedoe",
             email = "jandoe@gmail.com",
             domicile = "Texas",
@@ -658,6 +647,21 @@ fun PreviewAddTransactionContent() {
     AddTransactionsContent(
         onBackClick = {},
         userList = mockUsers,
-        isCollective = true
-    )
+        paymentList = emptyList(),
+        isCollective = true,
+        isLoading = false,
+        imageUri = null,
+        onImageChange = { },
+        user = null,
+        onUserChange = { },
+        tabungan = "",
+        onChangeTabungan = { },
+        date = "",
+        onDateChange = { },
+        time = "",
+        onTimeChange = { },
+        onPaymentChange = { }
+    ) {
+
+    }
 }

@@ -1,8 +1,10 @@
 package com.talangraga.umrohmobile.presentation.utils
 
+import com.talangraga.data.local.database.model.PaymentEntity
 import com.talangraga.data.local.database.model.TransactionEntity
 import com.talangraga.data.local.database.model.UserEntity
 import com.talangraga.data.network.model.response.UserResponse
+import com.talangraga.umrohmobile.presentation.transaction.model.PaymentUIData
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 
@@ -46,5 +48,13 @@ fun TransactionEntity.toUIData(): TransactionUiData {
         confirmedBy = this.confirmedBy,
         paymentType = this.paymentType,
         paymentName = this.paymentName
+    )
+}
+
+fun PaymentEntity.toUIData(): PaymentUIData {
+    return PaymentUIData(
+        id = paymentId,
+        paymentName = paymentName,
+        paymentType = paymentType
     )
 }

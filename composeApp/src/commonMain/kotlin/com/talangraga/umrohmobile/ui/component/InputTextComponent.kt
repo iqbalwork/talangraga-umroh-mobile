@@ -215,6 +215,8 @@ fun CurrencyInputText(
             onValueChange = { newValue ->
                 if (newValue.all { it.isDigit() }) {
                     onValueChange(newValue)
+                } else {
+                    onValueChange("")
                 }
             },
             placeholder = {

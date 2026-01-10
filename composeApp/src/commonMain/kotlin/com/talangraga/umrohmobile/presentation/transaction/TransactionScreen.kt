@@ -67,7 +67,7 @@ fun TransactionScreen(
         onShowPeriodSheet = {},
         onFetchAllTransaction = { }
     ) {
-        rootNavController.navigate(Screen.AddTransactionRoute(isCollective = true))
+        navHostController.navigate(Screen.AddTransactionRoute(isCollective = false))
     }
 }
 
