@@ -63,4 +63,14 @@ interface Repository {
         newPassword: String,
         confirmNewPassword: String
     ): Flow<Result<Unit>>
+
+    fun addTransaction(
+        userId: Int?,
+        reportedByUserId: Int?,
+        amount: Double?,
+        transactionDate: String?,
+        periodeId: Int?,
+        paymentId: Int?,
+        file: ByteArray?
+    ): Flow<Result<Boolean>>
 }

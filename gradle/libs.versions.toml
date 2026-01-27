@@ -23,7 +23,6 @@ ktor = "3.3.2"
 ktorMonitorLogging = "1.7.5"
 materialIconsExtended = "1.7.3"
 navigationCompose = "2.9.1"
-easyMediaPicker = "2.2.0"
 imagePickerKMP = "1.0.28"
 
 kotlinx-coroutines = "1.10.2"

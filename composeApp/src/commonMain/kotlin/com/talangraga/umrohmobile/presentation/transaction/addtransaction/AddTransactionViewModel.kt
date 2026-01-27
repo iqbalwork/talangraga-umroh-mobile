@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.database.model.PeriodEntity
+import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
 import com.talangraga.umrohmobile.presentation.transaction.model.PaymentGroupUIData
 import com.talangraga.umrohmobile.presentation.transaction.model.PaymentUIData
@@ -22,8 +24,12 @@ import kotlinx.coroutines.flow.update
  * Github: https://github.com/iqbalwork
  */
 class AddTransactionViewModel(
+    private val session: Session,
     private val repository: Repository
 ) : ViewModel() {
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
 
     private val _users = MutableStateFlow<List<UserUIData>>(emptyList())
     val users = _users.asStateFlow()
@@ -38,6 +44,7 @@ class AddTransactionViewModel(
     val user = mutableStateOf<UserUIData?>(null)
     val tabungan = mutableStateOf<String?>(null)
     val payment = mutableStateOf<PaymentUIData?>(null)
+    val periode = mutableStateOf<PeriodEntity?>(null)
     val date = mutableStateOf("")
     val time = mutableStateOf("")
 
@@ -71,7 +78,28 @@ class AddTransactionViewModel(
     }
 
     fun addTransaction() {
+        _isLoading.update { true }
+        repository.addTransaction(
+            userId = user.value?.id,
+            reportedByUserId = session.userProfile.value?.id,
+            amount = tabungan.value?.toDouble(),
+            transactionDate = date.value,
+            periodeId = periode.value?.periodId,
+            paymentId = payment.value?.id,
+            file = imageUri.value
+        ).onEach { result ->
+            when (result) {
+                is Result.Error -> {
+                    _isLoading.update { false }
+                    _errorMessage.update { result.t.message }
+                }
 
+                is Result.Success -> {
+                    _isLoading.update { false }
+                    // TODO: Handle succeed state
+                }
+            }
+        }.launchIn(viewModelScope)
     }
 
     private fun getListUser() {

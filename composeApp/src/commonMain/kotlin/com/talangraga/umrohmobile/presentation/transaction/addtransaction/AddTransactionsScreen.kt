@@ -73,9 +73,11 @@ import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import com.talangraga.umrohmobile.ui.component.ToastManager
 import com.talangraga.umrohmobile.ui.component.ToastType
 import io.github.aakira.napier.Napier
+import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -386,6 +388,22 @@ fun AddTransactionsContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Text(
+                text = "Periode Tabungan",
+                style = TalangragaTypography.titleSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            TextButtonOption(
+                text = "$date $time",
+                placeholder = "Bulan ke ...",
+                trailingIcon = Icons.Default.CalendarToday,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { showDatePicker = true }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Tanggal & Waktu Picker
             Text(
                 text = "Tanggal & Waktu",
@@ -398,7 +416,8 @@ fun AddTransactionsContent(
                 placeholder = "dd/mm/yyyy HH:mm",
                 trailingIcon = Icons.Default.CalendarToday,
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { showDatePicker = true })
+                onClick = { showDatePicker = true }
+            )
 
             // Collective Section
 //            if (isCollective) {
@@ -614,6 +633,20 @@ fun AddTransactionsContent(
                     }
                 )
             }
+        }
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        if (showCamera) {
+            ImagePickerLauncher(config = ImagePickerConfig(onPhotoCaptured = {
+                capturedPhoto = it
+                showCamera = false
+                showGallery = false
+            }, onError = {
+                imagePickerMessage = it.message.orEmpty()
+                showCamera = false
+                showGallery = false
+            }))
         }
     }
 }

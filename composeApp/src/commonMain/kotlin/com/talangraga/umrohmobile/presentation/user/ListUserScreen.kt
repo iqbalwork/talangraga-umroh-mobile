@@ -77,7 +77,7 @@ fun ListUserScreen(
     val state = viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-
+    
     LaunchedEffect(errorMessage) {
         if (!errorMessage.isNullOrEmpty()) {
             ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
