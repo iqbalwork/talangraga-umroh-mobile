@@ -40,6 +40,12 @@ class AddTransactionViewModel(
     private val _paymentGroup = MutableStateFlow<List<PaymentGroupUIData>>(emptyList())
     val paymentGroup = _paymentGroup.asStateFlow()
 
+//    val city: StateFlow<String>
+//        field = MutableStateFlow("")
+
+//    val periodList: StateFlow<List<PeriodEntity>>
+//        field = MutableStateFlow<List<PeriodEntity>>(emptyList())
+
     val imageUri = mutableStateOf<ByteArray?>(null)
     val user = mutableStateOf<UserUIData?>(null)
     val tabungan = mutableStateOf<String?>(null)
@@ -52,6 +58,10 @@ class AddTransactionViewModel(
         getListUser()
         getPayments()
     }
+
+//    fun updatePeriod(newPeriod: PeriodEntity) {
+//        period.value = newPeriod
+//    }
 
     fun onImageChange(bytes: ByteArray) {
         imageUri.value = bytes
