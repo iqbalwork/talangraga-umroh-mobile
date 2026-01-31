@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.1"
+agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "35"
@@ -42,6 +42,7 @@ google = "4.4.4"
 
 assertk = "0.28.1"
 turbine = "1.2.0"
+material = "1.13.0"
 
 [libraries]
 # Coil Image Loader
@@ -111,6 +112,7 @@ coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", 
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
 multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings" }
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -127,3 +129,4 @@ sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 kotzilla = { id = "io.kotzilla.kotzilla-plugin", version.ref = "kotzilla" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

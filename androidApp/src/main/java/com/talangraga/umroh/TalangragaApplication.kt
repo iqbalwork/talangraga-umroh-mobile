@@ -1,9 +1,7 @@
-package com.talangraga.umrohmobile
+package com.talangraga.umroh
 
 import android.app.Application
 import com.talangraga.umrohmobile.di.initializeKoin
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.initialize
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import io.kotzilla.sdk.analytics.koin.analytics
@@ -18,10 +16,10 @@ class TalangragaApplication : Application() {
             androidLogger(Level.DEBUG)
             androidContext(this@TalangragaApplication)
             analytics {
-                setApiKey(BuildKonfig.KOTZILLA_KEY)
+                setApiKey("ktz-sdk-DZMH3UFugdk5m6UV2gMBr876g8uoFkhPBFb1A28lojM")
             }
         }
-        Firebase.initialize(this)
+//        Firebase.initialize(this)
         Napier.base(DebugAntilog())
     }
 }

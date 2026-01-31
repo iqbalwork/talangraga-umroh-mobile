@@ -1,4 +1,4 @@
-package com.talangraga.umrohmobile
+package com.talangraga.umroh
 
 import android.Manifest
 import android.content.pm.PackageManager

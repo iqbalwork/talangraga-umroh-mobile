@@ -1,19 +1,18 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotzilla)
     alias(libs.plugins.buildKonfig)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.crashlytics)
+//    alias(libs.plugins.google.services)
+//    alias(libs.plugins.crashlytics)
 }
 
 buildkonfig {
@@ -35,11 +34,24 @@ buildkonfig {
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+//    androidTarget {
+//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+//        compilerOptions {
+//            jvmTarget.set(JvmTarget.JVM_11)
+//            freeCompilerArgs.add("-Xexpect-actual-classes")
+//        }
+//    }
+
+    androidLibrary {
+        namespace = "com.talangraga.umrohmobile"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
-            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+
+        androidResources {
+            enable = true
         }
     }
 
@@ -60,116 +72,116 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.koin.android)
-            implementation(libs.ktor.client.okhttp)
+            api(compose.preview)
+            api(libs.androidx.activity.compose)
+            api(libs.koin.android)
+            api(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.coil.compose)
-            implementation(libs.coil.network.ktor)
-            implementation(libs.navigation.compose)
-            implementation(libs.compose.ui.backhandler)
-            implementation(libs.material.icons.extended)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.kotzilla.sdk.compose)
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(libs.ktor.client.logging)
-            implementation(libs.ktor.client.auth)
-            implementation(libs.kotlinx.serialization.json)
-            implementation(libs.constraintlayout.compose.multiplatform)
-            implementation(libs.napier)
-            implementation(libs.kotlinx.datetime)
-            implementation(libs.inspektify.ktor3)
+            api(compose.runtime)
+            api(compose.foundation)
+            api(compose.material3)
+            api(compose.ui)
+            api(compose.components.resources)
+            api(compose.components.uiToolingPreview)
+            api(libs.coil.compose)
+            api(libs.coil.network.ktor)
+            api(libs.navigation.compose)
+            api(libs.compose.ui.backhandler)
+            api(libs.material.icons.extended)
+            api(libs.androidx.lifecycle.viewmodelCompose)
+            api(libs.androidx.lifecycle.runtimeCompose)
+            api(libs.kotzilla.sdk.compose)
+            api(libs.koin.core)
+            api(libs.koin.compose)
+            api(libs.koin.compose.viewmodel)
+            api(libs.ktor.client.core)
+            api(libs.ktor.client.content.negotiation)
+            api(libs.ktor.serialization.kotlinx.json)
+            api(libs.ktor.client.logging)
+            api(libs.ktor.client.auth)
+            api(libs.kotlinx.serialization.json)
+            api(libs.constraintlayout.compose.multiplatform)
+            api(libs.napier)
+            api(libs.kotlinx.datetime)
+            api(libs.inspektify.ktor3)
             // SQLDelight
-            implementation(libs.runtime)
+            api(libs.runtime)
             // optionally coroutines extensions
-            implementation(libs.coroutines.extensions)
-            implementation(libs.multiplatform.settings)
-            implementation(libs.multiplatform.settings.serialization)
-            implementation(libs.multiplatform.settings.coroutines)
+            api(libs.coroutines.extensions)
+            api(libs.multiplatform.settings)
+            api(libs.multiplatform.settings.serialization)
+            api(libs.multiplatform.settings.coroutines)
 
             // Gitlive Firebase
-            implementation(libs.firebase.app)
-            implementation(libs.firebase.analytic)
-            implementation(libs.firebase.crashlytic)
+//            api(libs.firebase.app)
+//            api(libs.firebase.analytic)
+//            api(libs.firebase.crashlytic)
 
             // Media Picker
-            implementation(libs.image.picker.kmp)
+            api(libs.image.picker.kmp)
 
-            implementation(project(":data"))
-            implementation(project(":shared"))
+            api(projects.data)
+            api(projects.shared)
         }
         iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
+            api(libs.ktor.client.darwin)
         }
         nativeMain.dependencies {
         }
         commonTest.dependencies {
-            implementation(libs.kotlin.test)
-            implementation(libs.ktor.client.mock)
+            api(libs.kotlin.test)
+            api(libs.ktor.client.mock)
         }
     }
 }
 
-kotlin.sourceSets.all {
-    kotlin.srcDir("build/generated/ksp/${name}/kotlin")
-}
+//kotlin.sourceSets.all {
+//    kotlin.srcDir("build/generated/ksp/${name}/kotlin")
+//}
 
-android {
-    namespace = "com.talangraga.umrohmobile"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+//android {
+//    namespace = "com.talangraga.umrohmobile"
+//    compileSdk = libs.versions.android.compileSdk.get().toInt()
+//
+//    defaultConfig {
+////        applicationId = "com.talangraga.umrohmobile"
+//        minSdk = libs.versions.android.minSdk.get().toInt()
+////        targetSdk = libs.versions.android.targetSdk.get().toInt()
+////        versionCode = 1
+////        versionName = "1.0"
+//    }
+//    packaging {
+//        resources {
+//            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+//        }
+//    }
+//    buildTypes {
+//        getByName("release") {
+//            isMinifyEnabled = true
+//        }
+//        getByName("debug") {
+//            isMinifyEnabled = false
+//        }
+//    }
+//
+//    flavorDimensions += "version"
+//    productFlavors {
+//        create("staging") {
+//            dimension = "version"
+//            applicationIdSuffix = ".staging"
+//        }
+//        create("production") {
+//            dimension = "version"
+//        }
+//    }
+//
+//    compileOptions {
+//        sourceCompatibility = JavaVersion.VERSION_11
+//        targetCompatibility = JavaVersion.VERSION_11
+//    }
+//}
 
-    defaultConfig {
-        applicationId = "com.talangraga.umrohmobile"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-        }
-        getByName("debug") {
-            isMinifyEnabled = false
-        }
-    }
-
-    flavorDimensions += "version"
-    productFlavors {
-        create("staging") {
-            dimension = "version"
-            applicationIdSuffix = ".staging"
-        }
-        create("production") {
-            dimension = "version"
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-}
-
-dependencies {
-    debugImplementation(compose.uiTooling)
-}
+//dependencies {
+//    debugapi(compose.uiTooling)
+//}
