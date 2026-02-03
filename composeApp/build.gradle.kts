@@ -72,18 +72,19 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            api(compose.preview)
+            api(libs.ui.tooling.preview)
+            api(libs.ui.tooling)
             api(libs.androidx.activity.compose)
             api(libs.koin.android)
             api(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
-            api(compose.runtime)
-            api(compose.foundation)
-            api(compose.material3)
-            api(compose.ui)
-            api(compose.components.resources)
-            api(compose.components.uiToolingPreview)
+            api(libs.jetbrains.runtime)
+            api(libs.foundation)
+            api(libs.material3)
+            api(libs.ui)
+            api(libs.components.resources)
+            api(libs.ui.tooling.preview)
             api(libs.coil.compose)
             api(libs.coil.network.ktor)
             api(libs.navigation.compose)
@@ -135,53 +136,3 @@ kotlin {
         }
     }
 }
-
-//kotlin.sourceSets.all {
-//    kotlin.srcDir("build/generated/ksp/${name}/kotlin")
-//}
-
-//android {
-//    namespace = "com.talangraga.umrohmobile"
-//    compileSdk = libs.versions.android.compileSdk.get().toInt()
-//
-//    defaultConfig {
-////        applicationId = "com.talangraga.umrohmobile"
-//        minSdk = libs.versions.android.minSdk.get().toInt()
-////        targetSdk = libs.versions.android.targetSdk.get().toInt()
-////        versionCode = 1
-////        versionName = "1.0"
-//    }
-//    packaging {
-//        resources {
-//            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-//        }
-//    }
-//    buildTypes {
-//        getByName("release") {
-//            isMinifyEnabled = true
-//        }
-//        getByName("debug") {
-//            isMinifyEnabled = false
-//        }
-//    }
-//
-//    flavorDimensions += "version"
-//    productFlavors {
-//        create("staging") {
-//            dimension = "version"
-//            applicationIdSuffix = ".staging"
-//        }
-//        create("production") {
-//            dimension = "version"
-//        }
-//    }
-//
-//    compileOptions {
-//        sourceCompatibility = JavaVersion.VERSION_11
-//        targetCompatibility = JavaVersion.VERSION_11
-//    }
-//}
-
-//dependencies {
-//    debugapi(compose.uiTooling)
-//}

@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
@@ -41,7 +42,6 @@ import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import talangragaumrohmobile.composeapp.generated.resources.Res
 import talangragaumrohmobile.composeapp.generated.resources.hide_password
 import talangragaumrohmobile.composeapp.generated.resources.label_username_or_email

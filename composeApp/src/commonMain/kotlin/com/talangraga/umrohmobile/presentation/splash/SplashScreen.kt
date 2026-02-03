@@ -11,13 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import com.talangraga.data.local.session.SessionKey
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
 import talangragaumrohmobile.composeapp.generated.resources.talangraga_logo
