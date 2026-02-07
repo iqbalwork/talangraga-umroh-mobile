@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.talangraga.shared.BorderColor
@@ -20,7 +21,6 @@ import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.shared.formatIsoTimestampToCustom
 import com.talangraga.shared.formatToIDR
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TransactionItem(

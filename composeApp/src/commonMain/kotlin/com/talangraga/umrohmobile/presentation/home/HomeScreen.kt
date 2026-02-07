@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -37,8 +38,8 @@ import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -101,7 +102,7 @@ fun HomeContent(
     var userTypeShowBottomSheet by remember { mutableStateOf(false) }
     val periodSheetState = rememberModalBottomSheetState()
     val periodScope = rememberCoroutineScope()
-    var periodShowBottomSheet by remember { mutableStateOf(false) }
+    var showPeriodeBottom by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -129,13 +130,13 @@ fun HomeContent(
             )
         }
 
-        if (periodShowBottomSheet) {
+        if (showPeriodeBottom) {
             DialogPeriods(
                 modifier = Modifier,
                 sheetState = periodSheetState,
                 scope = periodScope,
                 periods = periods,
-                onBottomSheetChange = { periodShowBottomSheet = it },
+                onBottomSheetChange = { showPeriodeBottom = it },
                 onChoosePeriod = {
                     onPeriodChange(it)
                 }
@@ -186,7 +187,7 @@ fun HomeContent(
                             onPeriodChange(null)
                             onFetchAllTransaction()
                         },
-                        onShowPeriodSheet = { periodShowBottomSheet = true }
+                        onShowPeriodSheet = { showPeriodeBottom = true }
                     )
                 }
 
@@ -205,52 +206,53 @@ fun HomeContent(
     }
 }
 
-
 @Preview
 @Composable
 fun PreviewHomeContent() {
-    HomeContent(
-        periods = listOf(
-            PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
-        ),
-        user = UserUIData(
-            id = 1,
-            username = "iqbalf",
-            fullname = "Iqbal Fauzi",
-            email = "",
-            phone = "",
-            domicile = "",
-            userType = "Admin",
-            imageProfileUrl = "",
-            isActive = true
-        ),
-        uiState = HomeUiState(
-            profile = SectionState.Success(
-                UserUIData(
-                    id = 1,
-                    username = "iqbalf",
-                    fullname = "Iqbal Fauzi",
-                    email = "",
-                    phone = "",
-                    domicile = "",
-                    userType = "Admin",
-                    imageProfileUrl = "",
-                    isActive = true
+    TalangragaTheme {
+        HomeContent(
+            periods = listOf(
+                PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
+            ),
+            user = UserUIData(
+                id = 1,
+                username = "iqbalf",
+                fullname = "Iqbal Fauzi",
+                email = "",
+                phone = "",
+                domicile = "",
+                userType = "Admin",
+                imageProfileUrl = "",
+                isActive = true
+            ),
+            uiState = HomeUiState(
+                profile = SectionState.Success(
+                    UserUIData(
+                        id = 1,
+                        username = "iqbalf",
+                        fullname = "Iqbal Fauzi",
+                        email = "",
+                        phone = "",
+                        domicile = "",
+                        userType = "Admin",
+                        imageProfileUrl = "",
+                        isActive = true
+                    )
+                ),
+                periods = SectionState.Loading,
+                transactions = SectionState.Success(
+                    data = listOf()
                 )
             ),
-            periods = SectionState.Loading,
-            transactions = SectionState.Success(
-                data = listOf()
-            )
-        ),
-        errorMessage = "",
-        onFetchProfile = {},
-        onPeriodChange = {},
-        userType = "Admin",
-        onUserTypeChange = { },
-        onSeeMoreTransaction = { },
-        onAddTransaction = { },
-        onFetchAllTransaction = {},
-        selectedPeriod = null,
-    )
+            errorMessage = "",
+            onFetchProfile = {},
+            onPeriodChange = {},
+            userType = "Admin",
+            onUserTypeChange = { },
+            onSeeMoreTransaction = { },
+            onAddTransaction = { },
+            onFetchAllTransaction = {},
+            selectedPeriod = null,
+        )
+    }
 }

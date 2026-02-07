@@ -1,12 +1,11 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
@@ -45,11 +44,17 @@ buildkonfig {
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+    androidLibrary {
+        namespace = "com.talangraga.data"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
-            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+
+        androidResources {
+            enable = true
         }
     }
 
@@ -125,37 +130,6 @@ kotlin {
             implementation(libs.turbine)
         }
     }
-}
-
-android {
-    namespace = "com.talangraga.data"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-        }
-        getByName("debug") {
-            isMinifyEnabled = false
-        }
-    }
-//    flavorDimensions += "version"
-//    productFlavors {
-//        create("staging") {
-//            dimension = "version"
-//        }
-//        create("production") {
-//            dimension = "version"
-//        }
-//    }
-}
-
-dependencies {
-    debugImplementation(compose.uiTooling)
 }
 
 sqldelight {

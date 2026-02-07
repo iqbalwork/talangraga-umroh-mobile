@@ -1,51 +1,63 @@
 [versions]
-agp = "8.13.1"
+agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "35"
-androidx-activity = "1.12.2"
+androidx-activity = "1.12.3"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.9.6"
 androidx-testExt = "1.3.0"
 coilCompose = "3.3.0"
+componentsResources = "1.10.0"
 composeMultiplatform = "1.10.0"
 constraintlayoutComposeMultiplatform = "0.6.1"
+foundation = "1.10.0"
 inspektifyKtor3 = "1.0.0-beta10"
 junit = "4.13.2"
-kotlin = "2.3.0"
+kotlin = "2.2.21"
 koin = "4.1.1"
 kotzilla = "1.4.2"
 kotlinx-serialization = "1.10.0"
 kotlinxDatetime = "0.7.1-0.6.x-compat"
 ktor = "3.4.0"
-ktorMonitorLogging = "1.9.4"
+ktorMonitorLogging = "1.9.7"
+material3 = "1.9.0"
 materialIconsExtended = "1.7.3"
 navigationCompose = "2.9.1"
-imagePickerKMP = "1.0.29"
+easyMediaPicker = "2.2.0"
+imagePickerKMP = "1.0.31"
 
 kotlinx-coroutines = "1.10.2"
-kotlinParcelize = "2.3.0"
+kotlinParcelize = "2.2.21"
 buildKonfig = "0.17.1"
 napier = "2.7.1"
+kotlinStdlib = "2.2.20"
+runner = "1.7.0"
+core = "1.7.0"
+runtime = "1.10.0"
 sqlDelight = "2.2.1"
 settings = "1.3.0"
-# Firebase
+# Firebase∫
 gitlive = "2.4.0"
 crashlytics = "3.0.6"
 google = "4.4.4"
 
 assertk = "0.28.1"
 turbine = "1.2.1"
+material = "1.13.0"
 
 [libraries]
 # Coil Image Loader
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coilCompose" }
 
+components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
 constraintlayout-compose-multiplatform = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayoutComposeMultiplatform" }
+foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
 inspektify-ktor3 = { module = "io.github.bvantur:inspektify-ktor3", version.ref = "inspektifyKtor3" }
+jetbrains-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -59,6 +71,7 @@ androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle
 
 # Test
 assertk = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
+material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # Koin
@@ -107,6 +120,10 @@ coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", 
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
 multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings" }
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -123,3 +140,4 @@ sqldelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 kotzilla = { id = "io.kotzilla.kotzilla-plugin", version.ref = "kotzilla" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
