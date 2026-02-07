@@ -102,7 +102,7 @@ fun HomeContent(
     var userTypeShowBottomSheet by remember { mutableStateOf(false) }
     val periodSheetState = rememberModalBottomSheetState()
     val periodScope = rememberCoroutineScope()
-    var periodShowBottomSheet by remember { mutableStateOf(false) }
+    var showPeriodeBottom by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -130,13 +130,13 @@ fun HomeContent(
             )
         }
 
-        if (periodShowBottomSheet) {
+        if (showPeriodeBottom) {
             DialogPeriods(
                 modifier = Modifier,
                 sheetState = periodSheetState,
                 scope = periodScope,
                 periods = periods,
-                onBottomSheetChange = { periodShowBottomSheet = it },
+                onBottomSheetChange = { showPeriodeBottom = it },
                 onChoosePeriod = {
                     onPeriodChange(it)
                 }
@@ -187,7 +187,7 @@ fun HomeContent(
                             onPeriodChange(null)
                             onFetchAllTransaction()
                         },
-                        onShowPeriodSheet = { periodShowBottomSheet = true }
+                        onShowPeriodSheet = { showPeriodeBottom = true }
                     )
                 }
 

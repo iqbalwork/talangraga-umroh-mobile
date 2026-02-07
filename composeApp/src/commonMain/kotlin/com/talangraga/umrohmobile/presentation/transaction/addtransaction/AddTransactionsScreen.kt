@@ -41,6 +41,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -71,14 +72,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
+import com.talangraga.shared.INDONESIA_TRIMMED
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.formatDateRange
 import com.talangraga.shared.toIndonesianDateFormat
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.CurrencyInputText
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
+import com.talangraga.umrohmobile.ui.section.DialogPeriods
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -108,11 +115,15 @@ fun AddTransactionScreen(
 ) {
 
     val users by viewModel.users.collectAsStateWithLifecycle()
+    val periods by viewModel.periods.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
 
     AddTransactionsContent(
         onBackClick = { navController.popBackStack() },
         userList = users,
+        periods = periods,
+        onPeriodChange = viewModel::setSelectedPeriod,
+        selectedPeriod = viewModel.selectedPeriod.value,
         isCollective = isCollective
     )
 }
@@ -122,14 +133,20 @@ fun AddTransactionScreen(
 fun AddTransactionsContent(
     onBackClick: () -> Unit,
     userList: List<UserUIData> = emptyList(),
+    periods: List<PeriodEntity>,
+    selectedPeriod: PeriodEntity?,
+    onPeriodChange: (PeriodEntity?) -> Unit,
     isCollective: Boolean = false
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showUserBottomSheet by remember { mutableStateOf(false) }
+    var showPeriodBottomSheet by remember { mutableStateOf(false) }
 
     // State for Add Member Transaction Modal
     var showAddMemberSheet by remember { mutableStateOf(false) }
+    val periodSheetState = rememberModalBottomSheetState()
+    val periodScope = rememberCoroutineScope()
 
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
@@ -145,6 +162,19 @@ fun AddTransactionsContent(
     val sheetState = rememberModalBottomSheetState()
     val addMemberSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
+
+    if (showPeriodBottomSheet) {
+        DialogPeriods(
+            modifier = Modifier,
+            sheetState = periodSheetState,
+            scope = periodScope,
+            periods = periods,
+            onBottomSheetChange = { showPeriodBottomSheet = it },
+            onChoosePeriod = {
+                onPeriodChange(it)
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -186,194 +216,229 @@ fun AddTransactionsContent(
         },
         containerColor = Background
     ) { paddingValues ->
-        Column(
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = paddingValues.calculateTopPadding())
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
         ) {
-
-            // Upload Bukti Transfer
-            Text(
-                text = "Bukti Transfer",
-                style = TalangragaTypography.titleSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .clickable { /* Handle upload click */ },
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val stroke = Stroke(
-                        width = 2f,
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                    )
-                    drawRoundRect(
-                        color = Color.LightGray,
-                        style = stroke,
-                        cornerRadius = CornerRadius(12.dp.toPx())
-                    )
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CloudUpload,
-                        contentDescription = "Upload",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+            item {
+                Column {
+                    // Upload Bukti Transfer
                     Text(
-                        text = "Tekan disini untuk unggah file",
-                        style = TalangragaTypography.bodySmall.copy(color = Color.Gray)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Anggota/Pengguna Dropdown
-            Text(
-                text = "Anggota/Pengguna",
-                style = TalangragaTypography.titleSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            TextButtonOption(
-                text = selectedUser?.fullname ?: "",
-                placeholder = "Pilih Anggota",
-                trailingIcon = Icons.Default.ArrowDropDown,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    isUserSelectionForCollective = false
-                    showUserBottomSheet = true
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Jumlah Tabungan Input
-            var amount by remember { mutableStateOf("") }
-            CurrencyInputText(
-                title = "Jumlah Tabungan",
-                value = amount,
-                onValueChange = { amount = it },
-                placeholder = "Rp xxx.xxx.xxx",
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Metode Pembayaran Dropdown
-            Text(
-                text = "Metode Pembayaran",
-                style = TalangragaTypography.titleSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            TextButtonOption(
-                text = "",
-                placeholder = "Pilih metode pembayaran",
-                trailingIcon = Icons.Default.ArrowDropDown,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { /* Show payment method dropdown */ }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Tanggal & Waktu Picker
-            Text(
-                text = "Tanggal & Waktu",
-                style = TalangragaTypography.titleSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            val displayDateTime = if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
-                "$selectedDate $selectedTime"
-            } else ""
-
-            TextButtonOption(
-                text = displayDateTime,
-                placeholder = "dd/mm/yyyy HH:mm",
-                trailingIcon = Icons.Default.CalendarToday,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = { showDatePicker = true }
-            )
-
-            // Collective Section
-            if (isCollective) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Tambahkan Anggota",
-                    style = TalangragaTypography.titleSmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                TextButtonOption(
-                    text = "",
-                    placeholder = "Tambahkan anggota",
-                    trailingIcon = Icons.Default.ArrowDropDown,
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        // Reset temp fields
-                        tempMemberUser = null
-                        tempMemberAmount = ""
-                        showAddMemberSheet = true
-                    }
-                )
-
-                if (collectiveMembers.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Daftar anggota",
+                        text = "Bukti Transfer",
                         style = TalangragaTypography.titleSmall,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .clickable { /* Handle upload click */ },
+                        contentAlignment = Alignment.Center
                     ) {
-                        collectiveMembers.forEach { member ->
-                            Card(
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(
-                                    1.dp,
-                                    BorderColor
-                                ),
-                                colors = CardDefaults.cardColors(containerColor = Background),
-                                modifier = Modifier.fillMaxWidth()
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val stroke = Stroke(
+                                width = 2f,
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                            )
+                            drawRoundRect(
+                                color = Color.LightGray,
+                                style = stroke,
+                                cornerRadius = CornerRadius(12.dp.toPx())
+                            )
+                        }
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CloudUpload,
+                                contentDescription = "Upload",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Tekan disini untuk unggah file",
+                                style = TalangragaTypography.bodySmall.copy(color = Color.Gray)
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
+                Column {
+                    // Anggota/Pengguna Dropdown
+                    Text(
+                        text = "Anggota/Pengguna",
+                        style = TalangragaTypography.titleSmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    TextButtonOption(
+                        text = selectedUser?.fullname ?: "",
+                        placeholder = "Pilih Anggota",
+                        trailingIcon = Icons.Default.ArrowDropDown,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            isUserSelectionForCollective = false
+                            showUserBottomSheet = true
+                        }
+                    )
+                }
+            }
+
+            item {
+                Text(
+                    text = "Tabungan ke:",
+                    style = TalangragaTypography.titleSmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                val bulan = if (selectedPeriod != null) {
+                    formatDateRange(
+                        startDateString = selectedPeriod.startDate,
+                        endDateString = selectedPeriod.endDate,
+                        monthFormat = INDONESIA_TRIMMED
+                    )
+                } else ""
+                TextButtonOption(
+                    text = "${selectedPeriod?.periodeName}: $bulan",
+                    placeholder = "Pilih Bulan",
+                    trailingIcon = Icons.Default.ArrowDropDown,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    showPeriodBottomSheet = true
+                }
+            }
+
+            item {
+                Column {
+                    // Metode Pembayaran Dropdown
+                    Text(
+                        text = "Metode Pembayaran",
+                        style = TalangragaTypography.titleSmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    TextButtonOption(
+                        text = "",
+                        placeholder = "Pilih metode pembayaran",
+                        trailingIcon = Icons.Default.ArrowDropDown,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { /* Show payment method dropdown */ }
+                    )
+                }
+            }
+
+            item {
+                Column {
+                    // Tanggal & Waktu Picker
+                    Text(
+                        text = "Tanggal & Waktu",
+                        style = TalangragaTypography.titleSmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    val displayDateTime = if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
+                        "$selectedDate $selectedTime"
+                    } else ""
+
+                    TextButtonOption(
+                        text = displayDateTime,
+                        placeholder = "dd/mm/yyyy HH:mm",
+                        trailingIcon = Icons.Default.CalendarToday,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { showDatePicker = true }
+                    )
+                }
+            }
+
+            item {
+                var amount by remember { mutableStateOf("") }
+                CurrencyInputText(
+                    title = "Jumlah Tabungan",
+                    value = amount,
+                    onValueChange = { amount = it },
+                    placeholder = "Rp xxx.xxx.xxx",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                if (isCollective) {
+                    Column {
+                        Text(
+                            text = "Tambahkan Anggota",
+                            style = TalangragaTypography.titleSmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        TextButtonOption(
+                            text = "",
+                            placeholder = "Tambahkan anggota",
+                            trailingIcon = Icons.Default.ArrowDropDown,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                // Reset temp fields
+                                tempMemberUser = null
+                                tempMemberAmount = ""
+                                showAddMemberSheet = true
+                            }
+                        )
+
+                        if (collectiveMembers.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Daftar anggota",
+                                style = TalangragaTypography.titleSmall,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = member.user.fullname ?: "Unknown",
-                                        style = TalangragaTypography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                                    )
-                                    Text(
-                                        text = member.amount,
-                                        style = TalangragaTypography.bodyMedium.copy(
-                                            color = Sage,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
+                                collectiveMembers.forEach { member ->
+                                    Card(
+                                        shape = RoundedCornerShape(8.dp),
+                                        border = BorderStroke(
+                                            1.dp,
+                                            BorderColor
+                                        ),
+                                        colors = CardDefaults.cardColors(containerColor = Background),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = member.user.fullname ?: "Unknown",
+                                                style = TalangragaTypography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                            )
+                                            Text(
+                                                text = member.amount,
+                                                style = TalangragaTypography.bodyMedium.copy(
+                                                    color = Sage,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
+        }
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState()),
+        ) {
         }
 
         if (showDatePicker) {
@@ -597,11 +662,21 @@ fun UserItem(
                     .background(Color(0xFFE0E0E0)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = Sage
-                )
+                if (user.imageProfileUrl.isNotBlank()) {
+                    BasicImage(
+                        model = user.imageProfileUrl,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "User Avatar",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -655,9 +730,14 @@ fun PreviewAddTransactionContent() {
             isActive = true
         )
     )
-    AddTransactionsContent(
-        onBackClick = {},
-        userList = mockUsers,
-        isCollective = true
-    )
+    TalangragaTheme {
+        AddTransactionsContent(
+            onBackClick = {},
+            userList = mockUsers,
+            isCollective = true,
+            periods = emptyList(),
+            onPeriodChange = { },
+            selectedPeriod = null
+        )
+    }
 }

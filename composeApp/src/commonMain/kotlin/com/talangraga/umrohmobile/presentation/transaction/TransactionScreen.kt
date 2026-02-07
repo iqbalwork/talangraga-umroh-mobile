@@ -127,7 +127,7 @@ fun TransactionContent(
                         )
                     } else ""
                     TextButtonOption(
-                        text = bulan,
+                        text = "${period?.periodeName}: $bulan",
                         placeholder = "Pilih Bulan",
                         trailingIcon = Icons.Default.ArrowDropDown,
                         modifier = Modifier.weight(1f),

@@ -101,9 +101,11 @@ fun TextButtonOption(
     trailingIcon: ImageVector? = Icons.Default.ArrowDropDown,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (text.isNotBlank()) Sage else Background
-    val borderColor = if (text.isNotBlank()) Sage else BorderColor
-    val selectedTextColor = if (text.isNotBlank()) TextOnColor else TextSecondaryDark
+
+    val isEmptyText = text.isBlank() || text.contains("null")
+    val backgroundColor = if (!isEmptyText) Sage else Background
+    val borderColor = if (!isEmptyText) Sage else BorderColor
+    val selectedTextColor = if (!isEmptyText) TextOnColor else TextSecondaryDark
     val roundedCornerShape = RoundedCornerShape(12.dp)
 
     Row(
@@ -117,7 +119,7 @@ fun TextButtonOption(
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
 
-        val label = text.ifBlank { placeholder }
+        val label = if (isEmptyText) placeholder else text
 
         Text(
             text = label,

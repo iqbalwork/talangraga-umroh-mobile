@@ -45,7 +45,7 @@ fun PeriodSection(
             )
         } else ""
         TextButtonOption(
-            text = bulan,
+            text = "${period?.periodeName}: $bulan",
             placeholder = "Pilih Bulan",
             trailingIcon = Icons.Default.ArrowDropDown,
             modifier = Modifier.fillMaxWidth(),
