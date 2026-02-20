@@ -22,8 +22,13 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,9 +48,13 @@ import com.talangraga.shared.formatDateRange
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
+import com.talangraga.umrohmobile.presentation.user.ListUserViewModel
+import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButton
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
+import com.talangraga.umrohmobile.ui.section.ListUserSheet
+import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -54,18 +63,26 @@ fun TransactionScreen(
     rootNavController: NavHostController,
     navHostController: NavHostController,
     homeViewModel: HomeViewModel = koinViewModel(),
-    viewModel: TransactionViewModel = koinViewModel()
+    viewModel: TransactionViewModel = koinViewModel(),
+    userViewModel: ListUserViewModel = koinViewModel()
 ) {
 
     val transactions by homeViewModel.transactions.collectAsStateWithLifecycle()
+    val users by userViewModel.users.collectAsStateWithLifecycle()
+    val selectedUser by userViewModel.selectedUser.collectAsStateWithLifecycle()
 
     TransactionContent(
-        period = homeViewModel.selectedPeriod.value,
-        onPeriodChange = homeViewModel::setSelectedPeriod,
+        selectedPeriod = homeViewModel.selectedPeriod.value,
+        onPeriodChange = {
+            homeViewModel.setSelectedPeriod(it)
+            homeViewModel.getTransactions(it?.periodId)
+        },
+        periods = homeViewModel.periods.value,
         transactions = transactions,
-        onClickAll = {},
-        onShowPeriodSheet = {},
-        onFetchAllTransaction = { }
+        onFetchAllTransaction = { },
+        selectedUser = selectedUser,
+        users = users,
+        onSelectUser = userViewModel::onSelectedUser
     ) {
         rootNavController.navigate(Screen.AddTransactionRoute(isCollective = true))
     }
@@ -74,14 +91,48 @@ fun TransactionScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionContent(
-    period: PeriodEntity?,
+    selectedUser: UserUIData?,
+    users: List<UserUIData>,
+    onSelectUser: (UserUIData) -> Unit,
+    selectedPeriod: PeriodEntity?,
     onPeriodChange: (PeriodEntity?) -> Unit,
+    periods: List<PeriodEntity>,
     transactions: List<TransactionUiData>,
     onFetchAllTransaction: () -> Unit,
-    onClickAll: () -> Unit,
-    onShowPeriodSheet: () -> Unit,
     onAddTransaction: () -> Unit,
 ) {
+
+    val periodSheetState = rememberModalBottomSheetState()
+    val periodScope = rememberCoroutineScope()
+    var showPeriodBottom by remember { mutableStateOf(false) }
+
+    val userSheetState = rememberModalBottomSheetState()
+    val userScope = rememberCoroutineScope()
+    var showUserSheet by remember { mutableStateOf(false) }
+
+    if (showPeriodBottom) {
+        PeriodsSheet(
+            modifier = Modifier,
+            sheetState = periodSheetState,
+            scope = periodScope,
+            periods = periods,
+            onBottomSheetChange = { showPeriodBottom = it },
+            onChoosePeriod = {
+                onPeriodChange(it)
+            }
+        )
+    }
+
+    if (showUserSheet) {
+        ListUserSheet(
+            modifier = Modifier,
+            sheetState = userSheetState,
+            scope = userScope,
+            data = users,
+            onBottomSheetChange = { showPeriodBottom = it },
+            onSelectUser = onSelectUser
+        )
+    }
 
     TalangragaScaffold(
         contentWindowInsets = WindowInsets.statusBars,
@@ -114,24 +165,27 @@ fun TransactionContent(
                 ) {
                     TextButton(
                         text = "Semua",
-                        isSelected = period == null,
+                        isSelected = selectedPeriod == null,
                         modifier = Modifier
                     ) {
-                        onClickAll()
+                        onPeriodChange(null)
+                        onFetchAllTransaction()
                     }
-                    val bulan = if (period != null) {
+                    val bulan = if (selectedPeriod != null) {
                         formatDateRange(
-                            startDateString = period.startDate.orEmpty(),
-                            endDateString = period.endDate.orEmpty(),
+                            startDateString = selectedPeriod.startDate,
+                            endDateString = selectedPeriod.endDate,
                             monthFormat = INDONESIA_TRIMMED
                         )
                     } else ""
                     TextButtonOption(
-                        text = "${period?.periodeName}: $bulan",
+                        text = "${selectedPeriod?.periodeName}: $bulan",
                         placeholder = "Pilih Bulan",
                         trailingIcon = Icons.Default.ArrowDropDown,
                         modifier = Modifier.weight(1f),
-                    ) { onShowPeriodSheet() }
+                    ) {
+                        showPeriodBottom = true
+                    }
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.List,
                         contentDescription = null,
@@ -148,7 +202,7 @@ fun TransactionContent(
                 }
 
                 TextButtonOption(
-                    text = "",
+                    text = selectedUser?.fullname.orEmpty(),
                     placeholder = "Pilih Pengguna",
                     modifier = Modifier.constrainAs(chooseUserRef) {
                         top.linkTo(filterRef.bottom, 8.dp)
@@ -186,9 +240,7 @@ fun TransactionContent(
                         modifier = Modifier,
                         showAllTransaction = true,
                         transactions = transactions,
-                        onAddTransaction = {
-
-                        },
+                        onAddTransaction = onAddTransaction,
                         onClickSeeMore = {
 
                         }
@@ -198,7 +250,7 @@ fun TransactionContent(
 
             if (transactions.isNotEmpty()) {
                 FloatingActionButton(
-                    onClick = { onAddTransaction() },
+                    onClick = onAddTransaction,
                     containerColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.align(Alignment.BottomEnd)
                         .padding(bottom = 16.dp, end = 16.dp)
@@ -220,10 +272,13 @@ fun TransactionContentPreview() {
     TalangragaTheme(useDynamicColor = false) {
         TransactionContent(
             transactions = emptyList(),
-            onClickAll = {}, onShowPeriodSheet = {},
             onFetchAllTransaction = { },
-            period = null,
-            onPeriodChange = { }
+            selectedPeriod = null,
+            onPeriodChange = { },
+            periods = emptyList(),
+            selectedUser = null,
+            users = emptyList(),
+            onSelectUser = {  },
         ) {
 
         }

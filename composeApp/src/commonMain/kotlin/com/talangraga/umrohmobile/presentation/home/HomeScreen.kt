@@ -36,7 +36,7 @@ import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
-import com.talangraga.umrohmobile.ui.section.DialogPeriods
+import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.section.DialogUserType
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.launch
@@ -102,7 +102,7 @@ fun HomeContent(
     var userTypeShowBottomSheet by remember { mutableStateOf(false) }
     val periodSheetState = rememberModalBottomSheetState()
     val periodScope = rememberCoroutineScope()
-    var showPeriodeBottom by remember { mutableStateOf(false) }
+    var showPeriodBottom by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -130,13 +130,13 @@ fun HomeContent(
             )
         }
 
-        if (showPeriodeBottom) {
-            DialogPeriods(
+        if (showPeriodBottom) {
+            PeriodsSheet(
                 modifier = Modifier,
                 sheetState = periodSheetState,
                 scope = periodScope,
                 periods = periods,
-                onBottomSheetChange = { showPeriodeBottom = it },
+                onBottomSheetChange = { showPeriodBottom = it },
                 onChoosePeriod = {
                     onPeriodChange(it)
                 }
@@ -187,7 +187,7 @@ fun HomeContent(
                             onPeriodChange(null)
                             onFetchAllTransaction()
                         },
-                        onShowPeriodSheet = { showPeriodeBottom = true }
+                        onShowPeriodSheet = { showPeriodBottom = true }
                     )
                 }
 

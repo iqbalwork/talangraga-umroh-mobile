@@ -46,16 +46,18 @@ fun TransactionSection(
                 amount = transaction.amount
             )
         }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    onClickSeeMore()
-                },
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Semua transaksi", style = TalangragaTypography.bodySmall)
-            Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
+        if (!showAllTransaction) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onClickSeeMore()
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Semua transaksi", style = TalangragaTypography.bodySmall)
+                Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
+            }
         }
     }
 }

@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DialogPeriods(
+fun PeriodsSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState,
     scope: CoroutineScope,

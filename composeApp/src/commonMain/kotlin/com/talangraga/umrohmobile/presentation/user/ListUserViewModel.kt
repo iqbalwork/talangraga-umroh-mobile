@@ -28,6 +28,12 @@ class ListUserViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
+    private val _users = MutableStateFlow<List<UserUIData>>(emptyList())
+    val users = _users.asStateFlow()
+
+    private val _selectedUser = MutableStateFlow<UserUIData?>(null)
+    val selectedUser = _selectedUser.asStateFlow()
+
     // Store the original full list to filter locally if needed, or trigger API search
     private var allUsers: List<UserUIData> = emptyList()
 
@@ -45,6 +51,10 @@ class ListUserViewModel(
                 filterUsers(query)
             }
             .launchIn(viewModelScope)
+    }
+
+    fun onSelectedUser(user: UserUIData) {
+        _selectedUser.update { user }
     }
 
     fun onSearchQueryChange(newQuery: String) {
@@ -90,6 +100,7 @@ class ListUserViewModel(
                         val listUser = result.data.map { it.toUiData() }
                             .filter { it.id != session.userProfile.value?.id }
                         allUsers = listUser
+                        _users.update { result.data.map { it.toUiData() } }
                         // Apply current filter if any
                         filterUsers(_searchQuery.value)
                     }
