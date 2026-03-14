@@ -39,7 +39,7 @@ core = "1.7.0"
 runtime = "1.10.0"
 sqlDelight = "2.2.1"
 settings = "1.3.0"
-# Firebase∫
+# Firebase
 gitlive = "2.4.0"
 crashlytics = "3.0.6"
 google = "4.4.4"
@@ -120,7 +120,6 @@ coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", 
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
 multiplatform-settings-serialization = { module = "com.russhwolf:multiplatform-settings-serialization", version.ref = "settings" }
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "settings" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
