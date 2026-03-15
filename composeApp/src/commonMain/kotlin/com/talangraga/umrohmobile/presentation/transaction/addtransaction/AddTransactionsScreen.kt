@@ -7,6 +7,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,7 +45,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -54,6 +55,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,11 +69,14 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.talangraga.data.local.database.model.PaymentEntity
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
@@ -81,11 +86,22 @@ import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.formatDateRange
 import com.talangraga.shared.toIndonesianDateFormat
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.presentation.utils.rememberSharedFileReader
 import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.CurrencyInputText
+import com.talangraga.umrohmobile.ui.component.ModalImagePicker
+import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
+import com.talangraga.umrohmobile.ui.component.ToastManager
+import com.talangraga.umrohmobile.ui.component.ToastType
+import com.talangraga.umrohmobile.ui.section.PaymentsSheet
 import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -120,10 +136,29 @@ fun AddTransactionScreen(
         onBackClick = { navController.popBackStack() },
         userList = uiState.users,
         periods = uiState.periods,
+        payments = uiState.payments,
         onPeriodChange = { viewModel.onEvent(AddTransactionEvent.SetSelectedPeriod(it)) },
         selectedPeriod = uiState.selectedPeriod,
-        isCollective = isCollective
+        onPaymentChange = { viewModel.onEvent(AddTransactionEvent.SetSelectedPayment(it)) },
+        selectedPayment = uiState.selectedPayment,
+        isCollective = isCollective,
+        imageUri = uiState.imageUri,
+        isLoading = uiState.isLoading,
+        onImageChange = { viewModel.onEvent(AddTransactionEvent.SetImageUri(it)) },
+        onSubmit = { amount, dateMillis, time, user ->
+            viewModel.onEvent(AddTransactionEvent.SubmitTransaction(amount, dateMillis, time, user))
+        }
     )
+
+    LaunchedEffect(viewModel.effect) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is AddTransactionEffect.ShowToastSuccess -> ToastManager.show(message = effect.message, type = ToastType.Success)
+                is AddTransactionEffect.ShowToastError -> ToastManager.show(message = effect.message, type = ToastType.Error)
+                AddTransactionEffect.NavigateBack -> navController.popBackStack()
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalTime::class)
@@ -132,14 +167,23 @@ fun AddTransactionsContent(
     onBackClick: () -> Unit,
     userList: List<UserUIData> = emptyList(),
     periods: List<PeriodEntity>,
+    payments: List<PaymentEntity>,
     selectedPeriod: PeriodEntity?,
     onPeriodChange: (PeriodEntity?) -> Unit,
-    isCollective: Boolean = false
+    selectedPayment: PaymentEntity?,
+    onPaymentChange: (PaymentEntity?) -> Unit,
+    isCollective: Boolean = false,
+    imageUri: ByteArray? = null,
+    isLoading: Boolean = false,
+    onImageChange: (ByteArray) -> Unit = {},
+    onSubmit: (amount: String, dateMillis: Long?, time: String, user: UserUIData?) -> Unit = { _, _, _, _ -> }
 ) {
+    val focusManager = LocalFocusManager.current
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showUserBottomSheet by remember { mutableStateOf(false) }
     var showPeriodBottomSheet by remember { mutableStateOf(false) }
+    var showPaymentBottomSheet by remember { mutableStateOf(false) }
 
     // State for Add Member Transaction Modal
     var showAddMemberSheet by remember { mutableStateOf(false) }
@@ -150,6 +194,7 @@ fun AddTransactionsContent(
     var selectedTime by remember { mutableStateOf("") }
     var tempDateMillis by remember { mutableStateOf<Long?>(null) }
     var selectedUser by remember { mutableStateOf<UserUIData?>(null) }
+    var amount by remember { mutableStateOf("") }
 
     // Collective Mode State
     val collectiveMembers = remember { mutableStateListOf<CollectiveMember>() }
@@ -160,6 +205,70 @@ fun AddTransactionsContent(
     val sheetState = rememberModalBottomSheetState()
     val addMemberSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
+
+    val fileReader = rememberSharedFileReader()
+    var showImagePickerSheet by remember { mutableStateOf(false) }
+    val imagePickerSheetState = rememberModalBottomSheetState()
+    var imagePickerMessage by remember { mutableStateOf<String?>(null) }
+    var showGallery by remember { mutableStateOf(false) }
+    var showCamera by remember { mutableStateOf(false) }
+    var capturedPhoto by remember { mutableStateOf<PhotoResult?>(null) }
+    var selectedImagesFile by remember { mutableStateOf<List<GalleryPhotoResult>>(emptyList()) }
+
+    LaunchedEffect(capturedPhoto) {
+        if (capturedPhoto != null) {
+            scope.launch {
+                val bytes = fileReader.readBytes(capturedPhoto?.uri.orEmpty())
+                if (bytes != null) {
+                    onImageChange(bytes)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(selectedImagesFile) {
+        if (selectedImagesFile.isNotEmpty()) {
+            scope.launch {
+                val bytes = fileReader.readBytes(selectedImagesFile.first().uri)
+                if (bytes != null) {
+                    onImageChange(bytes)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(imagePickerMessage) {
+        if (!imagePickerMessage.isNullOrEmpty()) {
+            ToastManager.show(message = imagePickerMessage.orEmpty(), type = ToastType.Error)
+            imagePickerMessage = null
+        }
+    }
+
+    if (showGallery) {
+        GalleryPickerLauncher(onPhotosSelected = {
+            selectedImagesFile = it
+            showCamera = false
+            showGallery = false
+        }, onError = {
+            imagePickerMessage = it.message.orEmpty()
+            showCamera = false
+            showGallery = false
+        })
+    }
+
+    if (showImagePickerSheet) {
+        ModalImagePicker(
+            onDismissRequest = { showImagePickerSheet = false }, onCameraClick = {
+                showImagePickerSheet = false
+                showCamera = true
+                showGallery = false
+            }, onGalleryClick = {
+                showImagePickerSheet = false
+                showCamera = false
+                showGallery = true
+            }, sheetState = imagePickerSheetState
+        )
+    }
 
     if (showPeriodBottomSheet) {
         PeriodsSheet(
@@ -174,7 +283,23 @@ fun AddTransactionsContent(
         )
     }
 
-    Scaffold(
+    val paymentSheetState = rememberModalBottomSheetState()
+    val paymentScope = rememberCoroutineScope()
+
+    if (showPaymentBottomSheet) {
+        PaymentsSheet(
+            modifier = Modifier,
+            sheetState = paymentSheetState,
+            scope = paymentScope,
+            payments = payments,
+            onBottomSheetChange = { showPaymentBottomSheet = it },
+            onChoosePayment = {
+                onPaymentChange(it)
+            }
+        )
+    }
+
+    TalangragaScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -203,16 +328,30 @@ fun AddTransactionsContent(
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = { /* Handle submit */ },
+                    enabled = !isLoading,
+                    onClick = {
+                        onSubmit(amount, tempDateMillis, selectedTime, selectedUser)
+                    },
                 ) {
-                    Text(
-                        stringResource(Res.string.tambah_transaksi),
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            stringResource(Res.string.tambah_transaksi),
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
                 }
             }
         },
-        containerColor = Background
+        containerColor = Background,
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = { focusManager.clearFocus() })
+        }
     ) { paddingValues ->
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -236,7 +375,7 @@ fun AddTransactionsContent(
                             .height(150.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(Color.White)
-                            .clickable { /* Handle upload click */ },
+                            .clickable { showImagePickerSheet = true },
                         contentAlignment = Alignment.Center
                     ) {
                         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -251,20 +390,32 @@ fun AddTransactionsContent(
                             )
                         }
 
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CloudUpload,
-                                contentDescription = "Upload",
-                                tint = Color.Gray,
-                                modifier = Modifier.size(48.dp)
+                        if (imageUri != null) {
+                            BasicImage(
+                                model = imageUri,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        showImagePickerSheet = true
+                                    }
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Tekan disini untuk unggah file",
-                                style = TalangragaTypography.bodySmall.copy(color = Color.Gray)
-                            )
+                        } else {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CloudUpload,
+                                    contentDescription = "Upload",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Tekan disini untuk unggah file",
+                                    style = TalangragaTypography.bodySmall.copy(color = Color.Gray)
+                                )
+                            }
                         }
                     }
                 }
@@ -323,11 +474,11 @@ fun AddTransactionsContent(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                     TextButtonOption(
-                        text = "",
+                        text = selectedPayment?.paymentName ?: "",
                         placeholder = "Pilih metode pembayaran",
                         trailingIcon = Icons.Default.ArrowDropDown,
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { /* Show payment method dropdown */ }
+                        onClick = { showPaymentBottomSheet = true }
                     )
                 }
             }
@@ -341,9 +492,10 @@ fun AddTransactionsContent(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    val displayDateTime = if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
-                        "$selectedDate $selectedTime"
-                    } else ""
+                    val displayDateTime =
+                        if (selectedDate.isNotEmpty() && selectedTime.isNotEmpty()) {
+                            "$selectedDate $selectedTime"
+                        } else ""
 
                     TextButtonOption(
                         text = displayDateTime,
@@ -356,7 +508,6 @@ fun AddTransactionsContent(
             }
 
             item {
-                var amount by remember { mutableStateOf("") }
                 CurrencyInputText(
                     title = "Jumlah Tabungan",
                     value = amount,
@@ -415,7 +566,9 @@ fun AddTransactionsContent(
                                         ) {
                                             Text(
                                                 text = member.user.fullname ?: "Unknown",
-                                                style = TalangragaTypography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                                style = TalangragaTypography.bodyMedium.copy(
+                                                    fontWeight = FontWeight.Bold
+                                                )
                                             )
                                             Text(
                                                 text = member.amount,
@@ -582,6 +735,20 @@ fun AddTransactionsContent(
             }
         }
     }
+
+    Box(Modifier.fillMaxSize()) {
+        if (showCamera) {
+            ImagePickerLauncher(config = ImagePickerConfig(onPhotoCaptured = {
+                capturedPhoto = it
+                showCamera = false
+                showGallery = false
+            }, onError = {
+                imagePickerMessage = it.message.orEmpty()
+                showCamera = false
+                showGallery = false
+            }))
+        }
+    }
 }
 
 @Composable
@@ -734,8 +901,11 @@ fun PreviewAddTransactionContent() {
             userList = mockUsers,
             isCollective = true,
             periods = emptyList(),
+            payments = emptyList(),
             onPeriodChange = { },
-            selectedPeriod = null
+            selectedPeriod = null,
+            onPaymentChange = { },
+            selectedPayment = null
         )
     }
 }

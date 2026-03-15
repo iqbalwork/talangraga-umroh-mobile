@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -26,7 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
@@ -63,6 +66,7 @@ fun InputText(
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
     val borderColor = if (value.isNotBlank()) Sage else BorderColor
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = modifier,
@@ -87,7 +91,11 @@ fun InputText(
             enabled = enabled,
             keyboardOptions = KeyboardOptions(
                 capitalization = keyboardCapitalization,
-                keyboardType = keyboardType
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
             ),
             leadingIcon = if (leadingIcon != null) {
                 {
@@ -132,6 +140,7 @@ fun InputTextWithStylingTitle(
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
     val borderColor = if (value.isNotBlank()) Sage else BorderColor
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = modifier,
@@ -156,7 +165,11 @@ fun InputTextWithStylingTitle(
             enabled = enabled,
             keyboardOptions = KeyboardOptions(
                 capitalization = keyboardCapitalization,
-                keyboardType = keyboardType
+                keyboardType = keyboardType,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
             ),
             leadingIcon = if (leadingIcon != null) {
                 {
@@ -197,6 +210,7 @@ fun CurrencyInputText(
     backgroundColor: Color = Background
 ) {
     val borderColor = if (value.isNotBlank()) Sage else BorderColor
+    val focusManager = LocalFocusManager.current
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
@@ -224,7 +238,13 @@ fun CurrencyInputText(
             },
             singleLine = true,
             enabled = enabled,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
+            ),
             visualTransformation = CurrencyVisualTransformation(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -349,6 +369,7 @@ fun PasswordInput(
 ) {
     var passwordVisibility by remember { mutableStateOf(false) }
     val borderColor = if (password.isNotBlank()) Sage else BorderColor
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = modifier,
@@ -369,6 +390,12 @@ fun PasswordInput(
             },
             singleLine = true,
             enabled = enabled,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
+            ),
             visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
             leadingIcon = if (leadingIcon != null) {
                 {

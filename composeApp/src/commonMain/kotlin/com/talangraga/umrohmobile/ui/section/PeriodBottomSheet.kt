@@ -88,7 +88,7 @@ fun PeriodsSheet(
             state = listState
         ) {
             itemsIndexed(
-                items = periods,
+                items = periods.sortedByDescending { it.startDate },
                 key = { index, item -> index }
             ) { index, item ->
                 val isCurrent = item == selectedPeriod
