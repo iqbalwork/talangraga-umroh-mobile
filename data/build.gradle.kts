@@ -75,19 +75,12 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.android.driver)
         }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
             implementation(libs.navigation.compose)
             implementation(libs.material.icons.extended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
@@ -136,6 +129,7 @@ sqldelight {
     databases {
         create("TalangragaDatabase") {
             packageName.set("com.talangraga")
+            version = 2
             // optional: specify srcDirs if you place .sq files outside default
             // srcDirs.setFrom("src/commonMain/sqldelight")
 //            verifyMigrations.set(false)
