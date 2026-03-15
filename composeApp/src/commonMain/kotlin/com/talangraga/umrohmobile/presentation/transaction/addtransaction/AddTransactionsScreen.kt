@@ -84,7 +84,7 @@ import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.CurrencyInputText
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
-import com.talangraga.umrohmobile.ui.section.DialogPeriods
+import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -114,16 +114,14 @@ fun AddTransactionScreen(
     viewModel: AddTransactionViewModel = koinViewModel()
 ) {
 
-    val users by viewModel.users.collectAsStateWithLifecycle()
-    val periods by viewModel.periods.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AddTransactionsContent(
         onBackClick = { navController.popBackStack() },
-        userList = users,
-        periods = periods,
-        onPeriodChange = viewModel::setSelectedPeriod,
-        selectedPeriod = viewModel.selectedPeriod.value,
+        userList = uiState.users,
+        periods = uiState.periods,
+        onPeriodChange = { viewModel.onEvent(AddTransactionEvent.SetSelectedPeriod(it)) },
+        selectedPeriod = uiState.selectedPeriod,
         isCollective = isCollective
     )
 }
@@ -164,7 +162,7 @@ fun AddTransactionsContent(
     val scope = rememberCoroutineScope()
 
     if (showPeriodBottomSheet) {
-        DialogPeriods(
+        PeriodsSheet(
             modifier = Modifier,
             sheetState = periodSheetState,
             scope = periodScope,

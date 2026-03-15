@@ -74,21 +74,30 @@ fun ListUserScreen(
     viewModel: ListUserViewModel = koinViewModel(),
 ) {
 
-    val state = viewModel.uiState.collectAsStateWithLifecycle()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val errorMessage = uiState.errorMessage
+
     LaunchedEffect(errorMessage) {
         if (!errorMessage.isNullOrEmpty()) {
-            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
-            viewModel.clearError()
+            ToastManager.show(message = errorMessage, type = ToastType.Error)
+            viewModel.onEvent(ListUserEvent.ClearError)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is ListUserEffect.ShowToastError -> {
+                    ToastManager.show(message = effect.message, type = ToastType.Error)
+                }
+            }
         }
     }
 
     ListUserContent(
-        state = state.value,
-        searchQuery = searchQuery,
-        onSearchQueryChange = viewModel::onSearchQueryChange,
+        state = uiState.listState,
+        searchQuery = uiState.searchQuery,
+        onSearchQueryChange = { viewModel.onEvent(ListUserEvent.SearchQueryChanged(it)) },
         onBackClick = {
             navHostController.popBackStack()
         },
@@ -114,7 +123,7 @@ fun ListUserScreen(
             )
 //            navHostController.navigate(Screen.EditProfileRoute(userId = it, isLoginUser = false))
         },
-        onRefresh = viewModel::getListUser
+        onRefresh = { viewModel.onEvent(ListUserEvent.GetListUser) }
     )
 }
 
