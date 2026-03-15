@@ -11,6 +11,7 @@ data class TransactionUiData(
     val reportedDate: String,
     val reportedBy: String,
     val confirmedBy: String,
+    val userName: String,
     val buktiTransferUrl: String,
     val paymentType: String,
     val paymentName: String,

@@ -40,6 +40,7 @@ import com.talangraga.umrohmobile.ui.section.DialogUserType
 import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -85,6 +86,10 @@ fun HomeScreen(
         onFetchAllTransaction = {
             viewModel.onEvent(HomeEvent.GetTransactions(null))
         },
+        onTransactionClick = { transaction ->
+            val transactionJson = Json.encodeToString(transaction)
+            rootNavHostController.navigate(Screen.TransactionDetailRoute(transactionJson))
+        }
     )
 }
 
@@ -103,6 +108,7 @@ fun HomeContent(
     onAddTransaction: () -> Unit,
     onFetchProfile: () -> Unit,
     onFetchAllTransaction: () -> Unit,
+    onTransactionClick: (com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData) -> Unit = {}
 ) {
 
     val refreshState = rememberPullToRefreshState()
@@ -207,7 +213,8 @@ fun HomeContent(
                         isHomeAdminDashboard = true,
                         state = uiState.transactions,
                         onAddTransaction = onAddTransaction,
-                        onClickSeeMore = onSeeMoreTransaction
+                        onClickSeeMore = onSeeMoreTransaction,
+                        onTransactionClick = onTransactionClick
                     )
                 }
             }

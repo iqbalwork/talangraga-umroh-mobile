@@ -8,20 +8,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import androidx.savedstate.SavedState
-import androidx.savedstate.read
-import androidx.savedstate.write
 import com.talangraga.data.network.TokenManager
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.login.LoginScreen
 import com.talangraga.umrohmobile.presentation.main.MainScreen
 import com.talangraga.umrohmobile.presentation.splash.SplashScreen
 import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionScreen
+import com.talangraga.umrohmobile.presentation.transaction.detailtransaction.TransactionDetailScreen
+import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.presentation.user.adduser.AddUserScreen
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import com.talangraga.umrohmobile.ui.theme.ThemeManager
@@ -104,26 +102,17 @@ fun App() {
                         isLoginUser = args.isLoginUser
                     )
                 }
+
+                composable<Screen.TransactionDetailRoute> { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.TransactionDetailRoute>()
+                    val transaction = Json.decodeFromString<TransactionUiData>(args.transactionJson)
+                    TransactionDetailScreen(
+                        transaction = transaction,
+                        onBackClick = { rootNavController.popBackStack() }
+                    )
+                }
             }
 
         }
     }
-}
-
-inline fun <reified T : Any> serializableType(
-    isNullableAllowed: Boolean = false,
-    json: Json = Json,
-) = object : NavType<T>(isNullableAllowed) {
-
-    override fun put(bundle: SavedState, key: String, value: T) {
-        bundle.write { putString(key, json.encodeToString(value)) }
-    }
-
-    override fun get(bundle: SavedState, key: String): T? {
-        return json.decodeFromString<T?>(bundle.read { getString(key) })
-    }
-
-    override fun parseValue(value: String): T = json.decodeFromString(value)
-
-    override fun serializeAsValue(value: T): String = json.encodeToString(value)
 }

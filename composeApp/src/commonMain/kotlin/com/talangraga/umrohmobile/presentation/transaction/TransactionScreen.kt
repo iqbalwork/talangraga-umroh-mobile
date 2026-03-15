@@ -46,7 +46,9 @@ import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.shared.formatDateRange
 import com.talangraga.umrohmobile.navigation.Screen
+import com.talangraga.umrohmobile.presentation.home.HomeEvent
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
+import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.presentation.user.ListUserViewModel
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
@@ -56,6 +58,7 @@ import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import com.talangraga.umrohmobile.ui.section.ListUserSheet
 import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -72,24 +75,29 @@ fun TransactionScreen(
     val users = userUiState.users
     val selectedUser = userUiState.selectedUser
 
-    val transactionsList = (homeUiState.transactions as? com.talangraga.umrohmobile.presentation.home.SectionState.Success)?.data ?: emptyList()
-    val periodsList = (homeUiState.periods as? com.talangraga.umrohmobile.presentation.home.SectionState.Success)?.data ?: emptyList()
+    val transactionsList = (homeUiState.transactions as? SectionState.Success)?.data ?: emptyList()
+    val periodsList = (homeUiState.periods as? SectionState.Success)?.data ?: emptyList()
 
     TransactionContent(
         selectedPeriod = homeUiState.selectedPeriod,
         onPeriodChange = {
-            homeViewModel.onEvent(com.talangraga.umrohmobile.presentation.home.HomeEvent.SetSelectedPeriod(it))
-            homeViewModel.onEvent(com.talangraga.umrohmobile.presentation.home.HomeEvent.GetTransactions(it?.periodId))
+            homeViewModel.onEvent(HomeEvent.SetSelectedPeriod(it))
+            homeViewModel.onEvent(HomeEvent.GetTransactions(it?.periodId))
         },
         periods = periodsList,
         transactions = transactionsList,
-        onFetchAllTransaction = { homeViewModel.onEvent(com.talangraga.umrohmobile.presentation.home.HomeEvent.GetTransactions(null)) },
+        onFetchAllTransaction = { homeViewModel.onEvent(HomeEvent.GetTransactions(null)) },
         selectedUser = selectedUser,
         users = users,
-        onSelectUser = userViewModel::onSelectedUser
-    ) {
-        navHostController.navigate(Screen.AddTransactionRoute(isCollective = false))
-    }
+        onSelectUser = userViewModel::onSelectedUser,
+        onTransactionClick = { transaction ->
+            val transactionJson = Json.encodeToString(transaction)
+            rootNavController.navigate(Screen.TransactionDetailRoute(transactionJson))
+        },
+        onAddTransaction = {
+            navHostController.navigate(Screen.AddTransactionRoute(isCollective = false))
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,6 +112,7 @@ fun TransactionContent(
     transactions: List<TransactionUiData>,
     onFetchAllTransaction: () -> Unit,
     onAddTransaction: () -> Unit,
+    onTransactionClick: (TransactionUiData) -> Unit = {}
 ) {
 
     val periodSheetState = rememberModalBottomSheetState()
@@ -133,7 +142,7 @@ fun TransactionContent(
             sheetState = userSheetState,
             scope = userScope,
             data = users,
-            onBottomSheetChange = { showPeriodBottom = it },
+            onBottomSheetChange = { showUserSheet = it },
             onSelectUser = onSelectUser
         )
     }
@@ -183,7 +192,7 @@ fun TransactionContent(
                         )
                     } else ""
                     TextButtonOption(
-                        text = "${selectedPeriod?.periodeName}: $bulan",
+                        text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
                         placeholder = "Pilih Bulan",
                         trailingIcon = Icons.Default.ArrowDropDown,
                         modifier = Modifier.weight(1f),
@@ -198,7 +207,7 @@ fun TransactionContent(
                             .clip(CircleShape)
                             .border(1.dp, BorderColor, CircleShape)
                             .clickable {
-
+                                showUserSheet = true
                             }
                             .background(color = Background)
                             .padding(8.dp)
@@ -214,20 +223,20 @@ fun TransactionContent(
                         end.linkTo(parent.end)
                         width = Dimension.fillToConstraints
                     },
-                ) { }
+                ) {
+                    showUserSheet = true
+                }
 
                 AnimatedVisibility(
                     visible = transactions.isEmpty(),
-                    modifier = Modifier.constrainAs(createRef()) {
+                    modifier = Modifier.constrainAs(emptyRef) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
                 ) {
-                    EmptyTransaction(modifier = Modifier) {
-                        onAddTransaction()
-                    }
+                    EmptyTransaction(modifier = Modifier, onAddTransaction = onAddTransaction)
                 }
 
                 AnimatedVisibility(
@@ -247,7 +256,8 @@ fun TransactionContent(
                         onAddTransaction = onAddTransaction,
                         onClickSeeMore = {
 
-                        }
+                        },
+                        onTransactionClick = onTransactionClick
                     )
                 }
             }
@@ -282,9 +292,9 @@ fun TransactionContentPreview() {
             periods = emptyList(),
             selectedUser = null,
             users = emptyList(),
-            onSelectUser = {  },
-        ) {
-
-        }
+            onSelectUser = { },
+            onAddTransaction = { },
+            onTransactionClick = { }
+        )
     }
 }

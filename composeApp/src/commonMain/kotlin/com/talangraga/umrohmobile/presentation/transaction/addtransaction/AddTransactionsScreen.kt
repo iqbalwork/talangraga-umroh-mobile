@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.talangraga.umrohmobile.presentation.transaction.addtransaction
 
 import androidx.compose.foundation.BorderStroke
@@ -22,10 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -89,7 +85,6 @@ import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.rememberSharedFileReader
 import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.CurrencyInputText
-import com.talangraga.umrohmobile.ui.component.ModalImagePicker
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import com.talangraga.umrohmobile.ui.component.ToastManager
@@ -110,7 +105,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
 import talangragaumrohmobile.composeapp.generated.resources.tambah_transaksi
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 /**
  * iqbalfauzi
@@ -153,15 +147,23 @@ fun AddTransactionScreen(
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is AddTransactionEffect.ShowToastSuccess -> ToastManager.show(message = effect.message, type = ToastType.Success)
-                is AddTransactionEffect.ShowToastError -> ToastManager.show(message = effect.message, type = ToastType.Error)
+                is AddTransactionEffect.ShowToastSuccess -> ToastManager.show(
+                    message = effect.message,
+                    type = ToastType.Success
+                )
+
+                is AddTransactionEffect.ShowToastError -> ToastManager.show(
+                    message = effect.message,
+                    type = ToastType.Error
+                )
+
                 AddTransactionEffect.NavigateBack -> navController.popBackStack()
             }
         }
     }
 }
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun AddTransactionsContent(
     onBackClick: () -> Unit,
@@ -204,6 +206,7 @@ fun AddTransactionsContent(
 
     val sheetState = rememberModalBottomSheetState()
     val addMemberSheetState = rememberModalBottomSheetState()
+    val paymentSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
     val fileReader = rememberSharedFileReader()
@@ -245,70 +248,28 @@ fun AddTransactionsContent(
     }
 
     if (showGallery) {
-        GalleryPickerLauncher(onPhotosSelected = {
-            selectedImagesFile = it
-            showCamera = false
-            showGallery = false
-        }, onError = {
-            imagePickerMessage = it.message.orEmpty()
-            showCamera = false
-            showGallery = false
-        })
-    }
-
-    if (showImagePickerSheet) {
-        ModalImagePicker(
-            onDismissRequest = { showImagePickerSheet = false }, onCameraClick = {
-                showImagePickerSheet = false
-                showCamera = true
+        GalleryPickerLauncher(
+            onPhotosSelected = {
+                selectedImagesFile = it
                 showGallery = false
-            }, onGalleryClick = {
-                showImagePickerSheet = false
-                showCamera = false
-                showGallery = true
-            }, sheetState = imagePickerSheetState
-        )
-    }
-
-    if (showPeriodBottomSheet) {
-        PeriodsSheet(
-            modifier = Modifier,
-            sheetState = periodSheetState,
-            scope = periodScope,
-            periods = periods,
-            onBottomSheetChange = { showPeriodBottomSheet = it },
-            onChoosePeriod = {
-                onPeriodChange(it)
-            }
-        )
-    }
-
-    val paymentSheetState = rememberModalBottomSheetState()
-    val paymentScope = rememberCoroutineScope()
-
-    if (showPaymentBottomSheet) {
-        PaymentsSheet(
-            modifier = Modifier,
-            sheetState = paymentSheetState,
-            scope = paymentScope,
-            payments = payments,
-            onBottomSheetChange = { showPaymentBottomSheet = it },
-            onChoosePayment = {
-                onPaymentChange(it)
-            }
-        )
+            },
+            onError = {
+                imagePickerMessage = it.message.orEmpty()
+                showGallery = false
+            })
     }
 
     TalangragaScaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(text = "Tambah Transaksi", style = TalangragaTypography.titleLarge)
+                    Text(
+                        text = "Tambah Tabungan",
+                        style = TalangragaTypography.titleLarge
+                    )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onBackClick,
-                    ) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -456,7 +417,7 @@ fun AddTransactionsContent(
                     )
                 } else ""
                 TextButtonOption(
-                    text = "${selectedPeriod?.periodeName}: $bulan",
+                    text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
                     placeholder = "Pilih Bulan",
                     trailingIcon = Icons.Default.ArrowDropDown,
                     modifier = Modifier.fillMaxWidth(),
@@ -586,11 +547,6 @@ fun AddTransactionsContent(
                 }
             }
         }
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState()),
-        ) {
-        }
 
         if (showDatePicker) {
             val datePickerState = rememberDatePickerState()
@@ -601,7 +557,7 @@ fun AddTransactionsContent(
                         onClick = {
                             datePickerState.selectedDateMillis?.let { millis ->
                                 tempDateMillis = millis
-                                val instant = Instant.fromEpochMilliseconds(millis)
+                                val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
                                 val date = instant.toLocalDateTime(TimeZone.UTC).date
                                 selectedDate = date.toIndonesianDateFormat()
                             }
@@ -647,6 +603,32 @@ fun AddTransactionsContent(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         TimeInput(state = timePickerState)
                     }
+                }
+            )
+        }
+
+        if (showPeriodBottomSheet) {
+            PeriodsSheet(
+                modifier = Modifier,
+                sheetState = periodSheetState,
+                scope = periodScope,
+                periods = periods,
+                onBottomSheetChange = { showPeriodBottomSheet = it },
+                onChoosePeriod = {
+                    onPeriodChange(it)
+                }
+            )
+        }
+
+        if (showPaymentBottomSheet) {
+            PaymentsSheet(
+                modifier = Modifier,
+                sheetState = paymentSheetState,
+                scope = scope,
+                payments = payments,
+                onBottomSheetChange = { showPaymentBottomSheet = it },
+                onChoosePayment = {
+                    onPaymentChange(it)
                 }
             )
         }
@@ -732,6 +714,57 @@ fun AddTransactionsContent(
                         }
                     }
                 )
+            }
+        }
+
+        if (showImagePickerSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showImagePickerSheet = false },
+                sheetState = imagePickerSheetState,
+                containerColor = Background
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .padding(bottom = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Pilih Sumber Gambar",
+                        style = TalangragaTypography.titleLarge,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    Button(
+                        onClick = {
+                            showCamera = true
+                            scope.launch { imagePickerSheetState.hide() }.invokeOnCompletion {
+                                if (!imagePickerSheetState.isVisible) {
+                                    showImagePickerSheet = false
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Kamera")
+                    }
+
+                    Button(
+                        onClick = {
+                            showGallery = true
+                            scope.launch { imagePickerSheetState.hide() }.invokeOnCompletion {
+                                if (!imagePickerSheetState.isVisible) {
+                                    showImagePickerSheet = false
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Galeri")
+                    }
+                }
             }
         }
     }

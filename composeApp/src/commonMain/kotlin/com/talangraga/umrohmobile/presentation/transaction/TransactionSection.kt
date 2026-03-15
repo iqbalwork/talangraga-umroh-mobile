@@ -29,21 +29,23 @@ fun TransactionSection(
     transactions: List<TransactionUiData>,
     onAddTransaction: () -> Unit,
     onClickSeeMore: () -> Unit,
+    onTransactionClick: (TransactionUiData) -> Unit = {}
 ) {
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         transactions.take(if (showAllTransaction) transactions.size else 3).forEach { transaction ->
             TransactionItem(
                 modifier = Modifier.fillMaxWidth(),
-                username = transaction.reportedBy,
+                username = transaction.userName,
                 paymentName = transaction.paymentName,
                 paymentMethod = transaction.paymentType,
                 date = transaction.transactionDate,
-                amount = transaction.amount
+                amount = transaction.amount,
+                onClick = { onTransactionClick(transaction) }
             )
         }
         if (!showAllTransaction) {
