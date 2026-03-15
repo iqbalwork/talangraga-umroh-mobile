@@ -84,7 +84,7 @@ class DatabaseHelper(factory: DriverFactory) {
             }
 
     fun insertTransactions(list: List<TransactionEntity>) {
-        list.forEach { (transactionId, amount, reportedDate, transactionDate, statusTransaksi, buktiTransferUrl, paymentType, paymentName, reportedBy, confirmedBy, userName) ->
+        list.forEach { (transactionId, amount, reportedDate, transactionDate, statusTransaksi, buktiTransferUrl, paymentType, paymentName, reportedBy, confirmedBy, userName, userId) ->
             transactionsQueries.insertTransactionData(
                 transactionId = transactionId.toLong(),
                 amount = amount.toLong(),
@@ -96,7 +96,8 @@ class DatabaseHelper(factory: DriverFactory) {
                 paymentName = paymentName,
                 reportedBy = reportedBy,
                 confirmedBy = confirmedBy,
-                userName = userName
+                userName = userName,
+                userId = userId.toLong()
             )
         }
     }

@@ -48,7 +48,8 @@ fun TransactionEntity.toUIData(): TransactionUiData {
         confirmedBy = this.confirmedBy,
         paymentType = this.paymentType,
         paymentName = this.paymentName,
-        userName = this.userName
+        userName = this.userName,
+        userId = this.userId
     )
 }
 

@@ -46,11 +46,8 @@ import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.shared.formatDateRange
 import com.talangraga.umrohmobile.navigation.Screen
-import com.talangraga.umrohmobile.presentation.home.HomeEvent
-import com.talangraga.umrohmobile.presentation.home.HomeViewModel
 import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
-import com.talangraga.umrohmobile.presentation.user.ListUserViewModel
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButton
@@ -65,31 +62,22 @@ import org.koin.compose.viewmodel.koinViewModel
 fun TransactionScreen(
     rootNavController: NavHostController,
     navHostController: NavHostController,
-    homeViewModel: HomeViewModel = koinViewModel(),
-    viewModel: TransactionViewModel = koinViewModel(),
-    userViewModel: ListUserViewModel = koinViewModel()
+    viewModel: TransactionViewModel = koinViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-    val userUiState by userViewModel.uiState.collectAsStateWithLifecycle()
-    val users = userUiState.users
-    val selectedUser = userUiState.selectedUser
-
-    val transactionsList = (homeUiState.transactions as? SectionState.Success)?.data ?: emptyList()
-    val periodsList = (homeUiState.periods as? SectionState.Success)?.data ?: emptyList()
+    val transactionsList = (uiState.transactions as? SectionState.Success)?.data ?: emptyList()
+    val periodsList = (uiState.periods as? SectionState.Success)?.data ?: emptyList()
 
     TransactionContent(
-        selectedPeriod = homeUiState.selectedPeriod,
-        onPeriodChange = {
-            homeViewModel.onEvent(HomeEvent.SetSelectedPeriod(it))
-            homeViewModel.onEvent(HomeEvent.GetTransactions(it?.periodId))
-        },
+        selectedPeriod = uiState.selectedPeriod,
+        onPeriodChange = { viewModel.onEvent(TransactionEvent.SelectPeriod(it)) },
         periods = periodsList,
         transactions = transactionsList,
-        onFetchAllTransaction = { homeViewModel.onEvent(HomeEvent.GetTransactions(null)) },
-        selectedUser = selectedUser,
-        users = users,
-        onSelectUser = userViewModel::onSelectedUser,
+        onFetchAllTransaction = { viewModel.onEvent(TransactionEvent.GetTransactions()) },
+        selectedUser = uiState.selectedUser,
+        users = uiState.users,
+        onSelectUser = { viewModel.onEvent(TransactionEvent.SelectUser(it)) },
         onTransactionClick = { transaction ->
             val transactionJson = Json.encodeToString(transaction)
             rootNavController.navigate(Screen.TransactionDetailRoute(transactionJson))
@@ -105,7 +93,7 @@ fun TransactionScreen(
 fun TransactionContent(
     selectedUser: UserUIData?,
     users: List<UserUIData>,
-    onSelectUser: (UserUIData) -> Unit,
+    onSelectUser: (UserUIData?) -> Unit,
     selectedPeriod: PeriodEntity?,
     onPeriodChange: (PeriodEntity?) -> Unit,
     periods: List<PeriodEntity>,
@@ -143,7 +131,9 @@ fun TransactionContent(
             scope = userScope,
             data = users,
             onBottomSheetChange = { showUserSheet = it },
-            onSelectUser = onSelectUser
+            onSelectUser = {
+                onSelectUser(it)
+            }
         )
     }
 
@@ -182,7 +172,6 @@ fun TransactionContent(
                         modifier = Modifier
                     ) {
                         onPeriodChange(null)
-                        onFetchAllTransaction()
                     }
                     val bulan = if (selectedPeriod != null) {
                         formatDateRange(
@@ -215,7 +204,7 @@ fun TransactionContent(
                 }
 
                 TextButtonOption(
-                    text = selectedUser?.fullname.orEmpty(),
+                    text = if (selectedUser != null) selectedUser.fullname else "Semua Pengguna",
                     placeholder = "Pilih Pengguna",
                     modifier = Modifier.constrainAs(chooseUserRef) {
                         top.linkTo(filterRef.bottom, 8.dp)

@@ -210,7 +210,7 @@ fun HomeContent(
                 item {
                     HomeInfoTransactionSection(
                         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-                        isHomeAdminDashboard = true,
+                        isHomeAdminDashboard = false,
                         state = uiState.transactions,
                         onAddTransaction = onAddTransaction,
                         onClickSeeMore = onSeeMoreTransaction,

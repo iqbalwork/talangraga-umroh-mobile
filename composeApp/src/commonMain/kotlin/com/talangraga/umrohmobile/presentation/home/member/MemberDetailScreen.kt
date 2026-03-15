@@ -205,7 +205,8 @@ fun PreviewHomeMemberContent() {
                         buktiTransferUrl = "",
                         paymentType = "Transfer Bank",
                         paymentName = "BCA",
-                        userName = "Iqbal Fauzi"
+                        userName = "Iqbal Fauzi",
+                        userId = 1
                     )
                 )
             ),

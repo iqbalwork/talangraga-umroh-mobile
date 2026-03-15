@@ -2,6 +2,7 @@ package com.talangraga.umrohmobile.presentation.transaction.detailtransaction
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.shared.formatIsoTimestampToCustom
 import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.ui.component.BasicImage
+import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import com.talangraga.umrohmobile.ui.utils.formatCurrency
@@ -58,7 +60,10 @@ fun TransactionDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
                     }
                 }
             )
@@ -89,7 +94,11 @@ fun TransactionDetailScreen(
                 if (transaction.buktiTransferUrl.isNotBlank()) {
                     BasicImage(
                         model = transaction.buktiTransferUrl,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                ImageViewerManager.show(transaction.buktiTransferUrl)
+                            }
                     )
                 } else {
                     Column(
@@ -201,7 +210,8 @@ fun TransactionDetailScreenPreview() {
                 buktiTransferUrl = "",
                 paymentType = "Bank Transfer",
                 paymentName = "BCA",
-                userName = "Iqbal Fauzi"
+                userName = "Iqbal Fauzi",
+                userId = 1
             ),
             onBackClick = {}
         )

@@ -322,7 +322,8 @@ fun PreviewTransactionSection() {
             paymentName = "BCA",
             reportedBy = "Iqbal Fauzi",
             confirmedBy = "",
-            userName = "Iqbal Fauzi"
+            userName = "Iqbal Fauzi",
+            userId = 1
         ),
         TransactionUiData(
             transactionId = 2,
@@ -335,7 +336,8 @@ fun PreviewTransactionSection() {
             paymentName = "BCA",
             reportedBy = "Iqbal Fauzi",
             confirmedBy = "",
-            userName = "Iqbal Fauzi"
+            userName = "Iqbal Fauzi",
+            userId = 1
         ),
         TransactionUiData(
             transactionId = 3,
@@ -348,7 +350,8 @@ fun PreviewTransactionSection() {
             paymentName = "BCA",
             reportedBy = "Iqbal Fauzi",
             confirmedBy = "",
-            userName = "Iqbal Fauzi"
+            userName = "Iqbal Fauzi",
+            userId = 1
         )
     )
     TalangragaTheme(useDynamicColor = false) {

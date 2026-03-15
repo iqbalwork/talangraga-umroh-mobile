@@ -11,5 +11,6 @@ data class TransactionEntity(
     val paymentName: String,
     val reportedBy: String,
     val confirmedBy: String,
-    val userName: String
+    val userName: String,
+    val userId: Int
 )
