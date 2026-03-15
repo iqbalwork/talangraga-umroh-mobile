@@ -67,19 +67,23 @@ fun TransactionScreen(
     userViewModel: ListUserViewModel = koinViewModel()
 ) {
 
-    val transactions by homeViewModel.transactions.collectAsStateWithLifecycle()
-    val users by userViewModel.users.collectAsStateWithLifecycle()
-    val selectedUser by userViewModel.selectedUser.collectAsStateWithLifecycle()
+    val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+    val userUiState by userViewModel.uiState.collectAsStateWithLifecycle()
+    val users = userUiState.users
+    val selectedUser = userUiState.selectedUser
+
+    val transactionsList = (homeUiState.transactions as? com.talangraga.umrohmobile.presentation.home.SectionState.Success)?.data ?: emptyList()
+    val periodsList = (homeUiState.periods as? com.talangraga.umrohmobile.presentation.home.SectionState.Success)?.data ?: emptyList()
 
     TransactionContent(
-        selectedPeriod = homeViewModel.selectedPeriod.value,
+        selectedPeriod = homeUiState.selectedPeriod,
         onPeriodChange = {
-            homeViewModel.setSelectedPeriod(it)
-            homeViewModel.getTransactions(it?.periodId)
+            homeViewModel.onEvent(com.talangraga.umrohmobile.presentation.home.HomeEvent.SetSelectedPeriod(it))
+            homeViewModel.onEvent(com.talangraga.umrohmobile.presentation.home.HomeEvent.GetTransactions(it?.periodId))
         },
-        periods = homeViewModel.periods.value,
-        transactions = transactions,
-        onFetchAllTransaction = { },
+        periods = periodsList,
+        transactions = transactionsList,
+        onFetchAllTransaction = { homeViewModel.onEvent(com.talangraga.umrohmobile.presentation.home.HomeEvent.GetTransactions(null)) },
         selectedUser = selectedUser,
         users = users,
         onSelectUser = userViewModel::onSelectedUser

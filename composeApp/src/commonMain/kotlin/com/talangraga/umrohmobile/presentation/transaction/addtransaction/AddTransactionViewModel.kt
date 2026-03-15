@@ -1,86 +1,87 @@
 package com.talangraga.umrohmobile.presentation.transaction.addtransaction
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
-import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.network.api.Result
-import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
-/**
- * iqbalfauzi
- * Email: work.iqbalfauzi@gmail.com
- * Github: https://github.com/iqbalwork
- */
 class AddTransactionViewModel(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _users = MutableStateFlow<List<UserUIData>>(emptyList())
-    val users = _users.asStateFlow()
+    private val _uiState = MutableStateFlow(AddTransactionState())
+    val uiState: StateFlow<AddTransactionState> = _uiState.asStateFlow()
 
-    private val _periods = MutableStateFlow<List<PeriodEntity>>(emptyList())
-    val periods = _periods.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage = _errorMessage.asStateFlow()
-
-    val selectedPeriod = mutableStateOf<PeriodEntity?>(null)
+    private val _effect = MutableSharedFlow<AddTransactionEffect>()
+    val effect: SharedFlow<AddTransactionEffect> = _effect.asSharedFlow()
 
     init {
-        getListUser()
-        getPeriods()
-        getListPayments()
+        onEvent(AddTransactionEvent.GetListUser)
+        onEvent(AddTransactionEvent.GetPeriods)
+        onEvent(AddTransactionEvent.GetListPayments)
     }
 
-    fun setSelectedPeriod(period: PeriodEntity?) {
-        selectedPeriod.value = period
+    fun onEvent(event: AddTransactionEvent) {
+        when (event) {
+            is AddTransactionEvent.GetListUser -> getListUser()
+            is AddTransactionEvent.GetPeriods -> getPeriods()
+            is AddTransactionEvent.GetListPayments -> getListPayments()
+            is AddTransactionEvent.SetSelectedPeriod -> {
+                _uiState.update { it.copy(selectedPeriod = event.period) }
+            }
+        }
     }
 
-    fun getListUser() {
+    private fun getListUser() {
         repository.getLocalUsers().onEach { result ->
             when (result) {
                 is Result.Error -> {
-                    _errorMessage.update { result.t.message }
+                    val message = result.t.message
+                    _uiState.update { it.copy(errorMessage = message) }
                 }
 
                 is Result.Success -> {
                     val data = result.data.map { it.toUiData() }
-                    _users.update { data }
+                    _uiState.update { it.copy(users = data) }
                 }
             }
         }.launchIn(viewModelScope)
     }
 
-    fun getPeriods() {
+    private fun getPeriods() {
         repository.getPeriods()
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _errorMessage.update { result.t.message }
+                        val message = result.t.message
+                        _uiState.update { it.copy(errorMessage = message) }
                     }
 
                     is Result.Success -> {
-                        _periods.update { result.data }
+                        _uiState.update { it.copy(periods = result.data) }
                     }
                 }
             }.launchIn(viewModelScope)
     }
 
-    fun getListPayments() {
+    private fun getListPayments() {
         repository.getPayments()
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _errorMessage.update { result.t.message }
+                        val message = result.t.message
+                        _uiState.update { it.copy(errorMessage = message) }
                     }
 
                     is Result.Success -> {
@@ -90,5 +91,4 @@ class AddTransactionViewModel(
                 }
             }.launchIn(viewModelScope)
     }
-
 }

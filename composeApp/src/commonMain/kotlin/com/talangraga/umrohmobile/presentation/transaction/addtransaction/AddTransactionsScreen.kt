@@ -114,16 +114,14 @@ fun AddTransactionScreen(
     viewModel: AddTransactionViewModel = koinViewModel()
 ) {
 
-    val users by viewModel.users.collectAsStateWithLifecycle()
-    val periods by viewModel.periods.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AddTransactionsContent(
         onBackClick = { navController.popBackStack() },
-        userList = users,
-        periods = periods,
-        onPeriodChange = viewModel::setSelectedPeriod,
-        selectedPeriod = viewModel.selectedPeriod.value,
+        userList = uiState.users,
+        periods = uiState.periods,
+        onPeriodChange = { viewModel.onEvent(AddTransactionEvent.SetSelectedPeriod(it)) },
+        selectedPeriod = uiState.selectedPeriod,
         isCollective = isCollective
     )
 }

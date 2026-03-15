@@ -70,43 +70,39 @@ fun EditProfileScreen(
     viewModel: EditProfileViewModel = koinViewModel()
 ) {
 
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    val isSuccess by viewModel.isSuccess.collectAsStateWithLifecycle()
-    val user by viewModel.user.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(userId) {
-        viewModel.isLoginUser.value = isLoginUser
-        viewModel.userId.value = userId
-        viewModel.getUser(userId)
+        viewModel.onEvent(EditProfileEvent.InitScope(userId, isLoginUser))
     }
 
-    LaunchedEffect(errorMessage) {
-        if (!errorMessage.isNullOrEmpty()) {
-            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
-            viewModel.clearError()
+    LaunchedEffect(uiState.errorMessage) {
+        if (!uiState.errorMessage.isNullOrEmpty()) {
+            ToastManager.show(message = uiState.errorMessage.orEmpty(), type = ToastType.Error)
+            viewModel.onEvent(EditProfileEvent.ClearError)
         }
     }
 
-    LaunchedEffect(isSuccess) {
-        if (isSuccess) {
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
             navHostController.popBackStack()
         }
     }
 
     EditProfileContent(
         onBackClick = { navHostController.popBackStack() },
-        fullname = viewModel.fullname.value,
-        onFullnameChange = viewModel::onFullnameChange,
-        phoneNumber = viewModel.phoneNumber.value,
-        onPhoneNumberChange = viewModel::onPhoneNumberChange,
-        email = viewModel.email.value,
-        onEmailChange = viewModel::onEmailChange,
-        domicile = viewModel.domicile.value,
-        onDomicileChange = viewModel::onDomicileChange,
-        imageUrl = viewModel.imageUrl.value,
-        onImageUrlChange = viewModel::onImageChange,
-        onSaveClick = viewModel::onSaveClick,
-        isLoading = false
+        fullname = uiState.fullname,
+        onFullnameChange = { viewModel.onEvent(EditProfileEvent.OnFullnameChange(it)) },
+        phoneNumber = uiState.phoneNumber,
+        onPhoneNumberChange = { viewModel.onEvent(EditProfileEvent.OnPhoneNumberChange(it)) },
+        email = uiState.email,
+        onEmailChange = { viewModel.onEvent(EditProfileEvent.OnEmailChange(it)) },
+        domicile = uiState.domicile,
+        onDomicileChange = { viewModel.onEvent(EditProfileEvent.OnDomicileChange(it)) },
+        imageUrl = uiState.imageUrl,
+        onImageUrlChange = { viewModel.onEvent(EditProfileEvent.OnImageChange(it)) },
+        onSaveClick = { viewModel.onEvent(EditProfileEvent.SaveProfile) },
+        isLoading = uiState.isLoading
     )
 }
 
