@@ -61,32 +61,31 @@ fun LoginScreen(
     viewModel: LoginViewModel = koinViewModel(),
 ) {
 
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val loginSucceed by viewModel.loginSucceed.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(loginSucceed) {
-        if (loginSucceed == true) {
-            navHostController.navigate(Screen.MainRoute.ROUTE) {
-                popUpTo(Screen.LoginRoute) { inclusive = true }
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is LoginEffect.NavigateToMain -> {
+                    navHostController.navigate(Screen.MainRoute.ROUTE) {
+                        popUpTo(Screen.LoginRoute) { inclusive = true }
+                    }
+                }
+                is LoginEffect.ShowToastError -> {
+                    ToastManager.show(message = effect.message, type = ToastType.Error)
+                    viewModel.onEvent(LoginEvent.ClearError)
+                }
             }
         }
     }
 
-    LaunchedEffect(errorMessage) {
-        if (!errorMessage.isNullOrEmpty()) {
-            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
-            viewModel.clearError() // Only if you have this in your VM
-        }
-    }
-
     LoginContent(
-        isLoading = isLoading,
-        identifier = viewModel.identifier.value,
-        password = viewModel.password.value,
-        onIdentifierChange = viewModel::onIdentifierChange,
-        onPasswordChange = viewModel::onPasswordChange,
-        onLoginClick = viewModel::login
+        isLoading = uiState.isLoading,
+        identifier = uiState.identifier,
+        password = uiState.password,
+        onIdentifierChange = { viewModel.onEvent(LoginEvent.OnIdentifierChange(it)) },
+        onPasswordChange = { viewModel.onEvent(LoginEvent.OnPasswordChange(it)) },
+        onLoginClick = { viewModel.onEvent(LoginEvent.OnLoginClick) }
     )
 }
 
