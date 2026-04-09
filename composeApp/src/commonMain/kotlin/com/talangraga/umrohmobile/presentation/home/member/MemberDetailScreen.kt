@@ -57,16 +57,15 @@ fun MemberDetailScreen(
     viewModel: MemberDetailViewModel = koinViewModel()
 ) {
 
-    val transactionState by viewModel.transactionState.collectAsStateWithLifecycle()
-    val userData by viewModel.user.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(userId) {
-        viewModel.getUser(userId)
+        viewModel.onEvent(MemberDetailEvent.GetUser(userId))
     }
 
     HomeMemberContent(
-        user = userData,
-        transactionState = transactionState,
+        user = uiState.user,
+        transactionState = uiState.transactionState,
         onBackClick = { navHostController.popBackStack() }
     )
 }
@@ -205,7 +204,9 @@ fun PreviewHomeMemberContent() {
                         confirmedBy = "Iqbal Fauzi",
                         buktiTransferUrl = "",
                         paymentType = "Transfer Bank",
-                        paymentName = "BCA"
+                        paymentName = "BCA",
+                        userName = "Iqbal Fauzi",
+                        userId = 1
                     )
                 )
             ),

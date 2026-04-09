@@ -37,7 +37,9 @@ fun TransactionData.toTransactionEntity(): TransactionEntity {
         paymentType = paymentType.orEmpty(),
         paymentName = paymentName.orEmpty(),
         reportedBy = reportedBy.orEmpty(),
-        confirmedBy = confirmedBy.orEmpty()
+        confirmedBy = confirmedBy.orEmpty(),
+        userName = userName.orEmpty(),
+        userId = (userId ?: 0L).toInt()
     )
 }
 

@@ -39,6 +39,9 @@ sealed class Screen {
     data class ChangePasswordRoute(val userId: Int)
 
     @Serializable
+    data class TransactionDetailRoute(val transactionJson: String)
+
+    @Serializable
     data class HomeRoute(val justLogin: Boolean = false)
 
     @Serializable

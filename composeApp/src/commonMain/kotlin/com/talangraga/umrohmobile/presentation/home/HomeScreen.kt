@@ -36,10 +36,11 @@ import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
-import com.talangraga.umrohmobile.ui.section.DialogPeriods
 import com.talangraga.umrohmobile.ui.section.DialogUserType
+import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -50,31 +51,45 @@ fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
 
-    val periods by viewModel.periods.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val userProfile by viewModel.session.userProfile.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+
+    val periodsList = (uiState.periods as? SectionState.Success)?.data ?: emptyList()
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is HomeEffect.ShowToastError -> {
+                    // handeled locally, or if needed can map to snackbar here.
+                }
+            }
+        }
+    }
 
     HomeContent(
         user = userProfile?.toUiData(),
-        userType = userProfile?.userType.orEmpty(),
-        onUserTypeChange = viewModel::setUserType,
-        periods = periods,
-        selectedPeriod = viewModel.selectedPeriod.value,
+        userType = uiState.userType ?: userProfile?.userType.orEmpty(),
+        onUserTypeChange = { viewModel.onEvent(HomeEvent.SetUserType(it)) },
+        periods = periodsList,
+        selectedPeriod = uiState.selectedPeriod,
         uiState = uiState,
-        errorMessage = errorMessage.orEmpty(),
+        errorMessage = uiState.errorMessage.orEmpty(),
         onPeriodChange = {
-            viewModel.setSelectedPeriod(it)
-            viewModel.getTransactions(it?.periodId)
+            viewModel.onEvent(HomeEvent.SetSelectedPeriod(it))
+            viewModel.onEvent(HomeEvent.GetTransactions(it?.periodId))
         },
-        onFetchProfile = viewModel::getProfile,
+        onFetchProfile = { viewModel.onEvent(HomeEvent.GetProfile) },
         onSeeMoreTransaction = onNavigateToTransaction,
         onAddTransaction = {
             rootNavHostController.navigate(Screen.AddTransactionRoute(false))
         },
         onFetchAllTransaction = {
-            viewModel.getTransactions()
+            viewModel.onEvent(HomeEvent.GetTransactions(null))
         },
+        onTransactionClick = { transaction ->
+            val transactionJson = Json.encodeToString(transaction)
+            rootNavHostController.navigate(Screen.TransactionDetailRoute(transactionJson))
+        }
     )
 }
 
@@ -86,13 +101,14 @@ fun HomeContent(
     onUserTypeChange: (String) -> Unit,
     periods: List<PeriodEntity>,
     selectedPeriod: PeriodEntity?,
-    uiState: HomeUiState,
+    uiState: HomeState,
     errorMessage: String,
     onPeriodChange: (PeriodEntity?) -> Unit,
     onSeeMoreTransaction: () -> Unit,
     onAddTransaction: () -> Unit,
     onFetchProfile: () -> Unit,
     onFetchAllTransaction: () -> Unit,
+    onTransactionClick: (com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData) -> Unit = {}
 ) {
 
     val refreshState = rememberPullToRefreshState()
@@ -102,7 +118,7 @@ fun HomeContent(
     var userTypeShowBottomSheet by remember { mutableStateOf(false) }
     val periodSheetState = rememberModalBottomSheetState()
     val periodScope = rememberCoroutineScope()
-    var showPeriodeBottom by remember { mutableStateOf(false) }
+    var showPeriodBottom by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -130,13 +146,13 @@ fun HomeContent(
             )
         }
 
-        if (showPeriodeBottom) {
-            DialogPeriods(
+        if (showPeriodBottom) {
+            PeriodsSheet(
                 modifier = Modifier,
                 sheetState = periodSheetState,
                 scope = periodScope,
                 periods = periods,
-                onBottomSheetChange = { showPeriodeBottom = it },
+                onBottomSheetChange = { showPeriodBottom = it },
                 onChoosePeriod = {
                     onPeriodChange(it)
                 }
@@ -187,17 +203,18 @@ fun HomeContent(
                             onPeriodChange(null)
                             onFetchAllTransaction()
                         },
-                        onShowPeriodSheet = { showPeriodeBottom = true }
+                        onShowPeriodSheet = { showPeriodBottom = true }
                     )
                 }
 
                 item {
                     HomeInfoTransactionSection(
                         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-                        isHomeAdminDashboard = true,
+                        isHomeAdminDashboard = false,
                         state = uiState.transactions,
                         onAddTransaction = onAddTransaction,
-                        onClickSeeMore = onSeeMoreTransaction
+                        onClickSeeMore = onSeeMoreTransaction,
+                        onTransactionClick = onTransactionClick
                     )
                 }
             }
@@ -225,7 +242,7 @@ fun PreviewHomeContent() {
                 imageProfileUrl = "",
                 isActive = true
             ),
-            uiState = HomeUiState(
+            uiState = HomeState(
                 profile = SectionState.Success(
                     UserUIData(
                         id = 1,

@@ -84,6 +84,7 @@ fun ProfileScreen(
 ) {
 
     val profile by viewModel.session.userProfile.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val themeManager: ThemeManager = koinInject()
     val themeMode by themeManager.themeMode.collectAsState()
@@ -99,10 +100,10 @@ fun ProfileScreen(
         isDarkMode = isDarkTheme,
         isLoginUser = isLoginUser,
         user = profile?.toUiData(),
-        imageUrl = viewModel.imageUrl.value,
+        imageUrl = uiState.imageUrl,
         themeManager = themeManager,
         onLogout = {
-            viewModel.clearSession()
+            viewModel.onEvent(ProfileEvent.ClearSession)
             rootNavHostController.navigate(Screen.LoginRoute) {
                 popUpTo(Screen.MainRoute.ROUTE) {
                     inclusive = true

@@ -58,7 +58,8 @@ fun HomeInfoTransactionSection(
     isHomeAdminDashboard: Boolean,
     state: SectionState<List<TransactionUiData>>,
     onAddTransaction: () -> Unit,
-    onClickSeeMore: () -> Unit
+    onClickSeeMore: () -> Unit,
+    onTransactionClick: (TransactionUiData) -> Unit = {}
 ) {
     when (state) {
         is SectionState.Error -> {
@@ -120,11 +121,12 @@ fun HomeInfoTransactionSection(
                         endIconColor = RosePink
                     )
 
-                    HomeInfoTransactionSection(
+                    TransactionsList(
                         modifier = Modifier,
                         isHomeAdminDashboard = isHomeAdminDashboard,
                         transactions = transactions,
-                        onClickSeeMore = onClickSeeMore
+                        onClickSeeMore = onClickSeeMore,
+                        onTransactionClick = onTransactionClick
                     )
                 }
             }
@@ -133,11 +135,12 @@ fun HomeInfoTransactionSection(
 }
 
 @Composable
-fun HomeInfoTransactionSection(
+fun TransactionsList(
     modifier: Modifier = Modifier,
     transactions: List<TransactionUiData>,
     isHomeAdminDashboard: Boolean,
-    onClickSeeMore: () -> Unit
+    onClickSeeMore: () -> Unit,
+    onTransactionClick: (TransactionUiData) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -180,14 +183,15 @@ fun HomeInfoTransactionSection(
                     .forEach { transaction ->
                         TransactionItem(
                             modifier = Modifier.fillMaxWidth(),
-                            username = transaction.reportedBy,
+                            username = transaction.userName,
                             paymentName = transaction.paymentName,
                             paymentMethod = transaction.paymentType,
                             date = transaction.transactionDate,
-                            amount = transaction.amount
+                            amount = transaction.amount,
+                            onClick = { onTransactionClick(transaction) }
                         )
                     }
-                if (isHomeAdminDashboard) {
+                if (!isHomeAdminDashboard) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -317,7 +321,9 @@ fun PreviewTransactionSection() {
             paymentType = "Bank Transfer",
             paymentName = "BCA",
             reportedBy = "Iqbal Fauzi",
-            confirmedBy = ""
+            confirmedBy = "",
+            userName = "Iqbal Fauzi",
+            userId = 1
         ),
         TransactionUiData(
             transactionId = 2,
@@ -329,7 +335,9 @@ fun PreviewTransactionSection() {
             paymentType = "Bank Transfer",
             paymentName = "BCA",
             reportedBy = "Iqbal Fauzi",
-            confirmedBy = ""
+            confirmedBy = "",
+            userName = "Iqbal Fauzi",
+            userId = 1
         ),
         TransactionUiData(
             transactionId = 3,
@@ -341,19 +349,23 @@ fun PreviewTransactionSection() {
             paymentType = "Bank Transfer",
             paymentName = "BCA",
             reportedBy = "Iqbal Fauzi",
-            confirmedBy = ""
+            confirmedBy = "",
+            userName = "Iqbal Fauzi",
+            userId = 1
         )
     )
     TalangragaTheme(useDynamicColor = false) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            HomeInfoTransactionSection(
+            TransactionsList(
                 transactions = dummyTransactions,
-                isHomeAdminDashboard = true
-            ) {}
-            HomeInfoTransactionSection(
+                isHomeAdminDashboard = true,
+                onClickSeeMore = {}
+            )
+            TransactionsList(
                 transactions = emptyList(),
-                isHomeAdminDashboard = false
-            ) {} // Preview for empty state
+                isHomeAdminDashboard = false,
+                onClickSeeMore = {}
+            ) // Preview for empty state
         }
     }
 }

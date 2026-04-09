@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DialogPeriods(
+fun PeriodsSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState,
     scope: CoroutineScope,
@@ -88,7 +88,7 @@ fun DialogPeriods(
             state = listState
         ) {
             itemsIndexed(
-                items = periods,
+                items = periods.sortedByDescending { it.startDate },
                 key = { index, item -> index }
             ) { index, item ->
                 val isCurrent = item == selectedPeriod

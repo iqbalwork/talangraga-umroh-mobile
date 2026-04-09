@@ -247,15 +247,15 @@ class ApiService(private val httpClient: HttpClient) {
         file: ByteArray?
     ): DataResponse<TransactionResponse> {
         return httpClient.submitFormWithBinaryData(
-            url = "transactions",
+            url = "transactions/",
             formData = formData {
                 // Required Strings
-                userId?.let { append("userId", it) }
-                reportedByUserId?.let { append("reportedByUserId", it) }
-                amount?.let { append("amount", it) }
+                userId?.let { append("userId", it.toString()) }
+                reportedByUserId?.let { append("reportedByUserId", it.toString()) }
+                amount?.let { append("amount", it.toString()) }
                 transactionDate?.let { append("transaction_date", it) }
-                periodeId?.let { append("periode_id", it) }
-                paymentId?.let { append("payment_id", it) }
+                periodeId?.let { append("periode_id", it.toString()) }
+                paymentId?.let { append("payment_id", it.toString()) }
 
                 // File Upload (image_profile)
                 if (file != null) {

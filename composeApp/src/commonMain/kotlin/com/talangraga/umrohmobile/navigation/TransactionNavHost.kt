@@ -7,6 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.talangraga.umrohmobile.presentation.transaction.TransactionScreen
 import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionScreen
+import com.talangraga.umrohmobile.presentation.transaction.detailtransaction.TransactionDetailScreen
+import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
+import kotlinx.serialization.json.Json
 
 @Composable
 fun TransactionNavHost(navController: NavHostController, rootNavController: NavHostController) {
@@ -25,6 +28,15 @@ fun TransactionNavHost(navController: NavHostController, rootNavController: NavH
         composable<Screen.AddTransactionRoute> { backStackEntry ->
             val args = backStackEntry.toRoute<Screen.AddTransactionRoute>()
             AddTransactionScreen(navController, args.isCollective)
+        }
+
+        composable<Screen.TransactionDetailRoute> { backStackEntry ->
+            val args = backStackEntry.toRoute<Screen.TransactionDetailRoute>()
+            val transaction = Json.decodeFromString<TransactionUiData>(args.transactionJson)
+            TransactionDetailScreen(
+                transaction = transaction,
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
     }

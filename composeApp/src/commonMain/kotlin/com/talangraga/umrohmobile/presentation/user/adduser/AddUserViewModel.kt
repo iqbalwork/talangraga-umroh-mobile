@@ -1,14 +1,16 @@
 package com.talangraga.umrohmobile.presentation.user.adduser
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
-import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -19,73 +21,34 @@ class AddUserViewModel(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
+    private val _uiState = MutableStateFlow(AddUserState())
+    val uiState: StateFlow<AddUserState> = _uiState.asStateFlow()
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage = _errorMessage.asStateFlow()
+    private val _effect = MutableSharedFlow<AddUserEffect>()
+    val effect: SharedFlow<AddUserEffect> = _effect.asSharedFlow()
 
-    private val _isSuccess = MutableStateFlow(false)
-    val isSuccess = _isSuccess.asStateFlow()
-
-    private val _user = MutableStateFlow<UserUIData?>(null)
-    val user = _user.asStateFlow()
-
-    val userId = mutableStateOf(0)
-    val isLoginUser = mutableStateOf(false)
-    val isEdit = mutableStateOf(false)
-    var fullname = mutableStateOf("")
-    var username = mutableStateOf("")
-    var phoneNumber = mutableStateOf("")
-    var email = mutableStateOf("")
-    var domicile = mutableStateOf("")
-    var userType = mutableStateOf("Member")
-    var password = mutableStateOf("")
-    var confirmPassword = mutableStateOf("")
-    val imageUri = mutableStateOf<ByteArray?>(null)
-
-    fun onImageChange(bytes: ByteArray) {
-        imageUri.value = bytes
+    fun onEvent(event: AddUserEvent) {
+        when (event) {
+            is AddUserEvent.InitScope -> {
+                _uiState.update { it.copy(userId = event.userId, isLoginUser = event.isLoginUser, isEdit = event.isEdit) }
+                if (event.userId > 0) getUser(event.userId)
+            }
+            is AddUserEvent.OnImageChange -> _uiState.update { it.copy(imageUri = event.bytes) }
+            is AddUserEvent.OnFullnameChange -> _uiState.update { it.copy(fullname = event.newValue) }
+            is AddUserEvent.OnUsernameChange -> _uiState.update { it.copy(username = event.newValue) }
+            is AddUserEvent.OnPhoneNumberChange -> _uiState.update { it.copy(phoneNumber = event.newValue) }
+            is AddUserEvent.OnEmailChange -> _uiState.update { it.copy(email = event.newValue) }
+            is AddUserEvent.OnDomicileChange -> _uiState.update { it.copy(domicile = event.newValue) }
+            is AddUserEvent.OnUserTypeChange -> _uiState.update { it.copy(userType = event.newValue) }
+            is AddUserEvent.OnPasswordChange -> _uiState.update { it.copy(password = event.newValue) }
+            is AddUserEvent.OnConfirmPasswordChange -> _uiState.update { it.copy(confirmPassword = event.newValue) }
+            is AddUserEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
+            is AddUserEvent.SaveUser -> saveUser()
+        }
     }
 
-    fun onFullnameChange(newValue: String) {
-        fullname.value = newValue
-    }
-
-    fun onUsernameChange(newValue: String) {
-        username.value = newValue
-    }
-
-    fun onPhoneNumberChange(newValue: String) {
-        phoneNumber.value = newValue
-    }
-
-    fun onEmailChange(newValue: String) {
-        email.value = newValue
-    }
-
-    fun onDomicileChange(newValue: String) {
-        domicile.value = newValue
-    }
-
-    fun onUserTypeChange(newValue: String) {
-        userType.value = newValue
-    }
-
-    fun onPasswordChange(newValue: String) {
-        password.value = newValue
-    }
-
-    fun onConfirmPasswordChange(newValue: String) {
-        confirmPassword.value = newValue
-    }
-
-    fun clearError() {
-        _errorMessage.update { null }
-    }
-
-    fun saveUser() {
-        if (!isEdit.value) {
+    private fun saveUser() {
+        if (!_uiState.value.isEdit) {
             registerUser()
         } else {
             updateUser()
@@ -93,22 +56,22 @@ class AddUserViewModel(
     }
 
     private fun updateUser() {
-        _isLoading.update { true }
-        if (isLoginUser.value) {
+        val state = _uiState.value
+        _uiState.update { it.copy(isLoading = true) }
+        if (state.isLoginUser) {
             repository.updateMe(
-                fullname = fullname.value,
-                username = username.value,
-                phone = phoneNumber.value,
-                email = email.value,
-                domicile = domicile.value,
-                userType = userType.value.lowercase(),
-                password = password.value,
-                imageProfile = imageUri.value
+                fullname = state.fullname,
+                username = state.username,
+                phone = state.phoneNumber,
+                email = state.email,
+                domicile = state.domicile,
+                userType = state.userType.lowercase(),
+                password = state.password,
+                imageProfile = state.imageUri
             ).onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _isLoading.update { false }
-                        _errorMessage.update { result.t.message }
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
                     }
 
                     is Result.Success -> {
@@ -118,20 +81,19 @@ class AddUserViewModel(
             }.launchIn(viewModelScope)
         } else {
             repository.updateUser(
-                userId = userId.value,
-                fullname = fullname.value,
-                username = username.value,
-                email = email.value,
-                phone = phoneNumber.value,
-                password = password.value,
-                domicile = domicile.value,
-                userType = userType.value,
-                imageProfile = if (imageUri.value != null) imageUri.value else null,
+                userId = state.userId,
+                fullname = state.fullname,
+                username = state.username,
+                email = state.email,
+                phone = state.phoneNumber,
+                password = state.password,
+                domicile = state.domicile,
+                userType = state.userType,
+                imageProfile = state.imageUri
             ).onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _isLoading.update { false }
-                        _errorMessage.update { result.t.message }
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
                     }
 
                     is Result.Success -> {
@@ -147,13 +109,11 @@ class AddUserViewModel(
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _isLoading.update { false }
-                        _errorMessage.update { result.t.message }
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
                     }
 
                     is Result.Success -> {
-                        _isLoading.update { false }
-                        _isSuccess.update { true }
+                        _uiState.update { it.copy(isLoading = false, isSuccess = true) }
                     }
                 }
             }.launchIn(viewModelScope)
@@ -164,40 +124,37 @@ class AddUserViewModel(
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _isLoading.update { false }
-                        _errorMessage.update { result.t.message }
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
                     }
 
                     is Result.Success -> {
-                        _isLoading.update { false }
-                        _isSuccess.update { true }
+                        _uiState.update { it.copy(isLoading = false, isSuccess = true) }
                     }
                 }
             }.launchIn(viewModelScope)
     }
 
     private fun registerUser() {
-        // Validation Logic here
-        if (password.value != confirmPassword.value) {
-            _errorMessage.update { "Password does not match" }
+        val state = _uiState.value
+        if (state.password != state.confirmPassword) {
+            _uiState.update { it.copy(errorMessage = "Password does not match") }
             return
         }
 
-        _isLoading.update { true }
+        _uiState.update { it.copy(isLoading = true) }
         repository.registerNewUser(
-            fullname = fullname.value,
-            username = username.value,
-            phone = phoneNumber.value,
-            email = email.value,
-            domicile = domicile.value,
-            userType = userType.value.lowercase(),
-            password = password.value,
-            imageProfile = imageUri.value
+            fullname = state.fullname,
+            username = state.username,
+            phone = state.phoneNumber,
+            email = state.email,
+            domicile = state.domicile,
+            userType = state.userType.lowercase(),
+            password = state.password,
+            imageProfile = state.imageUri
         ).onEach { result ->
             when (result) {
                 is Result.Error -> {
-                    _isLoading.update { false }
-                    _errorMessage.update { result.t.message }
+                    _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
                 }
 
                 is Result.Success -> {
@@ -207,35 +164,44 @@ class AddUserViewModel(
         }.launchIn(viewModelScope)
     }
 
-    fun getUser(userId: Int) {
-        if (isLoginUser.value) {
+    private fun getUser(userId: Int) {
+        val state = _uiState.value
+        if (state.isLoginUser) {
             val data = session.userProfile.value?.toUiData()
             data?.let {
-                onFullnameChange(data.fullname)
-                onUsernameChange(data.username)
-                onPhoneNumberChange(data.phone)
-                onEmailChange(data.email)
-                onDomicileChange(data.domicile)
-                onUserTypeChange(data.userType)
+                _uiState.update {
+                    it.copy(
+                        user = data,
+                        fullname = data.fullname,
+                        username = data.username,
+                        phoneNumber = data.phone,
+                        email = data.email,
+                        domicile = data.domicile,
+                        userType = data.userType
+                    )
+                }
             }
-            _user.update { data }
         } else {
             repository.getUser(userId)
                 .onEach { result ->
                     when (result) {
                         is Result.Error -> {
-                            _errorMessage.update { result.t.message }
+                            _uiState.update { it.copy(errorMessage = result.t.message) }
                         }
 
                         is Result.Success -> {
                             val data = result.data.toUiData()
-                            onFullnameChange(data.fullname)
-                            onUsernameChange(data.username)
-                            onPhoneNumberChange(data.phone)
-                            onEmailChange(data.email)
-                            onDomicileChange(data.domicile)
-                            onUserTypeChange(data.userType)
-                            _user.update { result.data.toUiData() }
+                            _uiState.update {
+                                it.copy(
+                                    user = data,
+                                    fullname = data.fullname,
+                                    username = data.username,
+                                    phoneNumber = data.phone,
+                                    email = data.email,
+                                    domicile = data.domicile,
+                                    userType = data.userType
+                                )
+                            }
                         }
                     }
                 }.launchIn(viewModelScope)

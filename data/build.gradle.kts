@@ -114,7 +114,7 @@ kotlin {
             implementation(libs.multiplatform.settings.serialization)
             implementation(libs.multiplatform.settings.coroutines)
 
-            implementation(project(":shared"))
+            implementation(projects.shared)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
