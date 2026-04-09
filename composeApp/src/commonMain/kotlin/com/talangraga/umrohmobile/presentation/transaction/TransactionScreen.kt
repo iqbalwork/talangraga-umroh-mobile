@@ -22,6 +22,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -70,6 +72,12 @@ fun TransactionScreen(
     val periodsList = (uiState.periods as? SectionState.Success)?.data ?: emptyList()
 
     TransactionContent(
+        isLoading = uiState.isLoading,
+        onRefresh = {
+            viewModel.onEvent(TransactionEvent.GetPeriods)
+            viewModel.onEvent(TransactionEvent.GetUsers)
+            viewModel.onEvent(TransactionEvent.GetTransactions(uiState.selectedPeriod?.periodId, uiState.selectedUser?.id))
+        },
         selectedPeriod = uiState.selectedPeriod,
         onPeriodChange = { viewModel.onEvent(TransactionEvent.SelectPeriod(it)) },
         periods = periodsList,
@@ -91,6 +99,8 @@ fun TransactionScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionContent(
+    isLoading: Boolean = false,
+    onRefresh: () -> Unit = {},
     selectedUser: UserUIData?,
     users: List<UserUIData>,
     onSelectUser: (UserUIData?) -> Unit,
@@ -110,6 +120,8 @@ fun TransactionContent(
     val userSheetState = rememberModalBottomSheetState()
     val userScope = rememberCoroutineScope()
     var showUserSheet by remember { mutableStateOf(false) }
+
+    val refreshState = rememberPullToRefreshState()
 
     if (showPeriodBottom) {
         PeriodsSheet(
@@ -152,102 +164,109 @@ fun TransactionContent(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            ConstraintLayout(
-                modifier = Modifier.padding(paddingValues).padding(16.dp).fillMaxSize()
+            PullToRefreshBox(
+                isRefreshing = isLoading,
+                onRefresh = onRefresh,
+                state = refreshState,
+                modifier = Modifier.padding(paddingValues).fillMaxSize()
             ) {
-                val (filterRef, chooseUserRef, listTransactionRef, emptyRef) = createRefs()
-
-                Row(
-                    modifier = Modifier.constrainAs(filterRef) {
-                        top.linkTo(parent.top)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    },
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                ConstraintLayout(
+                    modifier = Modifier.padding(16.dp).fillMaxSize()
                 ) {
-                    TextButton(
-                        text = "Semua",
-                        isSelected = selectedPeriod == null,
-                        modifier = Modifier
-                    ) {
-                        onPeriodChange(null)
-                    }
-                    val bulan = if (selectedPeriod != null) {
-                        formatDateRange(
-                            startDateString = selectedPeriod.startDate,
-                            endDateString = selectedPeriod.endDate,
-                            monthFormat = INDONESIA_TRIMMED
-                        )
-                    } else ""
-                    TextButtonOption(
-                        text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
-                        placeholder = "Pilih Bulan",
-                        trailingIcon = Icons.Default.ArrowDropDown,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        showPeriodBottom = true
-                    }
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.List,
-                        contentDescription = null,
-                        tint = TextSecondaryDark,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .border(1.dp, BorderColor, CircleShape)
-                            .clickable {
-                                showUserSheet = true
-                            }
-                            .background(color = Background)
-                            .padding(8.dp)
-                    )
-                }
+                    val (filterRef, chooseUserRef, listTransactionRef, emptyRef) = createRefs()
 
-                TextButtonOption(
-                    text = if (selectedUser != null) selectedUser.fullname else "Semua Pengguna",
-                    placeholder = "Pilih Pengguna",
-                    modifier = Modifier.constrainAs(chooseUserRef) {
-                        top.linkTo(filterRef.bottom, 8.dp)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        width = Dimension.fillToConstraints
-                    },
-                ) {
-                    showUserSheet = true
-                }
-
-                AnimatedVisibility(
-                    visible = transactions.isEmpty(),
-                    modifier = Modifier.constrainAs(emptyRef) {
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
-                ) {
-                    EmptyTransaction(modifier = Modifier, onAddTransaction = onAddTransaction)
-                }
-
-                AnimatedVisibility(
-                    visible = transactions.isNotEmpty(),
-                    modifier = Modifier.constrainAs(listTransactionRef) {
-                        top.linkTo(chooseUserRef.bottom)
-                        bottom.linkTo(parent.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                        height = Dimension.fillToConstraints
-                    }
-                ) {
-                    TransactionSection(
-                        modifier = Modifier,
-                        showAllTransaction = true,
-                        transactions = transactions,
-                        onAddTransaction = onAddTransaction,
-                        onClickSeeMore = {
-
+                    Row(
+                        modifier = Modifier.constrainAs(filterRef) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
                         },
-                        onTransactionClick = onTransactionClick
-                    )
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            text = "Semua",
+                            isSelected = selectedPeriod == null,
+                            modifier = Modifier
+                        ) {
+                            onPeriodChange(null)
+                        }
+                        val bulan = if (selectedPeriod != null) {
+                            formatDateRange(
+                                startDateString = selectedPeriod.startDate,
+                                endDateString = selectedPeriod.endDate,
+                                monthFormat = INDONESIA_TRIMMED
+                            )
+                        } else ""
+                        TextButtonOption(
+                            text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
+                            placeholder = "Pilih Bulan",
+                            trailingIcon = Icons.Default.ArrowDropDown,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            showPeriodBottom = true
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.List,
+                            contentDescription = null,
+                            tint = TextSecondaryDark,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .border(1.dp, BorderColor, CircleShape)
+                                .clickable {
+                                    showUserSheet = true
+                                }
+                                .background(color = Background)
+                                .padding(8.dp)
+                        )
+                    }
+
+                    TextButtonOption(
+                        text = if (selectedUser != null) selectedUser.fullname else "Semua Pengguna",
+                        placeholder = "Pilih Pengguna",
+                        modifier = Modifier.constrainAs(chooseUserRef) {
+                            top.linkTo(filterRef.bottom, 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            width = Dimension.fillToConstraints
+                        },
+                    ) {
+                        showUserSheet = true
+                    }
+
+                    AnimatedVisibility(
+                        visible = transactions.isEmpty(),
+                        modifier = Modifier.constrainAs(emptyRef) {
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                    ) {
+                        EmptyTransaction(modifier = Modifier, onAddTransaction = onAddTransaction)
+                    }
+
+                    AnimatedVisibility(
+                        visible = transactions.isNotEmpty(),
+                        modifier = Modifier.constrainAs(listTransactionRef) {
+                            top.linkTo(chooseUserRef.bottom)
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            height = Dimension.fillToConstraints
+                        }
+                    ) {
+                        TransactionSection(
+                            modifier = Modifier,
+                            showAllTransaction = true,
+                            transactions = transactions,
+                            onAddTransaction = onAddTransaction,
+                            onClickSeeMore = {
+
+                            },
+                            onTransactionClick = onTransactionClick
+                        )
+                    }
                 }
             }
 

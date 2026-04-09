@@ -34,8 +34,8 @@ val INDONESIA_TRIMMED: MonthNames = MonthNames(
 fun String.formatIsoTimestampToCustom(): String {
     return try {
         val instant = Instant.parse(this)
-        // The 'Z' in the timestamp means UTC. We'll format it based on UTC.
-        val localDateTime = instant.toLocalDateTime(TimeZone.UTC)
+        // Convert the UTC instant to the local system time for display
+        val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
 
         val customFormat = LocalDateTime.Format {
             day(padding = Padding.NONE)

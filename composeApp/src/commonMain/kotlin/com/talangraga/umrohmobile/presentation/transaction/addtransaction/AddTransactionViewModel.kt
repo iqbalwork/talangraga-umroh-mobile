@@ -122,6 +122,7 @@ class AddTransactionViewModel(
         if (dateMillis != null && time.isNotEmpty()) {
             try {
                 val instant = kotlin.time.Instant.fromEpochMilliseconds(dateMillis)
+                // Use UTC to get the date from DatePicker millis (standard for Material3 DatePicker)
                 val date = instant.toLocalDateTime(TimeZone.UTC).date
                 val timeParts = time.split(":")
                 val localDateTime = LocalDateTime(
@@ -133,6 +134,7 @@ class AddTransactionViewModel(
                     second = 0,
                     nanosecond = 0
                 )
+                // Convert the local time to an Instant using the system's timezone
                 transactionDateIso = localDateTime.toInstant(TimeZone.currentSystemDefault()).toString()
             } catch (e: Exception) {
                 e.printStackTrace()

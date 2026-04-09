@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Folder
@@ -32,12 +34,14 @@ fun TransactionSection(
     onTransactionClick: (TransactionUiData) -> Unit = {}
 ) {
 
-    Column(
+    val displayTransactions = if (showAllTransaction) transactions else transactions.take(3)
+
+    LazyColumn(
         modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        transactions.take(if (showAllTransaction) transactions.size else 3).forEach { transaction ->
+        items(displayTransactions) { transaction ->
             TransactionItem(
                 modifier = Modifier.fillMaxWidth(),
                 username = transaction.userName,
@@ -49,16 +53,18 @@ fun TransactionSection(
             )
         }
         if (!showAllTransaction) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onClickSeeMore()
-                    },
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Semua transaksi", style = TalangragaTypography.bodySmall)
-                Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onClickSeeMore()
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("Semua transaksi", style = TalangragaTypography.bodySmall)
+                    Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
+                }
             }
         }
     }
