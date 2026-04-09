@@ -53,24 +53,24 @@ fun SplashScreen(
 @Composable
 @Preview
 fun SplashContentPreview() {
-    SplashContent()
+    TalangragaTheme(darkTheme = false, useDynamicColor = false) {
+        SplashContent()
+    }
 }
 
 @Composable
 fun SplashContent() {
-    TalangragaTheme {
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.background)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.talangraga_logo),
-                contentDescription = "Splash Screen Image",
-            )
-        }
+    Column(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
+            .safeContentPadding()
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Image(
+            painter = painterResource(Res.drawable.talangraga_logo),
+            contentDescription = "Splash Screen Image",
+        )
     }
 }
