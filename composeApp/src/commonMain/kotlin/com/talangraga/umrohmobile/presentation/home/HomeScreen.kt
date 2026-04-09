@@ -226,7 +226,7 @@ fun HomeContent(
 @Preview
 @Composable
 fun PreviewHomeContent() {
-    TalangragaTheme {
+    TalangragaTheme(darkTheme = false, useDynamicColor = false) {
         HomeContent(
             periods = listOf(
                 PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
