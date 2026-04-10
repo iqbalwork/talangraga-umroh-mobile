@@ -33,6 +33,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -53,7 +55,6 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -112,11 +113,6 @@ import kotlin.time.ExperimentalTime
  * Github: https://github.com/iqbalwork
  */
 
-data class CollectiveMember(
-    val user: UserUIData,
-    val amount: String
-)
-
 @Composable
 fun AddTransactionScreen(
     navController: NavController,
@@ -135,14 +131,24 @@ fun AddTransactionScreen(
         selectedPeriod = uiState.selectedPeriod,
         onPaymentChange = { viewModel.onEvent(AddTransactionEvent.SetSelectedPayment(it)) },
         selectedPayment = uiState.selectedPayment,
-        isCollective = isCollective,
+        isCollective = uiState.isCollective,
+        onIsCollectiveChange = { viewModel.onEvent(AddTransactionEvent.SetIsCollective(it)) },
+        collectiveMembers = uiState.collectiveMembers,
+        onAddMember = { user, amount -> viewModel.onEvent(AddTransactionEvent.AddCollectiveMember(user, amount)) },
+        onRemoveMember = { viewModel.onEvent(AddTransactionEvent.RemoveCollectiveMember(it)) },
         imageUri = uiState.imageUri,
         isLoading = uiState.isLoading,
         onImageChange = { viewModel.onEvent(AddTransactionEvent.SetImageUri(it)) },
+        onUserChange = { viewModel.onEvent(AddTransactionEvent.SetSelectedUser(it)) },
+        selectedUser = uiState.selectedUser,
         onSubmit = { amount, dateMillis, time, user ->
             viewModel.onEvent(AddTransactionEvent.SubmitTransaction(amount, dateMillis, time, user))
         }
     )
+
+    LaunchedEffect(isCollective) {
+        viewModel.onEvent(AddTransactionEvent.SetIsCollective(isCollective))
+    }
 
     LaunchedEffect(viewModel.effect) {
         viewModel.effect.collect { effect ->
@@ -175,9 +181,15 @@ fun AddTransactionsContent(
     selectedPayment: PaymentEntity?,
     onPaymentChange: (PaymentEntity?) -> Unit,
     isCollective: Boolean = false,
+    onIsCollectiveChange: (Boolean) -> Unit = {},
+    collectiveMembers: List<CollectiveMember> = emptyList(),
+    onAddMember: (UserUIData, String) -> Unit = { _, _ -> },
+    onRemoveMember: (UserUIData) -> Unit = {},
     imageUri: ByteArray? = null,
     isLoading: Boolean = false,
     onImageChange: (ByteArray) -> Unit = {},
+    onUserChange: (UserUIData?) -> Unit = {},
+    selectedUser: UserUIData? = null,
     onSubmit: (amount: String, dateMillis: Long?, time: String, user: UserUIData?) -> Unit = { _, _, _, _ -> }
 ) {
     val focusManager = LocalFocusManager.current
@@ -195,11 +207,9 @@ fun AddTransactionsContent(
     var selectedDate by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf("") }
     var tempDateMillis by remember { mutableStateOf<Long?>(null) }
-    var selectedUser by remember { mutableStateOf<UserUIData?>(null) }
     var amount by remember { mutableStateOf("") }
 
     // Collective Mode State
-    val collectiveMembers = remember { mutableStateListOf<CollectiveMember>() }
     var tempMemberUser by remember { mutableStateOf<UserUIData?>(null) }
     var tempMemberAmount by remember { mutableStateOf("") }
     var isUserSelectionForCollective by remember { mutableStateOf(false) }
@@ -383,23 +393,44 @@ fun AddTransactionsContent(
             }
 
             item {
-                Column {
-                    // Anggota/Pengguna Dropdown
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onIsCollectiveChange(!isCollective) },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isCollective,
+                        onCheckedChange = { onIsCollectiveChange(it) },
+                        colors = CheckboxDefaults.colors(checkedColor = Sage)
+                    )
                     Text(
-                        text = "Anggota/Pengguna",
-                        style = TalangragaTypography.titleSmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        text = "Tambah Transaksi Kolektif (Beberapa Anggota)",
+                        style = TalangragaTypography.bodyMedium
                     )
-                    TextButtonOption(
-                        text = selectedUser?.fullname ?: "",
-                        placeholder = "Pilih Anggota",
-                        trailingIcon = Icons.Default.ArrowDropDown,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            isUserSelectionForCollective = false
-                            showUserBottomSheet = true
-                        }
-                    )
+                }
+            }
+
+            item {
+                if (!isCollective) {
+                    Column {
+                        // Anggota/Pengguna Dropdown
+                        Text(
+                            text = "Anggota/Pengguna",
+                            style = TalangragaTypography.titleSmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        TextButtonOption(
+                            text = selectedUser?.fullname ?: "",
+                            placeholder = "Pilih Anggota",
+                            trailingIcon = Icons.Default.ArrowDropDown,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = {
+                                isUserSelectionForCollective = false
+                                showUserBottomSheet = true
+                            }
+                        )
+                    }
                 }
             }
 
@@ -469,13 +500,15 @@ fun AddTransactionsContent(
             }
 
             item {
-                CurrencyInputText(
-                    title = "Jumlah Tabungan",
-                    value = amount,
-                    onValueChange = { amount = it },
-                    placeholder = "Rp xxx.xxx.xxx",
-                    modifier = Modifier.fillMaxWidth()
-                )
+                if (!isCollective) {
+                    CurrencyInputText(
+                        title = "Jumlah Tabungan",
+                        value = amount,
+                        onValueChange = { amount = it },
+                        placeholder = "Rp xxx.xxx.xxx",
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
 
             item {
@@ -677,7 +710,7 @@ fun AddTransactionsContent(
                         enabled = tempMemberUser != null && tempMemberAmount.isNotEmpty(),
                         onClick = {
                             tempMemberUser?.let { user ->
-                                collectiveMembers.add(CollectiveMember(user, tempMemberAmount))
+                                onAddMember(user, tempMemberAmount)
                                 scope.launch { addMemberSheetState.hide() }.invokeOnCompletion {
                                     if (!addMemberSheetState.isVisible) {
                                         showAddMemberSheet = false
@@ -705,7 +738,7 @@ fun AddTransactionsContent(
                         if (isUserSelectionForCollective) {
                             tempMemberUser = user
                         } else {
-                            selectedUser = user
+                            onUserChange(user)
                         }
                         scope.launch { sheetState.hide() }.invokeOnCompletion {
                             if (!sheetState.isVisible) {
@@ -932,7 +965,7 @@ fun PreviewAddTransactionContent() {
         AddTransactionsContent(
             onBackClick = {},
             userList = mockUsers,
-            isCollective = true,
+            isCollective = false,
             periods = emptyList(),
             payments = emptyList(),
             onPeriodChange = { },

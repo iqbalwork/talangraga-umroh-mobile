@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -57,11 +58,31 @@ class AddTransactionViewModel(
             }
 
             is AddTransactionEvent.SubmitTransaction -> {
-                addTransaction(event.amount, event.dateMillis, event.time, event.user)
+                if (_uiState.value.isCollective) {
+                    addCollectiveTransactions(event.dateMillis, event.time)
+                } else {
+                    addTransaction(event.amount, event.dateMillis, event.time, event.user)
+                }
             }
 
             is AddTransactionEvent.SetSelectedUser -> {
                 _uiState.update { it.copy(selectedUser = event.user) }
+            }
+
+            is AddTransactionEvent.SetIsCollective -> {
+                _uiState.update { it.copy(isCollective = event.isCollective) }
+            }
+
+            is AddTransactionEvent.AddCollectiveMember -> {
+                val currentMembers = _uiState.value.collectiveMembers.toMutableList()
+                currentMembers.add(CollectiveMember(event.user, event.amount))
+                _uiState.update { it.copy(collectiveMembers = currentMembers) }
+            }
+
+            is AddTransactionEvent.RemoveCollectiveMember -> {
+                val currentMembers = _uiState.value.collectiveMembers.toMutableList()
+                currentMembers.removeAll { it.user.id == event.user.id }
+                _uiState.update { it.copy(collectiveMembers = currentMembers) }
             }
         }
     }
@@ -112,6 +133,75 @@ class AddTransactionViewModel(
                     }
                 }
             }.launchIn(viewModelScope)
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private fun addCollectiveTransactions(dateMillis: Long?, time: String) {
+        val state = _uiState.value
+        val members = state.collectiveMembers
+        if (members.isEmpty()) {
+            viewModelScope.launch {
+                _effect.emit(AddTransactionEffect.ShowToastError("Belum ada anggota yang ditambahkan"))
+            }
+            return
+        }
+
+        var transactionDateIso = ""
+        if (dateMillis != null && time.isNotEmpty()) {
+            try {
+                val instant = kotlin.time.Instant.fromEpochMilliseconds(dateMillis)
+                val date = instant.toLocalDateTime(TimeZone.UTC).date
+                val timeParts = time.split(":")
+                val localDateTime = LocalDateTime(
+                    year = date.year,
+                    month = date.month,
+                    day = date.day,
+                    hour = timeParts[0].toInt(),
+                    minute = timeParts[1].toInt(),
+                    second = 0,
+                    nanosecond = 0
+                )
+                transactionDateIso = localDateTime.toInstant(TimeZone.currentSystemDefault()).toString()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        val transactionDate = transactionDateIso.ifEmpty { "$dateMillis $time" }
+
+        _uiState.update { it.copy(isLoading = true) }
+
+        viewModelScope.launch {
+            var allSuccess = true
+            val reportedByUserId = session.userProfile.value?.id ?: 1
+            val periodeId = state.selectedPeriod?.periodId ?: 1
+            val paymentId = state.selectedPayment?.paymentId ?: 1
+            val imageFile = state.imageUri
+
+            members.forEach { member ->
+                val amount = member.amount.replace(Regex("[^0-9]"), "").toDoubleOrNull() ?: 0.0
+                repository.addTransaction(
+                    userId = member.user.id,
+                    reportedByUserId = reportedByUserId,
+                    amount = amount,
+                    transactionDate = transactionDate,
+                    periodeId = periodeId,
+                    paymentId = paymentId,
+                    file = imageFile
+                ).collect { result ->
+                    if (result is Result.Error) {
+                        allSuccess = false
+                    }
+                }
+            }
+
+            _uiState.update { it.copy(isLoading = false) }
+            if (allSuccess) {
+                _effect.emit(AddTransactionEffect.ShowToastSuccess("Semua transaksi kolektif berhasil ditambahkan"))
+                _effect.emit(AddTransactionEffect.NavigateBack)
+            } else {
+                _effect.emit(AddTransactionEffect.ShowToastError("Beberapa transaksi gagal ditambahkan"))
+            }
+        }
     }
 
     @OptIn(ExperimentalTime::class)
