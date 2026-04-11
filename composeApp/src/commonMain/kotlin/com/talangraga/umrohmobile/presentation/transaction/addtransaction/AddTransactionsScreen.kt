@@ -86,6 +86,7 @@ import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.rememberSharedFileReader
 import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.CurrencyInputText
+import com.talangraga.umrohmobile.ui.component.ModalImagePicker
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
 import com.talangraga.umrohmobile.ui.component.ToastManager
@@ -93,6 +94,7 @@ import com.talangraga.umrohmobile.ui.component.ToastType
 import com.talangraga.umrohmobile.ui.section.PaymentsSheet
 import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import com.talangraga.umrohmobile.ui.utils.formatCurrency
 import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
@@ -261,12 +263,41 @@ fun AddTransactionsContent(
         GalleryPickerLauncher(
             onPhotosSelected = {
                 selectedImagesFile = it
+                showCamera = false
                 showGallery = false
             },
             onError = {
                 imagePickerMessage = it.message.orEmpty()
+                showCamera = false
                 showGallery = false
             })
+    }
+
+    // Logic for form validation
+    val isFormValid = remember(
+        isCollective,
+        collectiveMembers,
+        selectedUser,
+        amount,
+        selectedPeriod,
+        selectedPayment,
+        tempDateMillis,
+        selectedTime,
+        imageUri,
+        isLoading
+    ) {
+        val baseValid = selectedPeriod != null &&
+                selectedPayment != null &&
+                tempDateMillis != null &&
+                selectedTime.isNotEmpty() &&
+                imageUri != null &&
+                !isLoading
+
+        if (isCollective) {
+            baseValid && collectiveMembers.isNotEmpty()
+        } else {
+            baseValid && selectedUser != null && amount.isNotEmpty()
+        }
     }
 
     TalangragaScaffold(
@@ -299,7 +330,7 @@ fun AddTransactionsContent(
             ) {
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading,
+                    enabled = isFormValid,
                     onClick = {
                         onSubmit(amount, tempDateMillis, selectedTime, selectedUser)
                     },
@@ -319,17 +350,21 @@ fun AddTransactionsContent(
                 }
             }
         },
-        containerColor = Background,
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(onTap = { focusManager.clearFocus() })
-        }
+        containerColor = Background
     ) { paddingValues ->
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = paddingValues.calculateTopPadding())
-                .padding(horizontal = 16.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { focusManager.clearFocus() })
+                },
+            contentPadding = PaddingValues(
+                top = paddingValues.calculateTopPadding() + 16.dp,
+                bottom = paddingValues.calculateBottomPadding() + 16.dp,
+                start = 16.dp,
+                end = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 Column {
@@ -531,275 +566,266 @@ fun AddTransactionsContent(
                                 showAddMemberSheet = true
                             }
                         )
+                    }
+                }
+            }
 
-                        if (collectiveMembers.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(16.dp))
+            if (isCollective && collectiveMembers.isNotEmpty()) {
+                val totalAmount = collectiveMembers.sumOf { it.amount.toLongOrNull() ?: 0L }
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Sage.copy(alpha = 0.1f)),
+                        border = BorderStroke(1.dp, Sage)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
-                                text = "Daftar anggota",
-                                style = TalangragaTypography.titleSmall,
-                                modifier = Modifier.padding(bottom = 8.dp)
+                                text = "Total Tabungan",
+                                style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
-
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                collectiveMembers.forEach { member ->
-                                    Card(
-                                        shape = RoundedCornerShape(8.dp),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            BorderColor
-                                        ),
-                                        colors = CardDefaults.cardColors(containerColor = Background),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = member.user.fullname ?: "Unknown",
-                                                style = TalangragaTypography.bodyMedium.copy(
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            )
-                                            Text(
-                                                text = member.amount,
-                                                style = TalangragaTypography.bodyMedium.copy(
-                                                    color = Sage,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                            Text(
+                                text = totalAmount.toDouble().formatCurrency(),
+                                style = TalangragaTypography.titleMedium.copy(
+                                    color = Sage,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
                         }
                     }
                 }
-            }
-        }
 
-        if (showDatePicker) {
-            val datePickerState = rememberDatePickerState()
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let { millis ->
-                                tempDateMillis = millis
-                                val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
-                                val date = instant.toLocalDateTime(TimeZone.UTC).date
-                                selectedDate = date.toIndonesianDateFormat()
-                            }
-                            showDatePicker = false
-                            showTimePicker = true
-                        }
-                    ) {
-                        Text("OK")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel")
-                    }
-                }
-            ) {
-                DatePicker(state = datePickerState)
-            }
-        }
-
-        if (showTimePicker) {
-            val timePickerState = rememberTimePickerState()
-            AlertDialog(
-                onDismissRequest = { showTimePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            val hour = timePickerState.hour.toString().padStart(2, '0')
-                            val minute = timePickerState.minute.toString().padStart(2, '0')
-                            selectedTime = "$hour:$minute"
-                            showTimePicker = false
-                        }
-                    ) {
-                        Text("OK")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showTimePicker = false }) {
-                        Text("Cancel")
-                    }
-                },
-                text = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        TimeInput(state = timePickerState)
-                    }
-                }
-            )
-        }
-
-        if (showPeriodBottomSheet) {
-            PeriodsSheet(
-                modifier = Modifier,
-                sheetState = periodSheetState,
-                scope = periodScope,
-                periods = periods,
-                onBottomSheetChange = { showPeriodBottomSheet = it },
-                onChoosePeriod = {
-                    onPeriodChange(it)
-                }
-            )
-        }
-
-        if (showPaymentBottomSheet) {
-            PaymentsSheet(
-                modifier = Modifier,
-                sheetState = paymentSheetState,
-                scope = scope,
-                payments = payments,
-                onBottomSheetChange = { showPaymentBottomSheet = it },
-                onChoosePayment = {
-                    onPaymentChange(it)
-                }
-            )
-        }
-
-        // Add Member Transaction Modal
-        if (showAddMemberSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showAddMemberSheet = false },
-                sheetState = addMemberSheetState,
-                containerColor = Background
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp).padding(bottom = 24.dp)
-                ) {
+                item {
                     Text(
-                        text = "Tambahkan Transaksi Anggota",
-                        style = TalangragaTypography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        text = "Daftar anggota",
+                        style = TalangragaTypography.titleSmall,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
                     )
+                }
 
-                    TextButtonOption(
-                        text = tempMemberUser?.fullname ?: "",
-                        placeholder = "Pilih Anggota",
-                        trailingIcon = Icons.Default.ArrowDropDown,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            isUserSelectionForCollective = true
-                            showUserBottomSheet = true
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    CurrencyInputText(
-                        title = "Jumlah",
-                        value = tempMemberAmount,
-                        onValueChange = { tempMemberAmount = it },
-                        placeholder = "Masukkan jumlah setoran",
+                items(collectiveMembers) { member ->
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            BorderColor
+                        ),
+                        colors = CardDefaults.cardColors(containerColor = Background),
                         modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = tempMemberUser != null && tempMemberAmount.isNotEmpty(),
-                        onClick = {
-                            tempMemberUser?.let { user ->
-                                onAddMember(user, tempMemberAmount)
-                                scope.launch { addMemberSheetState.hide() }.invokeOnCompletion {
-                                    if (!addMemberSheetState.isVisible) {
-                                        showAddMemberSheet = false
-                                    }
-                                }
-                            }
-                        }
                     ) {
-                        Text("Tambahkan Transaksi")
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = member.user.fullname,
+                                style = TalangragaTypography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Text(
+                                text = (member.amount.toDoubleOrNull() ?: 0.0).formatCurrency(),
+                                style = TalangragaTypography.bodyMedium.copy(
+                                    color = Sage,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
                     }
                 }
             }
         }
+    }
 
-        // User Selection Modal
-        if (showUserBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showUserBottomSheet = false },
-                sheetState = sheetState,
-                containerColor = Background
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            tempDateMillis = millis
+                            val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
+                            val date = instant.toLocalDateTime(TimeZone.UTC).date
+                            selectedDate = date.toIndonesianDateFormat()
+                        }
+                        showDatePicker = false
+                        showTimePicker = true
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState()
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val hour = timePickerState.hour.toString().padStart(2, '0')
+                        val minute = timePickerState.minute.toString().padStart(2, '0')
+                        selectedTime = "$hour:$minute"
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    TimeInput(state = timePickerState)
+                }
+            }
+        )
+    }
+
+    if (showPeriodBottomSheet) {
+        PeriodsSheet(
+            modifier = Modifier,
+            sheetState = periodSheetState,
+            scope = periodScope,
+            periods = periods,
+            onBottomSheetChange = { showPeriodBottomSheet = it },
+            onChoosePeriod = {
+                onPeriodChange(it)
+            }
+        )
+    }
+
+    if (showPaymentBottomSheet) {
+        PaymentsSheet(
+            modifier = Modifier,
+            sheetState = paymentSheetState,
+            scope = scope,
+            payments = payments,
+            onBottomSheetChange = { showPaymentBottomSheet = it },
+            onChoosePayment = {
+                onPaymentChange(it)
+            }
+        )
+    }
+
+    // Add Member Transaction Modal
+    if (showAddMemberSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showAddMemberSheet = false },
+            sheetState = addMemberSheetState,
+            containerColor = Background
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp).padding(bottom = 24.dp)
             ) {
-                UserSelectionContent(
-                    userList = userList,
-                    onUserSelected = { user ->
-                        if (isUserSelectionForCollective) {
-                            tempMemberUser = user
-                        } else {
-                            onUserChange(user)
-                        }
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                showUserBottomSheet = false
-                            }
-                        }
+                Text(
+                    text = "Tambahkan Transaksi Anggota",
+                    style = TalangragaTypography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                TextButtonOption(
+                    text = tempMemberUser?.fullname ?: "",
+                    placeholder = "Pilih Anggota",
+                    trailingIcon = Icons.Default.ArrowDropDown,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        isUserSelectionForCollective = true
+                        showUserBottomSheet = true
                     }
                 )
-            }
-        }
 
-        if (showImagePickerSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showImagePickerSheet = false },
-                sheetState = imagePickerSheetState,
-                containerColor = Background
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .padding(bottom = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                CurrencyInputText(
+                    title = "Jumlah",
+                    value = tempMemberAmount,
+                    onValueChange = { tempMemberAmount = it },
+                    placeholder = "Masukkan jumlah setoran",
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = tempMemberUser != null && tempMemberAmount.isNotEmpty(),
+                    onClick = {
+                        tempMemberUser?.let { user ->
+                            onAddMember(user, tempMemberAmount)
+                            scope.launch { addMemberSheetState.hide() }.invokeOnCompletion {
+                                if (!addMemberSheetState.isVisible) {
+                                    showAddMemberSheet = false
+                                }
+                            }
+                        }
+                    }
                 ) {
-                    Text(
-                        text = "Pilih Sumber Gambar",
-                        style = TalangragaTypography.titleLarge,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    Button(
-                        onClick = {
-                            showCamera = true
-                            scope.launch { imagePickerSheetState.hide() }.invokeOnCompletion {
-                                if (!imagePickerSheetState.isVisible) {
-                                    showImagePickerSheet = false
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Kamera")
-                    }
-
-                    Button(
-                        onClick = {
-                            showGallery = true
-                            scope.launch { imagePickerSheetState.hide() }.invokeOnCompletion {
-                                if (!imagePickerSheetState.isVisible) {
-                                    showImagePickerSheet = false
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Galeri")
-                    }
+                    Text("Tambahkan Transaksi")
                 }
             }
         }
+    }
+
+    // User Selection Modal
+    if (showUserBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showUserBottomSheet = false },
+            sheetState = sheetState,
+            containerColor = Background
+        ) {
+            UserSelectionContent(
+                userList = userList,
+                onUserSelected = { user ->
+                    if (isUserSelectionForCollective) {
+                        tempMemberUser = user
+                    } else {
+                        onUserChange(user)
+                    }
+                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                        if (!sheetState.isVisible) {
+                            showUserBottomSheet = false
+                        }
+                    }
+                }
+            )
+        }
+    }
+
+    if (showImagePickerSheet) {
+        ModalImagePicker(
+            onDismissRequest = { showImagePickerSheet = false },
+            onCameraClick = {
+                showImagePickerSheet = false
+                showCamera = true
+                showGallery = false
+            },
+            onGalleryClick = {
+                showImagePickerSheet = false
+                showCamera = false
+                showGallery = true
+            },
+            sheetState = imagePickerSheetState
+        )
     }
 
     Box(Modifier.fillMaxSize()) {
