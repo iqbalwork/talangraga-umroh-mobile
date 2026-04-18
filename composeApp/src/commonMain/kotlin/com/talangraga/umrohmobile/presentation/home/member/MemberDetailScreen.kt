@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -42,7 +43,6 @@ import com.talangraga.umrohmobile.ui.component.BasicImage
 import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -57,16 +57,15 @@ fun MemberDetailScreen(
     viewModel: MemberDetailViewModel = koinViewModel()
 ) {
 
-    val transactionState by viewModel.transactionState.collectAsStateWithLifecycle()
-    val userData by viewModel.user.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(userId) {
-        viewModel.getUser(userId)
+        viewModel.onEvent(MemberDetailEvent.GetUser(userId))
     }
 
     HomeMemberContent(
-        user = userData,
-        transactionState = transactionState,
+        user = uiState.user,
+        transactionState = uiState.transactionState,
         onBackClick = { navHostController.popBackStack() }
     )
 }
@@ -205,7 +204,9 @@ fun PreviewHomeMemberContent() {
                         confirmedBy = "Iqbal Fauzi",
                         buktiTransferUrl = "",
                         paymentType = "Transfer Bank",
-                        paymentName = "BCA"
+                        paymentName = "BCA",
+                        userName = "Iqbal Fauzi",
+                        userId = 1
                     )
                 )
             ),

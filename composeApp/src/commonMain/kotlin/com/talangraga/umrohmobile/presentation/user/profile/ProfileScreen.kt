@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -69,7 +70,6 @@ import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import com.talangraga.umrohmobile.ui.theme.ThemeManager
 import com.talangraga.umrohmobile.ui.theme.ThemeMode
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
@@ -84,6 +84,7 @@ fun ProfileScreen(
 ) {
 
     val profile by viewModel.session.userProfile.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val themeManager: ThemeManager = koinInject()
     val themeMode by themeManager.themeMode.collectAsState()
@@ -99,10 +100,10 @@ fun ProfileScreen(
         isDarkMode = isDarkTheme,
         isLoginUser = isLoginUser,
         user = profile?.toUiData(),
-        imageUrl = viewModel.imageUrl.value,
+        imageUrl = uiState.imageUrl,
         themeManager = themeManager,
         onLogout = {
-            viewModel.clearSession()
+            viewModel.onEvent(ProfileEvent.ClearSession)
             rootNavHostController.navigate(Screen.LoginRoute) {
                 popUpTo(Screen.MainRoute.ROUTE) {
                     inclusive = true

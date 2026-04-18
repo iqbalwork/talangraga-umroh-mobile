@@ -41,7 +41,7 @@ object HttpClientFactory {
             if (BuildKonfig.IS_DEBUG) {
 
                 install(InspektifyKtor) {
-                    logLevel = sp.bvantur.inspektify.ktor.LogLevel.All
+                    logLevel = sp.bvantur.inspektify.ktor.LogLevel.Info
                     autoDetectEnabledFor = setOf(AutoDetectTarget.Android, AutoDetectTarget.Apple)
                     shortcutEnabled = true
                 }
@@ -52,7 +52,7 @@ object HttpClientFactory {
                             Napier.v(tag = "KTOR", message = message)
                         }
                     }
-                    level = LogLevel.ALL
+                    level = LogLevel.HEADERS
                 }
             }
 

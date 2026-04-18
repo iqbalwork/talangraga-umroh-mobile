@@ -1,13 +1,15 @@
 package com.talangraga.umrohmobile.presentation.user.editprofile
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.network.api.Result
-import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -22,75 +24,60 @@ class EditProfileViewModel(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage = _errorMessage.asStateFlow()
+    private val _uiState = MutableStateFlow(EditProfileState())
+    val uiState: StateFlow<EditProfileState> = _uiState.asStateFlow()
 
-    private val _isSuccess = MutableStateFlow(false)
-    val isSuccess = _isSuccess.asStateFlow()
+    private val _effect = MutableSharedFlow<EditProfileEffect>()
+    val effect: SharedFlow<EditProfileEffect> = _effect.asSharedFlow()
 
-    private val _user = MutableStateFlow<UserUIData?>(null)
-    val user = _user.asStateFlow()
-
-    val isLoginUser = mutableStateOf(false)
-    val userId = mutableStateOf(0)
-    val fullname = mutableStateOf("")
-    val phoneNumber = mutableStateOf("")
-    val email = mutableStateOf("")
-    val domicile = mutableStateOf("")
-    val imageUrl = mutableStateOf("")
-
-    fun onFullnameChange(value: String) {
-        fullname.value = value
+    fun onEvent(event: EditProfileEvent) {
+        when (event) {
+            is EditProfileEvent.InitScope -> {
+                _uiState.update { it.copy(userId = event.userId, isLoginUser = event.isLoginUser) }
+                getUser(event.userId)
+            }
+            is EditProfileEvent.OnFullnameChange -> _uiState.update { it.copy(fullname = event.value) }
+            is EditProfileEvent.OnPhoneNumberChange -> _uiState.update { it.copy(phoneNumber = event.value) }
+            is EditProfileEvent.OnEmailChange -> _uiState.update { it.copy(email = event.value) }
+            is EditProfileEvent.OnDomicileChange -> _uiState.update { it.copy(domicile = event.value) }
+            is EditProfileEvent.OnImageChange -> _uiState.update { it.copy(imageUrl = event.value) }
+            is EditProfileEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
+            is EditProfileEvent.SaveProfile -> saveProfile()
+        }
     }
 
-    fun onPhoneNumberChange(value: String) {
-        phoneNumber.value = value
-    }
-
-    fun onEmailChange(value: String) {
-        email.value = value
-    }
-
-    fun onDomicileChange(value: String) {
-        domicile.value = value
-    }
-
-    fun onImageChange(value: String) {
-        imageUrl.value = value
-    }
-
-    fun onSaveClick() {
+    private fun saveProfile() {
+        val state = _uiState.value
         // TODO: Implement save logic
-        if (isLoginUser.value) {
+        if (state.isLoginUser) {
 
         } else {
 
         }
     }
 
-    fun getUser(userId: Int) {
+    private fun getUser(userId: Int) {
         repository.getUser(userId)
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _errorMessage.update { result.t.message }
+                        _uiState.update { it.copy(errorMessage = result.t.message) }
                     }
 
                     is Result.Success -> {
                         val data = result.data.toUiData()
-                        onFullnameChange(data.fullname)
-                        onPhoneNumberChange(data.phone)
-                        onEmailChange(data.email)
-                        onDomicileChange(data.domicile)
-                        onImageChange(data.imageProfileUrl)
-                        _user.update { result.data.toUiData() }
+                        _uiState.update {
+                            it.copy(
+                                user = data,
+                                fullname = data.fullname,
+                                phoneNumber = data.phone,
+                                email = data.email,
+                                domicile = data.domicile,
+                                imageUrl = data.imageProfileUrl
+                            )
+                        }
                     }
                 }
             }.launchIn(viewModelScope)
     }
-
-    fun clearError() {
-        _errorMessage.update { null }
-    }
-
 }

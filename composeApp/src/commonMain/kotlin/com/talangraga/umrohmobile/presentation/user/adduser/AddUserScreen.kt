@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -78,7 +79,6 @@ import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -90,29 +90,21 @@ fun AddUserScreen(
     viewModel: AddUserViewModel = koinViewModel()
 ) {
 
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    val isSuccess by viewModel.isSuccess.collectAsStateWithLifecycle()
-    val user by viewModel.user.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(isLoginUser) {
-        viewModel.isLoginUser.value = isLoginUser
-        viewModel.isEdit.value = isEdit
-        if (userId > 0) {
-            viewModel.userId.value = userId
-            viewModel.getUser(userId)
+        viewModel.onEvent(AddUserEvent.InitScope(userId, isLoginUser, isEdit))
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        if (!uiState.errorMessage.isNullOrEmpty()) {
+            ToastManager.show(message = uiState.errorMessage.orEmpty(), type = ToastType.Error)
+            viewModel.onEvent(AddUserEvent.ClearError)
         }
     }
 
-    LaunchedEffect(errorMessage) {
-        if (!errorMessage.isNullOrEmpty()) {
-            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
-            viewModel.clearError()
-        }
-    }
-
-    LaunchedEffect(isSuccess) {
-        if (isSuccess) {
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
             navController.popBackStack()
         }
     }
@@ -121,27 +113,27 @@ fun AddUserScreen(
         onBackClick = { navController.popBackStack() },
         isEdit = isEdit,
         isLoginUser = isLoginUser,
-        fullname = viewModel.fullname.value,
-        onFullnameChange = viewModel::onFullnameChange,
-        username = viewModel.username.value,
-        onUsernameChange = viewModel::onUsernameChange,
-        phoneNumber = viewModel.phoneNumber.value,
-        onPhoneNumberChange = viewModel::onPhoneNumberChange,
-        email = viewModel.email.value,
-        onEmailChange = viewModel::onEmailChange,
-        domicile = viewModel.domicile.value,
-        onDomicileChange = viewModel::onDomicileChange,
-        userType = viewModel.userType.value,
-        onUserTypeChange = viewModel::onUserTypeChange,
-        password = viewModel.password.value,
-        onPasswordChange = viewModel::onPasswordChange,
-        confirmPassword = viewModel.confirmPassword.value,
-        onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
-        imageUrl = viewModel.imageUri.value,
-        onImageUrlChange = viewModel::onImageChange,
-        user = user,
-        isLoading = isLoading,
-        onSaveClick = viewModel::saveUser,
+        fullname = uiState.fullname,
+        onFullnameChange = { viewModel.onEvent(AddUserEvent.OnFullnameChange(it)) },
+        username = uiState.username,
+        onUsernameChange = { viewModel.onEvent(AddUserEvent.OnUsernameChange(it)) },
+        phoneNumber = uiState.phoneNumber,
+        onPhoneNumberChange = { viewModel.onEvent(AddUserEvent.OnPhoneNumberChange(it)) },
+        email = uiState.email,
+        onEmailChange = { viewModel.onEvent(AddUserEvent.OnEmailChange(it)) },
+        domicile = uiState.domicile,
+        onDomicileChange = { viewModel.onEvent(AddUserEvent.OnDomicileChange(it)) },
+        userType = uiState.userType,
+        onUserTypeChange = { viewModel.onEvent(AddUserEvent.OnUserTypeChange(it)) },
+        password = uiState.password,
+        onPasswordChange = { viewModel.onEvent(AddUserEvent.OnPasswordChange(it)) },
+        confirmPassword = uiState.confirmPassword,
+        onConfirmPasswordChange = { viewModel.onEvent(AddUserEvent.OnConfirmPasswordChange(it)) },
+        imageUrl = uiState.imageUri,
+        onImageUrlChange = { viewModel.onEvent(AddUserEvent.OnImageChange(it)) },
+        user = uiState.user,
+        isLoading = uiState.isLoading,
+        onSaveClick = { viewModel.onEvent(AddUserEvent.SaveUser) },
     )
 }
 

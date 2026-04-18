@@ -1,60 +1,74 @@
 package com.talangraga.umrohmobile.presentation.login
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.network.api.Result
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val repository: Repository
 ) : ViewModel() {
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
+    private val _uiState = MutableStateFlow(LoginState())
+    val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
 
-    private val _loginSucceed = MutableStateFlow<Boolean?>(null)
-    val loginSucceed = _loginSucceed.asStateFlow()
+    private val _effect = MutableSharedFlow<LoginEffect>()
+    val effect: SharedFlow<LoginEffect> = _effect.asSharedFlow()
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage = _errorMessage.asStateFlow()
+    fun onEvent(event: LoginEvent) {
+        when (event) {
+            is LoginEvent.OnIdentifierChange -> {
+                _uiState.update { it.copy(identifier = event.identifier) }
+            }
 
-    var identifier = mutableStateOf("")
-    var password = mutableStateOf("")
+            is LoginEvent.OnPasswordChange -> {
+                _uiState.update { it.copy(password = event.password) }
+            }
 
-    fun clearError() {
-        _errorMessage.update { null }
+            is LoginEvent.OnLoginClick -> {
+                login()
+            }
+
+            is LoginEvent.ClearError -> {
+                // Not needing a state change if we are firing as an effect, 
+                // but handled just in case logic requires it later.
+            }
+        }
     }
 
-    fun onIdentifierChange(newUsername: String) {
-        identifier.value = newUsername
-    }
-
-    fun onPasswordChange(newPassword: String) {
-        password.value = newPassword
-    }
-
-    fun login() {
-        _isLoading.update { true }
-        repository.login(identifier.value, password.value)
+    private fun login() {
+        val currentState = _uiState.value
+        _uiState.update { it.copy(isLoading = true) }
+        repository.login(currentState.identifier, currentState.password)
             .onEach { response ->
                 when (response) {
                     is Result.Error -> {
-                        _isLoading.update { false }
-                        _errorMessage.update { response.t.message }
+                        _uiState.update { it.copy(isLoading = false) }
+                        sendEffect(LoginEffect.ShowToastError(response.t.message ?: "Unknown error"))
                     }
+
                     is Result.Success -> {
-                        _loginSucceed.update { true }
-                        _isLoading.update { false }
+                        _uiState.update { it.copy(isLoading = false) }
+                        sendEffect(LoginEffect.NavigateToMain)
                     }
                 }
             }
             .launchIn(viewModelScope)
     }
 
+    private fun sendEffect(effect: LoginEffect) {
+        viewModelScope.launch {
+            _effect.emit(effect)
+        }
+    }
 }

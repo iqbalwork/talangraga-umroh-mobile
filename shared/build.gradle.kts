@@ -1,9 +1,8 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinx.serialization)
@@ -11,11 +10,17 @@ plugins {
 }
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+    androidLibrary {
+        namespace = "com.talangraga.shared"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
-            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+
+        androidResources {
+            enable = true
         }
     }
 
@@ -84,31 +89,4 @@ kotlin {
             implementation(libs.ktor.client.mock)
         }
     }
-}
-
-android {
-    namespace = "com.talangraga.shared"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-        }
-        getByName("debug") {
-            isMinifyEnabled = false
-        }
-    }
-//    flavorDimensions += "version"
-//    productFlavors {
-//        create("staging") {
-//            dimension = "version"
-//        }
-//        create("production") {
-//            dimension = "version"
-//        }
-//    }
 }

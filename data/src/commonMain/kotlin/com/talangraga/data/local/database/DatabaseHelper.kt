@@ -84,7 +84,7 @@ class DatabaseHelper(factory: DriverFactory) {
             }
 
     fun insertTransactions(list: List<TransactionEntity>) {
-        list.forEach { (transactionId, amount, reportedDate, transactionDate, statusTransaksi, buktiTransferUrl, paymentType, paymentName, reportedBy, confirmedBy) ->
+        list.forEach { (transactionId, amount, reportedDate, transactionDate, statusTransaksi, buktiTransferUrl, paymentType, paymentName, reportedBy, confirmedBy, userName, userId) ->
             transactionsQueries.insertTransactionData(
                 transactionId = transactionId.toLong(),
                 amount = amount.toLong(),
@@ -95,7 +95,9 @@ class DatabaseHelper(factory: DriverFactory) {
                 paymentType = paymentType,
                 paymentName = paymentName,
                 reportedBy = reportedBy,
-                confirmedBy = confirmedBy
+                confirmedBy = confirmedBy,
+                userName = userName,
+                userId = userId.toLong()
             )
         }
     }
@@ -118,7 +120,7 @@ class DatabaseHelper(factory: DriverFactory) {
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { data ->
-                data.map { it.toTransactionEntity() }
+                data.map { it.toTransactionEntity() }.sortedByDescending { it.transactionId }
             }
 
     fun insertUsers(list: List<UserEntity>) {

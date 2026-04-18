@@ -8,7 +8,9 @@ CREATE TABLE TransactionData (
   paymentType TEXT,
   paymentName TEXT,
   reportedBy TEXT,
-  confirmedBy TEXT
+  confirmedBy TEXT,
+  userName TEXT,
+  userId INTEGER
 );
 
 selectAll:
@@ -26,8 +28,10 @@ INSERT OR REPLACE INTO TransactionData(
     paymentType,
     paymentName,
     reportedBy,
-    confirmedBy
-) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?);
+    confirmedBy,
+    userName,
+    userId
+) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?, ?, ?);
 
 upsertTransactionData:
 INSERT OR REPLACE INTO TransactionData(

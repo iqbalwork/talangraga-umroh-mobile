@@ -85,7 +85,7 @@ fun DialogUserType(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DialogPeriods(
+fun PeriodsSheet(
     modifier: Modifier = Modifier,
     periods: List<PeriodEntity>,
     sheetState: SheetState,

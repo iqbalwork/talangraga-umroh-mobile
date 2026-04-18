@@ -16,14 +16,18 @@ data class TransactionResponse(
     val buktiTransfer: String? = null,
     @SerialName("status")
     val statusTransaksi: String?,
+    @SerialName("user_id")
+    val userId: Int,
+    @SerialName("user")
+    val user: UserResponse? = null,
     @SerialName("reported_date")
     val reportedDate: String,
     @SerialName("reported_by")
-    val reportedByUser: com.talangraga.data.network.model.response.UserResponse? = null,
+    val reportedByUser: UserResponse? = null,
     @SerialName("confirmed_by")
-    val confirmedByUser: com.talangraga.data.network.model.response.UserResponse? = null,
+    val confirmedByUser: UserResponse? = null,
     @SerialName("payment")
-    val payment: com.talangraga.data.network.model.response.PaymentResponse? = null,
+    val payment: PaymentResponse? = null,
     @SerialName("periode")
-    val periode: com.talangraga.data.network.model.response.PeriodeResponse? = null,
+    val periode: PeriodeResponse? = null,
 )

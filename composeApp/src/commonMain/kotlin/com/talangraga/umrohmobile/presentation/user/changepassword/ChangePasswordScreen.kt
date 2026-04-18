@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -37,7 +38,6 @@ import com.talangraga.umrohmobile.ui.component.ToastManager
 import com.talangraga.umrohmobile.ui.component.ToastType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -51,21 +51,19 @@ fun ChangePasswordScreen(
     userId: Int,
     viewModel: ChangePasswordViewModel = koinViewModel()
 ) {
-    val currentPassword by viewModel.currentPassword.collectAsStateWithLifecycle()
-    val newPassword by viewModel.newPassword.collectAsStateWithLifecycle()
-    val confirmPassword by viewModel.confirmPassword.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    val isPasswordChanged by viewModel.isPasswordChanged.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(errorMessage) {
-        ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
+    LaunchedEffect(uiState.errorMessage) {
+        if (!uiState.errorMessage.isNullOrEmpty()) {
+            ToastManager.show(message = uiState.errorMessage.orEmpty(), type = ToastType.Error)
+            viewModel.onEvent(ChangePasswordEvent.ClearError)
+        }
     }
 
-    LaunchedEffect(isPasswordChanged) {
-        if (isPasswordChanged == true) {
+    LaunchedEffect(uiState.isPasswordChanged) {
+        if (uiState.isPasswordChanged) {
             scope.launch {
                 ToastManager.show(message = "Kata sandi berhasil diubah", type = ToastType.Success)
                 delay(2000)
@@ -76,14 +74,14 @@ fun ChangePasswordScreen(
 
     ChangePasswordContent(
         onBackClick = { navHostController.popBackStack() },
-        isLoading = isLoading,
-        currentPassword = currentPassword,
-        onCurrentPasswordChange = viewModel::onCurrentPasswordChange,
-        newPassword = newPassword,
-        onNewPasswordChange = viewModel::onNewPasswordChange,
-        confirmPassword = confirmPassword,
-        onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
-        onClickChangePassword = viewModel::changePassword
+        isLoading = uiState.isLoading,
+        currentPassword = uiState.currentPassword,
+        onCurrentPasswordChange = { viewModel.onEvent(ChangePasswordEvent.OnCurrentPasswordChange(it)) },
+        newPassword = uiState.newPassword,
+        onNewPasswordChange = { viewModel.onEvent(ChangePasswordEvent.OnNewPasswordChange(it)) },
+        confirmPassword = uiState.confirmPassword,
+        onConfirmPasswordChange = { viewModel.onEvent(ChangePasswordEvent.OnConfirmPasswordChange(it)) },
+        onClickChangePassword = { viewModel.onEvent(ChangePasswordEvent.ChangePassword) }
     )
 
 }

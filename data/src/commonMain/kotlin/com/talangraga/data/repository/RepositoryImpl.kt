@@ -30,11 +30,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 
 class RepositoryImpl(
     private val apiService: ApiService,
-    private val json: Json,
     private val session: Session,
     private val tokenManager: TokenManager,
     private val databaseHelper: DatabaseHelper
@@ -155,6 +153,7 @@ class RepositoryImpl(
                     imageProfile
                 )
                 if (response.data != null) {
+                    databaseHelper.insertUsers(listOf(response.data.toUserEntity()))
                     emit(Result.Success(response.data))
                 } else {
                     emit(Result.Error(Exception(response.message)))
@@ -397,4 +396,39 @@ class RepositoryImpl(
         }
     }
 
+    override fun addTransaction(
+        userId: Int?,
+        reportedByUserId: Int?,
+        amount: Double?,
+        transactionDate: String?,
+        periodeId: Int?,
+        paymentId: Int?,
+        file: ByteArray?
+    ): Flow<Result<Boolean>> {
+        return flow {
+            try {
+                val response = apiService.addTransaction(
+                    userId = userId,
+                    reportedByUserId = reportedByUserId,
+                    amount = amount,
+                    transactionDate = transactionDate,
+                    periodeId = periodeId,
+                    paymentId = paymentId,
+                    file = file
+                )
+
+                if (response.data != null) {
+                    emit(Result.Success(true))
+                } else {
+                    emit(Result.Error(Exception(response.message)))
+                }
+            } catch (e: JsonConvertException) {
+                val message = normalizeErrorMessage(e)
+                emit(Result.Error(Exception(message)))
+            } catch (e: Exception) {
+                val message = normalizeErrorMessage(e)
+                emit(Result.Error(Exception(message)))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
 }

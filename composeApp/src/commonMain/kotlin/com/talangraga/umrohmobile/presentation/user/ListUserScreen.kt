@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,7 +63,6 @@ import com.talangraga.umrohmobile.ui.component.ToastManager
 import com.talangraga.umrohmobile.ui.component.ToastType
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
 import talangragaumrohmobile.composeapp.generated.resources.search_username
@@ -74,21 +74,30 @@ fun ListUserScreen(
     viewModel: ListUserViewModel = koinViewModel(),
 ) {
 
-    val state = viewModel.uiState.collectAsStateWithLifecycle()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val errorMessage = uiState.errorMessage
 
     LaunchedEffect(errorMessage) {
         if (!errorMessage.isNullOrEmpty()) {
-            ToastManager.show(message = errorMessage.orEmpty(), type = ToastType.Error)
-            viewModel.clearError()
+            ToastManager.show(message = errorMessage, type = ToastType.Error)
+            viewModel.onEvent(ListUserEvent.ClearError)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is ListUserEffect.ShowToastError -> {
+                    ToastManager.show(message = effect.message, type = ToastType.Error)
+                }
+            }
         }
     }
 
     ListUserContent(
-        state = state.value,
-        searchQuery = searchQuery,
-        onSearchQueryChange = viewModel::onSearchQueryChange,
+        state = uiState.listState,
+        searchQuery = uiState.searchQuery,
+        onSearchQueryChange = { viewModel.onEvent(ListUserEvent.SearchQueryChanged(it)) },
         onBackClick = {
             navHostController.popBackStack()
         },
@@ -114,7 +123,7 @@ fun ListUserScreen(
             )
 //            navHostController.navigate(Screen.EditProfileRoute(userId = it, isLoginUser = false))
         },
-        onRefresh = viewModel::getListUser
+        onRefresh = { viewModel.onEvent(ListUserEvent.GetListUser) }
     )
 }
 

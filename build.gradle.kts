@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.android.lint) apply false
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.kotzilla) apply false
+    alias(libs.plugins.kotlin.android) apply false
 }
 
 subprojects {

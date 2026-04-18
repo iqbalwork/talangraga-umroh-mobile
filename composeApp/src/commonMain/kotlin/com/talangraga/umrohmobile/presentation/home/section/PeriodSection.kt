@@ -10,13 +10,13 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.shared.INDONESIA_TRIMMED
 import com.talangraga.shared.formatDateRange
 import com.talangraga.umrohmobile.ui.component.TextButton
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun PeriodSection(
@@ -45,7 +45,7 @@ fun PeriodSection(
             )
         } else ""
         TextButtonOption(
-            text = bulan,
+            text = "${period?.periodeName}: $bulan",
             placeholder = "Pilih Bulan",
             trailingIcon = Icons.Default.ArrowDropDown,
             modifier = Modifier.fillMaxWidth(),

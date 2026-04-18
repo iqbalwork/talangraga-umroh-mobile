@@ -43,6 +43,8 @@ fun TransactionResponse.toTransactionEntity(): TransactionEntity {
         paymentName = payment?.paymentName.orEmpty(),
         reportedBy = reportedByUser?.fullname.orEmpty(),
         confirmedBy = confirmedByUser?.fullname.orEmpty(),
+        userName = user?.fullname.orEmpty(),
+        userId = userId
     )
 }
 

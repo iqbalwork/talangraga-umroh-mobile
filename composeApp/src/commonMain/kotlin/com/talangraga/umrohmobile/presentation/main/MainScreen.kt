@@ -38,18 +38,14 @@ fun MainScreen(rootNavHostController: NavHostController) {
     var selectedTab by remember { mutableStateOf<BottomNavRoute>(BottomNavRoute.Home) }
 
     // Observe current route of member nav to hide bottom bar
+    val homeBackStackEntry by homeNav.currentBackStackEntryAsState()
+    val homeCurrentRoute = homeBackStackEntry?.destination?.route
+    val transactionBackStackEntry by transactionNav.currentBackStackEntryAsState()
+    val transactionCurrentRoute = transactionBackStackEntry?.destination?.route
     val memberBackStackEntry by memberNav.currentBackStackEntryAsState()
     val memberCurrentRoute = memberBackStackEntry?.destination?.route
     val profileBackStackEntry by profileNav.currentBackStackEntryAsState()
     val profileCurrentRoute = profileBackStackEntry?.destination?.route
-
-    // Check if the current route in member nav is AddUserRoute
-    // Note: Type-safe navigation routes might look different, 
-    // but usually contain the qualified name or the route string.
-    // For safety, we can check if it matches the AddUserRoute pattern.
-    // However, since we are using Type-Safe navigation, 'route' property might be null or complex string.
-    // A simpler way with type safe nav is checking the destination class name if available or similar logic.
-    // For now, let's assume standard behavior where nested destinations are identifiable.
 
     // Actually, simply checking if we are NOT at start destination of Member tab
     val isSubScreen = memberCurrentRoute?.contains(
@@ -64,6 +60,10 @@ fun MainScreen(rootNavHostController: NavHostController) {
         Screen.MemberDetailRoute::class.simpleName ?: "MemberDetailRoute"
     ) == true || profileCurrentRoute?.contains(
         Screen.AddUserRoute::class.simpleName ?: "AddUserRoute"
+    ) == true || homeCurrentRoute?.contains(
+        Screen.AddTransactionRoute::class.simpleName ?: "AddTransactionRoute"
+    ) == true || transactionCurrentRoute?.contains(
+        Screen.AddTransactionRoute::class.simpleName ?: "AddTransactionRoute"
     ) == true
 
     val showBottomBar = !isSubScreen

@@ -2,6 +2,7 @@ package com.talangraga.umrohmobile.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.talangraga.shared.BorderColor
@@ -20,7 +22,6 @@ import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.shared.formatIsoTimestampToCustom
 import com.talangraga.shared.formatToIDR
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TransactionItem(
@@ -29,13 +30,15 @@ fun TransactionItem(
     paymentName: String,
     paymentMethod: String,
     amount: Int,
-    date: String
+    date: String,
+    onClick: () -> Unit = {}
 ) {
     ConstraintLayout(
         modifier = modifier.fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, BorderColor, RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.background)
+            .clickable { onClick() }
             .padding(12.dp)
     ) {
         val (dataRef, amountRef) = createRefs()
@@ -89,4 +92,3 @@ fun TransactionItemPreview() {
         date = "2023-01-01T12:00:00Z"
     )
 }
-
