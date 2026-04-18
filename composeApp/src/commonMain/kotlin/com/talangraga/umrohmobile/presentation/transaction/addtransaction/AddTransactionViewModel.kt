@@ -6,7 +6,9 @@ import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.presentation.utils.ImageCompressor
 import com.talangraga.umrohmobile.presentation.utils.toUiData
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -34,6 +36,8 @@ class AddTransactionViewModel(
     private val _effect = MutableSharedFlow<AddTransactionEffect>()
     val effect: SharedFlow<AddTransactionEffect> = _effect.asSharedFlow()
 
+    private val imageCompressor = ImageCompressor()
+
     init {
         onEvent(AddTransactionEvent.GetListUser)
         onEvent(AddTransactionEvent.GetPeriods)
@@ -54,7 +58,20 @@ class AddTransactionViewModel(
             }
 
             is AddTransactionEvent.SetImageUri -> {
-                _uiState.update { it.copy(imageUri = event.uri) }
+                if (event.uri != null) {
+                    _uiState.update { it.copy(isLoading = true) }
+                    viewModelScope.launch {
+                        try {
+                            val compressedFile = imageCompressor.compress(event.uri, 200 * 1024L)
+                            _uiState.update { it.copy(imageUri = compressedFile, isLoading = false) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            _uiState.update { it.copy(imageUri = event.uri, isLoading = false) }
+                        }
+                    }
+                } else {
+                    _uiState.update { it.copy(imageUri = null) }
+                }
             }
 
             is AddTransactionEvent.SubmitTransaction -> {
@@ -206,6 +223,7 @@ class AddTransactionViewModel(
 
     @OptIn(ExperimentalTime::class)
     private fun addTransaction(amountString: String, dateMillis: Long?, time: String, user: UserUIData?) {
+        Napier.i { "TEST => Add Transaction Triggered" }
         val amount = amountString.replace(Regex("[^0-9]"), "").toDoubleOrNull() ?: 0.0
         var transactionDateIso = ""
         
@@ -233,7 +251,6 @@ class AddTransactionViewModel(
         
         val transactionDate = transactionDateIso.ifEmpty { "$dateMillis $time" }
         val userId = user?.id ?: uiState.value.selectedUser?.id
-
         _uiState.update { it.copy(isLoading = true) }
         repository.addTransaction(
             userId = userId,
@@ -247,10 +264,12 @@ class AddTransactionViewModel(
             _uiState.update { it.copy(isLoading = false) }
             when (result) {
                 is Result.Success -> {
+                    Napier.i { "TEST => Add Transaction Succeed" }
                     _effect.emit(AddTransactionEffect.ShowToastSuccess("Transaksi berhasil ditambahkan"))
                     _effect.emit(AddTransactionEffect.NavigateBack)
                 }
                 is Result.Error -> {
+                    Napier.i { "TEST => Add Transaction Error" }
                     _effect.emit(AddTransactionEffect.ShowToastError(result.t.message ?: "Gagal menambahkan transaksi"))
                 }
             }
