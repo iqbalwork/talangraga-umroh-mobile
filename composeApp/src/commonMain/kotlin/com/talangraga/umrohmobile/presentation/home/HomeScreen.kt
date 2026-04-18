@@ -36,6 +36,8 @@ import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
+import com.talangraga.umrohmobile.ui.component.ToastManager
+import com.talangraga.umrohmobile.ui.component.ToastType
 import com.talangraga.umrohmobile.ui.section.DialogUserType
 import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
@@ -60,7 +62,7 @@ fun HomeScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is HomeEffect.ShowToastError -> {
-                    // handeled locally, or if needed can map to snackbar here.
+                    ToastManager.show(message = effect.message, type = ToastType.Error)
                 }
             }
         }
