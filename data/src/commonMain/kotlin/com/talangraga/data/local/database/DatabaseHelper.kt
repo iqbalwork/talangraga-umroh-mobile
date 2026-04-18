@@ -120,7 +120,7 @@ class DatabaseHelper(factory: DriverFactory) {
             .asFlow()
             .mapToList(Dispatchers.IO)
             .map { data ->
-                data.map { it.toTransactionEntity() }
+                data.map { it.toTransactionEntity() }.sortedByDescending { it.transactionId }
             }
 
     fun insertUsers(list: List<UserEntity>) {

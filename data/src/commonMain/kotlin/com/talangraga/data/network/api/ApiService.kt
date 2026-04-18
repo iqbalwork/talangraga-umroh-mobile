@@ -257,19 +257,21 @@ class ApiService(private val httpClient: HttpClient) {
                 periodeId?.let { append("periode_id", it.toString()) }
                 paymentId?.let { append("payment_id", it.toString()) }
 
-                // File Upload (image_profile)
+                // File Upload
                 if (file != null) {
+                    val safeDate = transactionDate?.replace(":", "")?.replace(" ", "_")
+                        ?.replace("-", "") ?: "date"
                     append(
                         key = "file",
                         value = file,
                         headers = Headers.build {
                             append(
                                 HttpHeaders.ContentType,
-                                "image/jpg"
+                                "image/jpeg"
                             )
                             append(
                                 HttpHeaders.ContentDisposition,
-                                "filename=\"${userId}_${transactionDate}_transaction.jpg\""
+                                "filename=\"${userId}_${safeDate}_transaction.jpg\""
                             )
                         }
                     )

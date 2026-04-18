@@ -6,7 +6,9 @@ import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
+import com.talangraga.umrohmobile.presentation.utils.ImageCompressor
 import com.talangraga.umrohmobile.presentation.utils.toUiData
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -32,6 +35,8 @@ class AddTransactionViewModel(
 
     private val _effect = MutableSharedFlow<AddTransactionEffect>()
     val effect: SharedFlow<AddTransactionEffect> = _effect.asSharedFlow()
+
+    private val imageCompressor = ImageCompressor()
 
     init {
         onEvent(AddTransactionEvent.GetListUser)
@@ -53,15 +58,48 @@ class AddTransactionViewModel(
             }
 
             is AddTransactionEvent.SetImageUri -> {
-                _uiState.update { it.copy(imageUri = event.uri) }
+                if (event.uri != null) {
+                    _uiState.update { it.copy(isLoading = true) }
+                    viewModelScope.launch {
+                        try {
+                            val compressedFile = imageCompressor.compress(event.uri, 200 * 1024L)
+                            _uiState.update { it.copy(imageUri = compressedFile, isLoading = false) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            _uiState.update { it.copy(imageUri = event.uri, isLoading = false) }
+                        }
+                    }
+                } else {
+                    _uiState.update { it.copy(imageUri = null) }
+                }
             }
 
             is AddTransactionEvent.SubmitTransaction -> {
-                addTransaction(event.amount, event.dateMillis, event.time, event.user)
+                if (_uiState.value.isCollective) {
+                    addCollectiveTransactions(event.dateMillis, event.time)
+                } else {
+                    addTransaction(event.amount, event.dateMillis, event.time, event.user)
+                }
             }
 
             is AddTransactionEvent.SetSelectedUser -> {
                 _uiState.update { it.copy(selectedUser = event.user) }
+            }
+
+            is AddTransactionEvent.SetIsCollective -> {
+                _uiState.update { it.copy(isCollective = event.isCollective) }
+            }
+
+            is AddTransactionEvent.AddCollectiveMember -> {
+                val currentMembers = _uiState.value.collectiveMembers.toMutableList()
+                currentMembers.add(CollectiveMember(event.user, event.amount))
+                _uiState.update { it.copy(collectiveMembers = currentMembers) }
+            }
+
+            is AddTransactionEvent.RemoveCollectiveMember -> {
+                val currentMembers = _uiState.value.collectiveMembers.toMutableList()
+                currentMembers.removeAll { it.user.id == event.user.id }
+                _uiState.update { it.copy(collectiveMembers = currentMembers) }
             }
         }
     }
@@ -115,10 +153,17 @@ class AddTransactionViewModel(
     }
 
     @OptIn(ExperimentalTime::class)
-    private fun addTransaction(amountString: String, dateMillis: Long?, time: String, user: UserUIData?) {
-        val amount = amountString.replace(Regex("[^0-9]"), "").toDoubleOrNull() ?: 0.0
+    private fun addCollectiveTransactions(dateMillis: Long?, time: String) {
+        val state = _uiState.value
+        val members = state.collectiveMembers
+        if (members.isEmpty()) {
+            viewModelScope.launch {
+                _effect.emit(AddTransactionEffect.ShowToastError("Belum ada anggota yang ditambahkan"))
+            }
+            return
+        }
+
         var transactionDateIso = ""
-        
         if (dateMillis != null && time.isNotEmpty()) {
             try {
                 val instant = kotlin.time.Instant.fromEpochMilliseconds(dateMillis)
@@ -138,10 +183,74 @@ class AddTransactionViewModel(
                 e.printStackTrace()
             }
         }
+        val transactionDate = transactionDateIso.ifEmpty { "$dateMillis $time" }
+
+        _uiState.update { it.copy(isLoading = true) }
+
+        viewModelScope.launch {
+            var allSuccess = true
+            val reportedByUserId = session.userProfile.value?.id ?: 1
+            val periodeId = state.selectedPeriod?.periodId ?: 1
+            val paymentId = state.selectedPayment?.paymentId ?: 1
+            val imageFile = state.imageUri
+
+            members.forEach { member ->
+                val amount = member.amount.replace(Regex("[^0-9]"), "").toDoubleOrNull() ?: 0.0
+                repository.addTransaction(
+                    userId = member.user.id,
+                    reportedByUserId = reportedByUserId,
+                    amount = amount,
+                    transactionDate = transactionDate,
+                    periodeId = periodeId,
+                    paymentId = paymentId,
+                    file = imageFile
+                ).collect { result ->
+                    if (result is Result.Error) {
+                        allSuccess = false
+                    }
+                }
+            }
+
+            _uiState.update { it.copy(isLoading = false) }
+            if (allSuccess) {
+                _effect.emit(AddTransactionEffect.ShowToastSuccess("Semua transaksi kolektif berhasil ditambahkan"))
+                _effect.emit(AddTransactionEffect.NavigateBack)
+            } else {
+                _effect.emit(AddTransactionEffect.ShowToastError("Beberapa transaksi gagal ditambahkan"))
+            }
+        }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private fun addTransaction(amountString: String, dateMillis: Long?, time: String, user: UserUIData?) {
+        Napier.i { "TEST => Add Transaction Triggered" }
+        val amount = amountString.replace(Regex("[^0-9]"), "").toDoubleOrNull() ?: 0.0
+        var transactionDateIso = ""
+        
+        if (dateMillis != null && time.isNotEmpty()) {
+            try {
+                val instant = kotlin.time.Instant.fromEpochMilliseconds(dateMillis)
+                // Use UTC to get the date from DatePicker millis (standard for Material3 DatePicker)
+                val date = instant.toLocalDateTime(TimeZone.UTC).date
+                val timeParts = time.split(":")
+                val localDateTime = LocalDateTime(
+                    year = date.year,
+                    month = date.month,
+                    day = date.day,
+                    hour = timeParts[0].toInt(),
+                    minute = timeParts[1].toInt(),
+                    second = 0,
+                    nanosecond = 0
+                )
+                // Convert the local time to an Instant using the system's timezone
+                transactionDateIso = localDateTime.toInstant(TimeZone.currentSystemDefault()).toString()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
         
         val transactionDate = transactionDateIso.ifEmpty { "$dateMillis $time" }
         val userId = user?.id ?: uiState.value.selectedUser?.id
-
         _uiState.update { it.copy(isLoading = true) }
         repository.addTransaction(
             userId = userId,
@@ -155,10 +264,12 @@ class AddTransactionViewModel(
             _uiState.update { it.copy(isLoading = false) }
             when (result) {
                 is Result.Success -> {
+                    Napier.i { "TEST => Add Transaction Succeed" }
                     _effect.emit(AddTransactionEffect.ShowToastSuccess("Transaksi berhasil ditambahkan"))
                     _effect.emit(AddTransactionEffect.NavigateBack)
                 }
                 is Result.Error -> {
+                    Napier.i { "TEST => Add Transaction Error" }
                     _effect.emit(AddTransactionEffect.ShowToastError(result.t.message ?: "Gagal menambahkan transaksi"))
                 }
             }

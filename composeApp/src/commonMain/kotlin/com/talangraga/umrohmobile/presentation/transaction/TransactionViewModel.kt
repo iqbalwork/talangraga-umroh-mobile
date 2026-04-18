@@ -78,12 +78,12 @@ class TransactionViewModel(
     }
 
     private fun getTransactions(periodId: Int? = null, userId: Int? = null) {
-        _uiState.update { it.copy(transactions = SectionState.Loading) }
+        _uiState.update { it.copy(transactions = SectionState.Loading, isLoading = true) }
         repository.getTransactions(periodId = periodId)
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _uiState.update { it.copy(transactions = SectionState.Error(result.t.message)) }
+                        _uiState.update { it.copy(transactions = SectionState.Error(result.t.message), isLoading = false) }
                     }
                     is Result.Success -> {
                         val allData = result.data.map { it.toUIData() }
@@ -92,7 +92,7 @@ class TransactionViewModel(
                         } else {
                             allData
                         }
-                        _uiState.update { it.copy(transactions = SectionState.Success(filteredData)) }
+                        _uiState.update { it.copy(transactions = SectionState.Success(filteredData), isLoading = false) }
                     }
                 }
             }.launchIn(viewModelScope)

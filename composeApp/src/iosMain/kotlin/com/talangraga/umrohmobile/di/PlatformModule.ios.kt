@@ -8,6 +8,12 @@ import org.koin.dsl.module
 
 actual val platformModule: Module
     get() = module {
-        single<HttpClientEngine> { Darwin.create() }
+        single<HttpClientEngine> {
+            Darwin.create {
+                configureRequest {
+                    setAllowsCellularAccess(true)
+                }
+            }
+        }
         single { DriverFactory() }
     }

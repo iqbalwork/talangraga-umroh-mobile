@@ -429,6 +429,6 @@ class RepositoryImpl(
                 val message = normalizeErrorMessage(e)
                 emit(Result.Error(Exception(message)))
             }
-        }
+        }.flowOn(Dispatchers.IO)
     }
 }
