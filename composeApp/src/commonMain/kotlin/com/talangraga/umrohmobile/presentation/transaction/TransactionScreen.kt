@@ -76,13 +76,14 @@ fun TransactionScreen(
         onRefresh = {
             viewModel.onEvent(TransactionEvent.GetPeriods)
             viewModel.onEvent(TransactionEvent.GetUsers)
-            viewModel.onEvent(TransactionEvent.GetTransactions(uiState.selectedPeriod?.periodId, uiState.selectedUser?.id))
+            viewModel.onEvent(TransactionEvent.GetTransactions(null, uiState.selectedUser?.id))
         },
         selectedPeriod = uiState.selectedPeriod,
         onPeriodChange = { viewModel.onEvent(TransactionEvent.SelectPeriod(it)) },
         periods = periodsList,
         transactions = transactionsList,
         onFetchAllTransaction = { viewModel.onEvent(TransactionEvent.GetTransactions()) },
+        isMember = uiState.isMember,
         selectedUser = uiState.selectedUser,
         users = uiState.users,
         onSelectUser = { viewModel.onEvent(TransactionEvent.SelectUser(it)) },
@@ -101,6 +102,7 @@ fun TransactionScreen(
 fun TransactionContent(
     isLoading: Boolean = false,
     onRefresh: () -> Unit = {},
+    isMember: Boolean = false,
     selectedUser: UserUIData?,
     users: List<UserUIData>,
     onSelectUser: (UserUIData?) -> Unit,
@@ -175,63 +177,65 @@ fun TransactionContent(
                 ) {
                     val (filterRef, chooseUserRef, listTransactionRef, emptyRef) = createRefs()
 
-                    Row(
-                        modifier = Modifier.constrainAs(filterRef) {
-                            top.linkTo(parent.top)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        },
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(
-                            text = "Semua",
-                            isSelected = selectedPeriod == null,
-                            modifier = Modifier
+                    if (!isMember) {
+                        Row(
+                            modifier = Modifier.constrainAs(filterRef) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                            },
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            onPeriodChange(null)
-                        }
-                        val bulan = if (selectedPeriod != null) {
-                            formatDateRange(
-                                startDateString = selectedPeriod.startDate,
-                                endDateString = selectedPeriod.endDate,
-                                monthFormat = INDONESIA_TRIMMED
+                            TextButton(
+                                text = "Semua",
+                                isSelected = selectedPeriod == null,
+                                modifier = Modifier
+                            ) {
+                                onPeriodChange(null)
+                            }
+                            val bulan = if (selectedPeriod != null) {
+                                formatDateRange(
+                                    startDateString = selectedPeriod.startDate,
+                                    endDateString = selectedPeriod.endDate,
+                                    monthFormat = INDONESIA_TRIMMED
+                                )
+                            } else ""
+                            TextButtonOption(
+                                text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
+                                placeholder = "Pilih Bulan",
+                                trailingIcon = Icons.Default.ArrowDropDown,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                showPeriodBottom = true
+                            }
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.List,
+                                contentDescription = null,
+                                tint = TextSecondaryDark,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .border(1.dp, BorderColor, CircleShape)
+                                    .clickable {
+                                        showUserSheet = true
+                                    }
+                                    .background(color = Background)
+                                    .padding(8.dp)
                             )
-                        } else ""
-                        TextButtonOption(
-                            text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
-                            placeholder = "Pilih Bulan",
-                            trailingIcon = Icons.Default.ArrowDropDown,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            showPeriodBottom = true
                         }
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.List,
-                            contentDescription = null,
-                            tint = TextSecondaryDark,
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .border(1.dp, BorderColor, CircleShape)
-                                .clickable {
-                                    showUserSheet = true
-                                }
-                                .background(color = Background)
-                                .padding(8.dp)
-                        )
-                    }
 
-                    TextButtonOption(
-                        text = if (selectedUser != null) selectedUser.fullname else "Semua Pengguna",
-                        placeholder = "Pilih Pengguna",
-                        modifier = Modifier.constrainAs(chooseUserRef) {
-                            top.linkTo(filterRef.bottom, 8.dp)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            width = Dimension.fillToConstraints
-                        },
-                    ) {
-                        showUserSheet = true
+                        TextButtonOption(
+                            text = if (selectedUser != null) selectedUser.fullname else "Semua Pengguna",
+                            placeholder = "Pilih Pengguna",
+                            modifier = Modifier.constrainAs(chooseUserRef) {
+                                top.linkTo(filterRef.bottom, 8.dp)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
+                                width = Dimension.fillToConstraints
+                            },
+                        ) {
+                            showUserSheet = true
+                        }
                     }
 
                     AnimatedVisibility(
@@ -249,7 +253,11 @@ fun TransactionContent(
                     AnimatedVisibility(
                         visible = transactions.isNotEmpty(),
                         modifier = Modifier.constrainAs(listTransactionRef) {
-                            top.linkTo(chooseUserRef.bottom)
+                            if (isMember) {
+                                top.linkTo(parent.top)
+                            } else {
+                                top.linkTo(chooseUserRef.bottom)
+                            }
                             bottom.linkTo(parent.bottom)
                             start.linkTo(parent.start)
                             end.linkTo(parent.end)

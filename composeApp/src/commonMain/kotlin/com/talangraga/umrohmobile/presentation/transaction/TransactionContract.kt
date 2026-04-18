@@ -12,6 +12,7 @@ data class TransactionState(
     val selectedPeriod: PeriodEntity? = null,
     val selectedUser: UserUIData? = null,
     val isLoading: Boolean = false,
+    val isMember: Boolean = false,
     val errorMessage: String? = null
 )
 

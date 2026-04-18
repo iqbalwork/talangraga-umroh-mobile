@@ -39,6 +39,9 @@ class AddTransactionViewModel(
     private val imageCompressor = ImageCompressor()
 
     init {
+        val isMemberUser = session.userProfile.value?.userType?.lowercase() != "admin"
+        _uiState.update { it.copy(isMemberUser = isMemberUser) }
+
         onEvent(AddTransactionEvent.GetListUser)
         onEvent(AddTransactionEvent.GetPeriods)
         onEvent(AddTransactionEvent.GetListPayments)
@@ -114,7 +117,14 @@ class AddTransactionViewModel(
 
                 is Result.Success -> {
                     val data = result.data.map { it.toUiData() }
-                    _uiState.update { it.copy(users = data) }
+                    _uiState.update { state -> 
+                        var updatedSelectedUser = state.selectedUser
+                        if (state.isMemberUser) {
+                            val currentUserId = session.userProfile.value?.id
+                            updatedSelectedUser = data.find { it.id == currentUserId }
+                        }
+                        state.copy(users = data, selectedUser = updatedSelectedUser) 
+                    }
                 }
             }
         }.launchIn(viewModelScope)

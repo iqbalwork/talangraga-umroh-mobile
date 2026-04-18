@@ -3,6 +3,7 @@ package com.talangraga.umrohmobile.presentation.transaction
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
 import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.presentation.utils.toUIData
@@ -18,7 +19,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 
 class TransactionViewModel(
-    private val repository: Repository
+    private val repository: Repository,
+    private val session: Session
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TransactionState())
@@ -28,9 +30,12 @@ class TransactionViewModel(
     val effect: SharedFlow<TransactionEffect> = _effect.asSharedFlow()
 
     init {
+        val isMember = session.userProfile.value?.userType?.lowercase() != "admin"
+        _uiState.update { it.copy(isMember = isMember) }
+
         onEvent(TransactionEvent.GetPeriods)
         onEvent(TransactionEvent.GetUsers)
-        onEvent(TransactionEvent.GetTransactions())
+        onEvent(TransactionEvent.GetTransactions(null))
     }
 
     fun onEvent(event: TransactionEvent) {
@@ -70,7 +75,19 @@ class TransactionViewModel(
             .onEach { result ->
                 when (result) {
                     is Result.Success -> {
-                        _uiState.update { it.copy(users = result.data.map { user -> user.toUiData() }) }
+                        val mappedUsers = result.data.map { user -> user.toUiData() }
+                        _uiState.update { state -> 
+                            var updatedUser = state.selectedUser
+                            if (state.isMember) {
+                                val currentUserId = session.userProfile.value?.id
+                                updatedUser = mappedUsers.find { it.id == currentUserId }
+                                // get transactions immediately for this user if it's newly set
+                                if (updatedUser != null && state.selectedUser?.id != updatedUser.id) {
+                                    getTransactions(periodId = state.selectedPeriod?.periodId, userId = updatedUser.id)
+                                }
+                            }
+                            state.copy(users = mappedUsers, selectedUser = updatedUser) 
+                        }
                     }
                     else -> {}
                 }
@@ -92,7 +109,13 @@ class TransactionViewModel(
                         } else {
                             allData
                         }
-                        _uiState.update { it.copy(transactions = SectionState.Success(filteredData), isLoading = false) }
+                        _uiState.update { state ->
+                            state.copy(
+                                transactions = SectionState.Success(filteredData),
+                                isLoading = false,
+                                selectedPeriod = if (periodId == null) null else state.selectedPeriod
+                            )
+                        }
                     }
                 }
             }.launchIn(viewModelScope)

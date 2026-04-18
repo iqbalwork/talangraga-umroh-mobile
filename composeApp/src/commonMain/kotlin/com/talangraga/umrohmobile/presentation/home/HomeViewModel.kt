@@ -3,7 +3,6 @@ package com.talangraga.umrohmobile.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
-import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
@@ -119,21 +118,17 @@ class HomeViewModel(
                             )
                         }
 
+                        // Only set initial period if it's not already set
                         if (_uiState.value.selectedPeriod == null) {
-                            setInitialPeriodAndTransactions(data)
+                            val currentPeriod = data.find { data ->
+                                currentDate.isDateInRange(data.startDate, data.endDate)
+                            }
+                            _uiState.update { it.copy(selectedPeriod = currentPeriod) }
+                            onEvent(HomeEvent.GetTransactions(currentPeriod?.periodId))
                         }
                     }
                 }
             }.launchIn(viewModelScope)
-    }
-
-    private fun setInitialPeriodAndTransactions(periods: List<PeriodEntity>) {
-        val currentPeriod = periods.find { data ->
-            currentDate.isDateInRange(data.startDate, data.endDate)
-        }
-
-        onEvent(HomeEvent.SetSelectedPeriod(currentPeriod))
-        onEvent(HomeEvent.GetTransactions(currentPeriod?.periodId))
     }
 
     private fun getTransactions(periodId: Int? = null) {

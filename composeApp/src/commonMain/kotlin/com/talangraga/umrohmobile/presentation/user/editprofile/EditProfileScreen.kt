@@ -91,6 +91,10 @@ fun EditProfileScreen(
 
     EditProfileContent(
         onBackClick = { navHostController.popBackStack() },
+        isMember = uiState.isMember,
+        isLoginUser = uiState.isLoginUser,
+        username = uiState.username,
+        onUsernameChange = { viewModel.onEvent(EditProfileEvent.OnUsernameChange(it)) },
         fullname = uiState.fullname,
         onFullnameChange = { viewModel.onEvent(EditProfileEvent.OnFullnameChange(it)) },
         phoneNumber = uiState.phoneNumber,
@@ -110,6 +114,10 @@ fun EditProfileScreen(
 @Composable
 fun EditProfileContent(
     onBackClick: () -> Unit,
+    isMember: Boolean,
+    isLoginUser: Boolean,
+    username: String,
+    onUsernameChange: (String) -> Unit,
     fullname: String,
     onFullnameChange: (String) -> Unit,
     phoneNumber: String,
@@ -273,6 +281,16 @@ fun EditProfileContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             InputText(
+                title = "Nama Pengguna",
+                value = username,
+                onValueChange = onUsernameChange,
+                placeholder = "Masukkan nama pengguna",
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !(isLoginUser && isMember)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            InputText(
                 title = "Nama Lengkap",
                 value = fullname,
                 onValueChange = onFullnameChange,
@@ -330,6 +348,10 @@ fun EditProfileContent(
 fun PreviewEditProfileContent() {
     EditProfileContent(
         onBackClick = { },
+        isMember = false,
+        isLoginUser = true,
+        username = "",
+        onUsernameChange = { },
         fullname = "",
         onFullnameChange = { },
         phoneNumber = "",
