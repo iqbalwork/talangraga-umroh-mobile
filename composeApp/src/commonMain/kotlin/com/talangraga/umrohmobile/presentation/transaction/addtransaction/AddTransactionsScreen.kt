@@ -987,7 +987,7 @@ fun PreviewAddTransactionContent() {
             isActive = true
         )
     )
-    TalangragaTheme {
+    TalangragaTheme(darkTheme = false, useDynamicColor = false) {
         AddTransactionsContent(
             onBackClick = {},
             userList = mockUsers,
