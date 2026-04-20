@@ -74,9 +74,13 @@ fun TransactionScreen(
     TransactionContent(
         isLoading = uiState.isLoading,
         onRefresh = {
-            viewModel.onEvent(TransactionEvent.GetPeriods)
-            viewModel.onEvent(TransactionEvent.GetUsers)
-            viewModel.onEvent(TransactionEvent.GetTransactions(null, uiState.selectedUser?.id))
+            if (!uiState.isMember) {
+                viewModel.onEvent(TransactionEvent.GetPeriods)
+                viewModel.onEvent(TransactionEvent.GetUsers)
+                viewModel.onEvent(TransactionEvent.GetTransactions(null, uiState.selectedUser?.id))
+            } else {
+                viewModel.onEvent(TransactionEvent.GetTransactions(null, uiState.selectedUser?.id))
+            }
         },
         selectedPeriod = uiState.selectedPeriod,
         onPeriodChange = { viewModel.onEvent(TransactionEvent.SelectPeriod(it)) },
@@ -225,7 +229,7 @@ fun TransactionContent(
                         }
 
                         TextButtonOption(
-                            text = if (selectedUser != null) selectedUser.fullname else "Semua Pengguna",
+                            text = selectedUser?.fullname ?: "Semua Pengguna",
                             placeholder = "Pilih Pengguna",
                             modifier = Modifier.constrainAs(chooseUserRef) {
                                 top.linkTo(filterRef.bottom, 8.dp)

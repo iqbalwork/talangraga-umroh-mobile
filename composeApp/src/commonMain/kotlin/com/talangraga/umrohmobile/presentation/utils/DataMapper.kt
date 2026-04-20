@@ -49,7 +49,8 @@ fun TransactionEntity.toUIData(): TransactionUiData {
         paymentType = this.paymentType,
         paymentName = this.paymentName,
         userName = this.userName,
-        userId = this.userId
+        userId = this.userId,
+        periodId = this.periodId
     )
 }
 

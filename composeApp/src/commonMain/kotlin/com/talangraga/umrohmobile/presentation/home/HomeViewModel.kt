@@ -8,6 +8,7 @@ import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
 import com.talangraga.shared.currentDate
 import com.talangraga.shared.isDateInRange
+import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.presentation.utils.toUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,6 +34,8 @@ class HomeViewModel(
     private val _effect = MutableSharedFlow<HomeEffect>()
     val effect: SharedFlow<HomeEffect> = _effect.asSharedFlow()
 
+    private var transactions = MutableStateFlow<List<TransactionUiData>>(emptyList())
+
     init {
         onEvent(HomeEvent.GetProfile)
         onEvent(HomeEvent.GetPeriods)
@@ -43,24 +46,33 @@ class HomeViewModel(
             is HomeEvent.SetSelectedPeriod -> {
                 _uiState.update { it.copy(selectedPeriod = event.period) }
             }
+
             is HomeEvent.SetUserType -> {
                 _uiState.update { it.copy(userType = event.type) }
             }
+
             is HomeEvent.GetProfile -> {
                 getProfile()
             }
+
             is HomeEvent.GetLocalProfile -> {
                 getLocalProfile()
             }
+
             is HomeEvent.GetPeriods -> {
                 getPeriods()
             }
+
             is HomeEvent.GetTransactions -> {
-                getTransactions(event.periodId)
+                val filteredTransaction = transactions.value.filter { it.periodId == event.periodId }
+                _uiState.update { it.copy(transactions = SectionState.Success(filteredTransaction)) }
+//                getTransactions(event.periodId)
             }
+
             is HomeEvent.ClearSession -> {
                 clearSession()
             }
+
             is HomeEvent.ClearError -> {
                 _uiState.update { it.copy(errorMessage = null) }
             }
@@ -74,7 +86,12 @@ class HomeViewModel(
                 when (response) {
                     is Result.Error -> {
                         val errorMsg = response.t.message
-                        _uiState.update { it.copy(profile = SectionState.Error(errorMsg), errorMessage = errorMsg) }
+                        _uiState.update {
+                            it.copy(
+                                profile = SectionState.Error(errorMsg),
+                                errorMessage = errorMsg
+                            )
+                        }
                     }
 
                     is Result.Success -> {
@@ -143,6 +160,7 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         val data = result.data.map { it.toUIData() }
+                        transactions.update { data }
                         _uiState.update { it.copy(transactions = SectionState.Success(data)) }
                     }
                 }

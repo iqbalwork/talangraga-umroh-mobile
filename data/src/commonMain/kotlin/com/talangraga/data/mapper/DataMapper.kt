@@ -44,7 +44,8 @@ fun TransactionResponse.toTransactionEntity(): TransactionEntity {
         reportedBy = reportedByUser?.fullname.orEmpty(),
         confirmedBy = confirmedByUser?.fullname.orEmpty(),
         userName = user?.fullname.orEmpty(),
-        userId = userId
+        userId = userId,
+        periodId = periode?.id ?: 1
     )
 }
 

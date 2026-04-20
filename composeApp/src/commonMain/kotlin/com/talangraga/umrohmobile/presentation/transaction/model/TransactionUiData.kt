@@ -15,5 +15,6 @@ data class TransactionUiData(
     val buktiTransferUrl: String,
     val paymentType: String,
     val paymentName: String,
-    val userId: Int
+    val userId: Int,
+    val periodId: Int
 )

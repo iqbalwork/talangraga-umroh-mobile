@@ -211,7 +211,8 @@ fun TransactionDetailScreenPreview() {
                 paymentType = "Bank Transfer",
                 paymentName = "BCA",
                 userName = "Iqbal Fauzi",
-                userId = 1
+                userId = 1,
+                periodId = 1
             ),
             onBackClick = {}
         )

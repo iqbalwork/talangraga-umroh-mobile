@@ -10,7 +10,8 @@ CREATE TABLE TransactionData (
   reportedBy TEXT,
   confirmedBy TEXT,
   userName TEXT,
-  userId INTEGER
+  userId INTEGER,
+  periodId INTEGER
 );
 
 selectAll:
@@ -30,8 +31,9 @@ INSERT OR REPLACE INTO TransactionData(
     reportedBy,
     confirmedBy,
     userName,
-    userId
-) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?, ?, ?);
+    userId,
+    periodId
+) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?, ?, ?, ?);
 
 upsertTransactionData:
 INSERT OR REPLACE INTO TransactionData(
@@ -45,8 +47,9 @@ INSERT OR REPLACE INTO TransactionData(
         paymentName,
         reportedDate,
         reportedBy,
-        confirmedBy
-) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?, ?);
+        confirmedBy,
+        periodId
+) VALUES (?, ?, ?, ?,? ,?, ?, ?,?, ?, ?, ?);
 
 -- Get all records
 selectAllTransactionData:

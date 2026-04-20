@@ -42,15 +42,23 @@ class TransactionViewModel(
         when (event) {
             is TransactionEvent.GetPeriods -> getPeriods()
             is TransactionEvent.GetUsers -> getUsers()
-            is TransactionEvent.GetTransactions -> getTransactions(event.periodId, event.userId)
+            is TransactionEvent.GetTransactions -> getTransactions(null, event.userId)
             is TransactionEvent.SelectPeriod -> {
                 _uiState.update { it.copy(selectedPeriod = event.period) }
-                getTransactions(periodId = event.period?.periodId, userId = _uiState.value.selectedUser?.id)
+                getTransactions(
+                    periodId = event.period?.periodId,
+                    userId = _uiState.value.selectedUser?.id
+                )
             }
+
             is TransactionEvent.SelectUser -> {
                 _uiState.update { it.copy(selectedUser = event.user) }
-                getTransactions(periodId = _uiState.value.selectedPeriod?.periodId, userId = event.user?.id)
+                getTransactions(
+                    periodId = _uiState.value.selectedPeriod?.periodId,
+                    userId = event.user?.id
+                )
             }
+
             is TransactionEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
         }
     }
@@ -63,6 +71,7 @@ class TransactionViewModel(
                     is Result.Error -> {
                         _uiState.update { it.copy(periods = SectionState.Error(result.t.message)) }
                     }
+
                     is Result.Success -> {
                         _uiState.update { it.copy(periods = SectionState.Success(result.data)) }
                     }
@@ -76,19 +85,23 @@ class TransactionViewModel(
                 when (result) {
                     is Result.Success -> {
                         val mappedUsers = result.data.map { user -> user.toUiData() }
-                        _uiState.update { state -> 
+                        _uiState.update { state ->
                             var updatedUser = state.selectedUser
                             if (state.isMember) {
                                 val currentUserId = session.userProfile.value?.id
                                 updatedUser = mappedUsers.find { it.id == currentUserId }
                                 // get transactions immediately for this user if it's newly set
                                 if (updatedUser != null && state.selectedUser?.id != updatedUser.id) {
-                                    getTransactions(periodId = state.selectedPeriod?.periodId, userId = updatedUser.id)
+                                    getTransactions(
+                                        periodId = state.selectedPeriod?.periodId,
+                                        userId = updatedUser.id
+                                    )
                                 }
                             }
-                            state.copy(users = mappedUsers, selectedUser = updatedUser) 
+                            state.copy(users = mappedUsers, selectedUser = updatedUser)
                         }
                     }
+
                     else -> {}
                 }
             }.launchIn(viewModelScope)
@@ -100,8 +113,14 @@ class TransactionViewModel(
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
-                        _uiState.update { it.copy(transactions = SectionState.Error(result.t.message), isLoading = false) }
+                        _uiState.update {
+                            it.copy(
+                                transactions = SectionState.Error(result.t.message),
+                                isLoading = false
+                            )
+                        }
                     }
+
                     is Result.Success -> {
                         val allData = result.data.map { it.toUIData() }
                         val filteredData = if (userId != null) {

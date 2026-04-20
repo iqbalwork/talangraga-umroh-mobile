@@ -206,7 +206,8 @@ fun PreviewHomeMemberContent() {
                         paymentType = "Transfer Bank",
                         paymentName = "BCA",
                         userName = "Iqbal Fauzi",
-                        userId = 1
+                        userId = 1,
+                        periodId = 1
                     )
                 )
             ),

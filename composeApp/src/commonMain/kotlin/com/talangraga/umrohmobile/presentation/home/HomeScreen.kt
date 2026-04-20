@@ -165,11 +165,7 @@ fun HomeContent(
             isRefreshing = uiState.isLoading,
             onRefresh = {
                 onFetchProfile()
-                if (selectedPeriod != null) {
-                    onPeriodChange(selectedPeriod)
-                } else {
-                    onFetchAllTransaction()
-                }
+                onFetchAllTransaction()
             },
             state = refreshState,
             modifier = Modifier

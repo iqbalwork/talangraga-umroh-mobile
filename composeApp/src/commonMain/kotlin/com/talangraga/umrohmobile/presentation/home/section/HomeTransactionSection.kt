@@ -323,7 +323,8 @@ fun PreviewTransactionSection() {
             reportedBy = "Iqbal Fauzi",
             confirmedBy = "",
             userName = "Iqbal Fauzi",
-            userId = 1
+            userId = 1,
+            periodId = 1
         ),
         TransactionUiData(
             transactionId = 2,
@@ -337,7 +338,8 @@ fun PreviewTransactionSection() {
             reportedBy = "Iqbal Fauzi",
             confirmedBy = "",
             userName = "Iqbal Fauzi",
-            userId = 1
+            userId = 1,
+            periodId = 1
         ),
         TransactionUiData(
             transactionId = 3,
@@ -351,7 +353,8 @@ fun PreviewTransactionSection() {
             reportedBy = "Iqbal Fauzi",
             confirmedBy = "",
             userName = "Iqbal Fauzi",
-            userId = 1
+            userId = 1,
+            periodId = 1
         )
     )
     TalangragaTheme(useDynamicColor = false) {
