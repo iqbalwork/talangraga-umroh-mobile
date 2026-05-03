@@ -5,17 +5,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -77,10 +76,13 @@ fun TransactionScreen(
             if (!uiState.isMember) {
                 viewModel.onEvent(TransactionEvent.GetPeriods)
                 viewModel.onEvent(TransactionEvent.GetUsers)
-                viewModel.onEvent(TransactionEvent.GetTransactions(null, uiState.selectedUser?.id))
-            } else {
-                viewModel.onEvent(TransactionEvent.GetTransactions(null, uiState.selectedUser?.id))
             }
+            viewModel.onEvent(
+                TransactionEvent.GetTransactions(
+                    uiState.selectedPeriod?.periodId,
+                    uiState.selectedUser?.id
+                )
+            )
         },
         selectedPeriod = uiState.selectedPeriod,
         onPeriodChange = { viewModel.onEvent(TransactionEvent.SelectPeriod(it)) },
@@ -156,7 +158,7 @@ fun TransactionContent(
     }
 
     TalangragaScaffold(
-        contentWindowInsets = WindowInsets.statusBars,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -164,135 +166,154 @@ fun TransactionContent(
                 },
                 modifier = Modifier,
             )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            PullToRefreshBox(
-                isRefreshing = isLoading,
-                onRefresh = onRefresh,
-                state = refreshState,
-                modifier = Modifier.padding(paddingValues).fillMaxSize()
-            ) {
-                ConstraintLayout(
-                    modifier = Modifier.padding(16.dp).fillMaxSize()
-                ) {
-                    val (filterRef, chooseUserRef, listTransactionRef, emptyRef) = createRefs()
-
-                    if (!isMember) {
-                        Row(
-                            modifier = Modifier.constrainAs(filterRef) {
-                                top.linkTo(parent.top)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            },
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            TextButton(
-                                text = "Semua",
-                                isSelected = selectedPeriod == null,
-                                modifier = Modifier
-                            ) {
-                                onPeriodChange(null)
-                            }
-                            val bulan = if (selectedPeriod != null) {
-                                formatDateRange(
-                                    startDateString = selectedPeriod.startDate,
-                                    endDateString = selectedPeriod.endDate,
-                                    monthFormat = INDONESIA_TRIMMED
-                                )
-                            } else ""
-                            TextButtonOption(
-                                text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
-                                placeholder = "Pilih Bulan",
-                                trailingIcon = Icons.Default.ArrowDropDown,
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                showPeriodBottom = true
-                            }
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.List,
-                                contentDescription = null,
-                                tint = TextSecondaryDark,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .border(1.dp, BorderColor, CircleShape)
-                                    .clickable {
-                                        showUserSheet = true
-                                    }
-                                    .background(color = Background)
-                                    .padding(8.dp)
-                            )
-                        }
-
-                        TextButtonOption(
-                            text = selectedUser?.fullname ?: "Semua Pengguna",
-                            placeholder = "Pilih Pengguna",
-                            modifier = Modifier.constrainAs(chooseUserRef) {
-                                top.linkTo(filterRef.bottom, 8.dp)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                                width = Dimension.fillToConstraints
-                            },
-                        ) {
-                            showUserSheet = true
-                        }
-                    }
-
-                    AnimatedVisibility(
-                        visible = transactions.isEmpty(),
-                        modifier = Modifier.constrainAs(emptyRef) {
-                            top.linkTo(parent.top)
-                            bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        }
-                    ) {
-                        EmptyTransaction(modifier = Modifier, onAddTransaction = onAddTransaction)
-                    }
-
-                    AnimatedVisibility(
-                        visible = transactions.isNotEmpty(),
-                        modifier = Modifier.constrainAs(listTransactionRef) {
-                            if (isMember) {
-                                top.linkTo(parent.top)
-                            } else {
-                                top.linkTo(chooseUserRef.bottom)
-                            }
-                            bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            height = Dimension.fillToConstraints
-                        }
-                    ) {
-                        TransactionSection(
-                            modifier = Modifier,
-                            showAllTransaction = true,
-                            transactions = transactions,
-                            onAddTransaction = onAddTransaction,
-                            onClickSeeMore = {
-
-                            },
-                            onTransactionClick = onTransactionClick
-                        )
-                    }
-                }
-            }
-
+        },
+        floatingActionButton = {
             if (transactions.isNotEmpty()) {
                 FloatingActionButton(
                     onClick = onAddTransaction,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.align(Alignment.BottomEnd)
-                        .padding(bottom = 16.dp, end = 16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Add Transaction",
                         tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
+    ) { paddingValues ->
+        PullToRefreshBox(
+            isRefreshing = isLoading,
+            onRefresh = onRefresh,
+            state = refreshState,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            ConstraintLayout(
+                modifier = Modifier
+                    .padding(top = paddingValues.calculateTopPadding())
+                    .padding(horizontal = 16.dp)
+                    .fillMaxSize()
+            ) {
+                val (filterRef, chooseUserRef, listTransactionRef, emptyRef) = createRefs()
+
+                if (!isMember) {
+                    Row(
+                        modifier = Modifier.constrainAs(filterRef) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        },
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            text = "Semua",
+                            isSelected = selectedPeriod == null,
+                            modifier = Modifier
+                        ) {
+                            onPeriodChange(null)
+                        }
+                        val bulan = if (selectedPeriod != null) {
+                            formatDateRange(
+                                startDateString = selectedPeriod.startDate,
+                                endDateString = selectedPeriod.endDate,
+                                monthFormat = INDONESIA_TRIMMED
+                            )
+                        } else ""
+                        TextButtonOption(
+                            text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
+                            placeholder = "Pilih Bulan",
+                            trailingIcon = Icons.Default.ArrowDropDown,
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            showPeriodBottom = true
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.List,
+                            contentDescription = null,
+                            tint = TextSecondaryDark,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .border(1.dp, BorderColor, CircleShape)
+                                .clickable {
+                                    showUserSheet = true
+                                }
+                                .background(color = Background)
+                                .padding(8.dp)
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.constrainAs(chooseUserRef) {
+                            top.linkTo(filterRef.bottom, 8.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            width = Dimension.fillToConstraints
+                        },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        TextButtonOption(
+                            text = selectedUser?.fullname ?: "Semua Pengguna",
+                            placeholder = "Pilih Pengguna",
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            showUserSheet = true
+                        }
+
+                        if (selectedUser != null && !isMember) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear User",
+                                tint = TextSecondaryDark,
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .border(1.dp, BorderColor, CircleShape)
+                                    .clickable {
+                                        onSelectUser(null)
+                                    }
+                                    .background(color = Background)
+                                    .padding(8.dp)
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = transactions.isEmpty(),
+                    modifier = Modifier.constrainAs(emptyRef) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    }
+                ) {
+                    EmptyTransaction(modifier = Modifier, onAddTransaction = onAddTransaction)
+                }
+
+                AnimatedVisibility(
+                    visible = transactions.isNotEmpty(),
+                    modifier = Modifier.constrainAs(listTransactionRef) {
+                        if (isMember) {
+                            top.linkTo(parent.top)
+                        } else {
+                            top.linkTo(chooseUserRef.bottom)
+                        }
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        height = Dimension.fillToConstraints
+                    }
+                ) {
+                    TransactionSection(
+                        modifier = Modifier,
+                        showAllTransaction = true,
+                        transactions = transactions,
+                        onAddTransaction = onAddTransaction,
+                        onClickSeeMore = {
+
+                        },
+                        onTransactionClick = onTransactionClick
                     )
                 }
             }

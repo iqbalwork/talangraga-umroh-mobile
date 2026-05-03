@@ -8,9 +8,9 @@ import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
 import com.talangraga.shared.currentDate
 import com.talangraga.shared.isDateInRange
-import com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData
 import com.talangraga.umrohmobile.presentation.utils.toUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -34,7 +34,7 @@ class HomeViewModel(
     private val _effect = MutableSharedFlow<HomeEffect>()
     val effect: SharedFlow<HomeEffect> = _effect.asSharedFlow()
 
-    private var transactions = MutableStateFlow<List<TransactionUiData>>(emptyList())
+    private var getTransactionsJob: Job? = null
 
     init {
         onEvent(HomeEvent.GetProfile)
@@ -64,9 +64,7 @@ class HomeViewModel(
             }
 
             is HomeEvent.GetTransactions -> {
-                val filteredTransaction = transactions.value.filter { it.periodId == event.periodId }
-                _uiState.update { it.copy(transactions = SectionState.Success(filteredTransaction)) }
-//                getTransactions(event.periodId)
+                getTransactions(event.periodId)
             }
 
             is HomeEvent.ClearSession -> {
@@ -149,19 +147,29 @@ class HomeViewModel(
     }
 
     private fun getTransactions(periodId: Int? = null) {
+        getTransactionsJob?.cancel()
         _uiState.update { it.copy(transactions = SectionState.Loading) }
-        repository.getTransactions(periodId)
+        getTransactionsJob = repository.getTransactions(periodId)
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
                         val errorMsg = result.t.message
-                        _uiState.update { it.copy(errorMessage = errorMsg) }
+                        _uiState.update {
+                            it.copy(
+                                errorMessage = errorMsg,
+                                transactions = SectionState.Error(errorMsg),
+                            )
+                        }
                     }
 
                     is Result.Success -> {
-                        val data = result.data.map { it.toUIData() }
-                        transactions.update { data }
-                        _uiState.update { it.copy(transactions = SectionState.Success(data)) }
+                        val allData = result.data.map { it.toUIData() }
+                        val filteredData = if (periodId != null) {
+                            allData.filter { it.periodId == periodId }
+                        } else {
+                            allData
+                        }
+                        _uiState.update { it.copy(transactions = SectionState.Success(filteredData)) }
                     }
                 }
             }

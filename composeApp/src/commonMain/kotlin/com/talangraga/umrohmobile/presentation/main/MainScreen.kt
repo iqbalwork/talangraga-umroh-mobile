@@ -7,7 +7,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,6 +71,7 @@ fun MainScreen(rootNavHostController: NavHostController) {
     val showBottomBar = !isSubScreen
 
     Scaffold(
+        contentWindowInsets = WindowInsets.statusBars,
         bottomBar = {
             if (showBottomBar) {
                 BottomNavBar(selectedTab) { selectedTab = it }

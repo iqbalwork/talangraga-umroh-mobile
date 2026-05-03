@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Folder
@@ -37,13 +37,16 @@ fun TransactionSection(
     val displayTransactions = if (showAllTransaction) transactions else transactions.take(3)
 
     LazyColumn(
-        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(displayTransactions) { transaction ->
+        itemsIndexed(displayTransactions) { index, transaction ->
             TransactionItem(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(
+                    top = if (index == 0) 16.dp else 0.dp,
+                    bottom = if (index == displayTransactions.lastIndex) 16.dp else 0.dp
+                ),
                 username = transaction.userName,
                 paymentName = transaction.paymentName,
                 paymentMethod = transaction.paymentType,
@@ -52,6 +55,7 @@ fun TransactionSection(
                 onClick = { onTransactionClick(transaction) }
             )
         }
+
         if (!showAllTransaction) {
             item {
                 Column(

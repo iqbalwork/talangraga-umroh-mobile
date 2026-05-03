@@ -338,7 +338,11 @@ class RepositoryImpl(
                 val localTransactions = databaseHelper.getAllTransactions()
                 val networkTransactionIds = networkSource.map { it.transactionId }.toSet()
                 val transactionsToDelete = localTransactions
-                    .filter { it.transactionId !in networkTransactionIds }
+                    .filter {
+                        (periodId == null || it.periodId == periodId) &&
+                                (status == null || it.statusTransaksi == status) &&
+                                it.transactionId !in networkTransactionIds
+                    }
                     .map { it.transactionId }
 
                 databaseHelper.deleteTransactionByIds(transactionsToDelete)
