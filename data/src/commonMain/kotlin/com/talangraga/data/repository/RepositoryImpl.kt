@@ -435,4 +435,21 @@ class RepositoryImpl(
             }
         }.flowOn(Dispatchers.IO)
     }
+
+    override fun updateTransactionStatus(
+        transactionId: Int,
+        status: String
+    ): Flow<Result<TransactionEntity>> {
+        return safeApiCall(
+            apiCall = { apiService.updateTransactionStatus(transactionId, status) },
+            onSuccess = { transactionResponse ->
+                databaseHelper.insertTransactions(listOf(transactionResponse.toTransactionEntity()))
+            }
+        ).map { result ->
+            when (result) {
+                is Result.Success -> Result.Success(result.data.toTransactionEntity())
+                is Result.Error -> Result.Error(result.t)
+            }
+        }.flowOn(Dispatchers.IO)
+    }
 }

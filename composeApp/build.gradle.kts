@@ -1,6 +1,5 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -34,24 +33,17 @@ buildkonfig {
 }
 
 kotlin {
-//    androidTarget {
-//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-//        compilerOptions {
-//            jvmTarget.set(JvmTarget.JVM_11)
-//            freeCompilerArgs.add("-Xexpect-actual-classes")
-//        }
-//    }
+    jvmToolchain(17)
 
-    androidLibrary {
+    android {
         namespace = "com.talangraga.umrohmobile"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-        experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
 
         androidResources {
             enable = true
+        }
+        withHostTest {
+
         }
     }
 
@@ -122,8 +114,8 @@ kotlin {
             // Media Picker
             api(libs.image.picker.kmp)
 
-            api(projects.data)
-            api(projects.shared)
+            api(project(":data"))
+            api(project(":shared"))
         }
         iosMain.dependencies {
             api(libs.ktor.client.darwin)

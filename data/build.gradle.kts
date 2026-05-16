@@ -1,6 +1,5 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
@@ -44,18 +43,16 @@ buildkonfig {
 }
 
 kotlin {
+    jvmToolchain(17)
 
-    androidLibrary {
+    android {
         namespace = "com.talangraga.data"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
 
         androidResources {
             enable = true
         }
+        withHostTest {  }
     }
 
     listOf(
@@ -107,7 +104,7 @@ kotlin {
             implementation(libs.multiplatform.settings.serialization)
             implementation(libs.multiplatform.settings.coroutines)
 
-            implementation(projects.shared)
+            implementation(project(":shared"))
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
@@ -10,14 +8,11 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(17)
 
-    androidLibrary {
+    android {
         namespace = "com.talangraga.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
 
         androidResources {
             enable = true

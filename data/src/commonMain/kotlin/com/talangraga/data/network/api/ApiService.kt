@@ -2,6 +2,7 @@ package com.talangraga.data.network.api
 
 import com.talangraga.data.network.model.request.ChangePasswordRequest
 import com.talangraga.data.network.model.request.LoginRequest
+import com.talangraga.data.network.model.request.UpdateTransactionStatusRequest
 import com.talangraga.data.network.model.response.DataResponse
 import com.talangraga.data.network.model.response.PaymentResponse
 import com.talangraga.data.network.model.response.PeriodeResponse
@@ -278,5 +279,15 @@ class ApiService(private val httpClient: HttpClient) {
                 }
             }
         ).body()
+    }
+
+    suspend fun updateTransactionStatus(
+        transactionId: Int,
+        status: String
+    ): DataResponse<TransactionResponse> {
+        return httpClient.put("transactions/$transactionId/status") {
+            contentType(ContentType.Application.Json)
+            setBody(UpdateTransactionStatusRequest(status))
+        }.body()
     }
 }

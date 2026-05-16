@@ -73,4 +73,9 @@ interface Repository {
         paymentId: Int?,
         file: ByteArray?
     ): Flow<Result<Boolean>>
+
+    fun updateTransactionStatus(
+        transactionId: Int,
+        status: String
+    ): Flow<Result<TransactionEntity>>
 }
