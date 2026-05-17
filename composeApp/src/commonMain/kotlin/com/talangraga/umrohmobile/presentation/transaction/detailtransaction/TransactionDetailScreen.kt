@@ -56,7 +56,7 @@ fun TransactionDetailScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(text = "Detail Transaksi", style = TalangragaTypography.titleLarge)
+                    Text(text = "Detail Tabungan", style = TalangragaTypography.titleLarge)
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -123,7 +123,7 @@ fun TransactionDetailScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Rincian Transaksi",
+                text = "Rincian Tabungan",
                 style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.fillMaxWidth()
             )

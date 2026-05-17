@@ -223,10 +223,10 @@ class AddTransactionViewModel(
 
             _uiState.update { it.copy(isLoading = false) }
             if (allSuccess) {
-                _effect.emit(AddTransactionEffect.ShowToastSuccess("Semua transaksi kolektif berhasil ditambahkan"))
+                _effect.emit(AddTransactionEffect.ShowToastSuccess("Semua tabungan kolektif berhasil ditambahkan"))
                 _effect.emit(AddTransactionEffect.NavigateBack)
             } else {
-                _effect.emit(AddTransactionEffect.ShowToastError("Beberapa transaksi gagal ditambahkan"))
+                _effect.emit(AddTransactionEffect.ShowToastError("Beberapa tabungan gagal ditambahkan"))
             }
         }
     }
@@ -275,12 +275,12 @@ class AddTransactionViewModel(
             when (result) {
                 is Result.Success -> {
                     Napier.i { "TEST => Add Transaction Succeed" }
-                    _effect.emit(AddTransactionEffect.ShowToastSuccess("Transaksi berhasil ditambahkan"))
+                    _effect.emit(AddTransactionEffect.ShowToastSuccess("Tabungan berhasil ditambahkan"))
                     _effect.emit(AddTransactionEffect.NavigateBack)
                 }
                 is Result.Error -> {
                     Napier.i { "TEST => Add Transaction Error" }
-                    _effect.emit(AddTransactionEffect.ShowToastError(result.t.message ?: "Gagal menambahkan transaksi"))
+                    _effect.emit(AddTransactionEffect.ShowToastError(result.t.message ?: "Gagal menambahkan tabungan"))
                 }
             }
         }.launchIn(viewModelScope)

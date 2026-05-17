@@ -442,7 +442,7 @@ fun AddTransactionsContent(
                         colors = CheckboxDefaults.colors(checkedColor = Sage)
                     )
                     Text(
-                        text = "Tambah Transaksi Kolektif (Beberapa Anggota)",
+                        text = "Tambah Tabungan Kolektif (Beberapa Anggota)",
                         style = TalangragaTypography.bodyMedium
                     )
                 }
@@ -742,7 +742,7 @@ fun AddTransactionsContent(
                 modifier = Modifier.fillMaxWidth().padding(16.dp).padding(bottom = 24.dp)
             ) {
                 Text(
-                    text = "Tambahkan Transaksi Anggota",
+                    text = "Tambahkan Tabungan Anggota",
                     style = TalangragaTypography.titleLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -784,7 +784,7 @@ fun AddTransactionsContent(
                         }
                     }
                 ) {
-                    Text("Tambahkan Transaksi")
+                    Text("Tambahkan Tabungan")
                 }
             }
         }

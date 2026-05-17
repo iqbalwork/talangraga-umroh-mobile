@@ -162,7 +162,7 @@ fun TransactionContent(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(text = "Riwayat Transaksi", style = TalangragaTypography.titleLarge)
+                    Text(text = "Riwayat Tabungan", style = TalangragaTypography.titleLarge)
                 },
                 modifier = Modifier,
             )

@@ -90,7 +90,7 @@ fun HomeInfoTransactionSection(
                     CardInfoSection(
                         modifier = Modifier.fillMaxWidth(),
                         title = "Total Tabungan Periode ini",
-                        value = if (transactionAvailable) totalAmount.formatToIDR() else "Belum Ada Transaksi",
+                        value = if (transactionAvailable) totalAmount.formatToIDR() else "Belum Ada Tabungan",
                         icon = Icons.Default.Wallet,
                         illustrationIcon = Icons.Default.AttachMoney,
                         startIconColor = Aqua,
@@ -150,7 +150,7 @@ fun TransactionsList(
     ) {
 
         Text(
-            text = "Transaksi Terakhir",
+            text = "Tabungan Terakhir",
             style = TalangragaTypography.titleLarge,
         )
 
@@ -164,7 +164,7 @@ fun TransactionsList(
             visible = transactions.isEmpty(),
         ) {
             Text(
-                text = "Tidak ada transaksi terkini.",
+                text = "Tidak ada tabungan terkini.",
                 style = TalangragaTypography.bodyMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
@@ -200,7 +200,7 @@ fun TransactionsList(
                             },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Semua transaksi", style = TalangragaTypography.bodySmall)
+                        Text("Semua tabungan", style = TalangragaTypography.bodySmall)
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = null

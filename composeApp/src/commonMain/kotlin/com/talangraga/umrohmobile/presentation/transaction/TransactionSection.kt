@@ -66,7 +66,7 @@ fun TransactionSection(
                         },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Semua transaksi", style = TalangragaTypography.bodySmall)
+                    Text("Semua Tabungan", style = TalangragaTypography.bodySmall)
                     Icon(imageVector = Icons.Default.KeyboardArrowDown, contentDescription = null)
                 }
             }

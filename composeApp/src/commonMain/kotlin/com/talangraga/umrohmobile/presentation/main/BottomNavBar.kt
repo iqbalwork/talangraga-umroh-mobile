@@ -42,7 +42,7 @@ fun BottomNavBar(
             selected = selected is BottomNavRoute.Transaction,
             onClick = { onSelect(BottomNavRoute.Transaction) },
             icon = { Icon(Icons.Default.History, null) },
-            label = { Text("Transaksi") },
+            label = { Text("Tabungan") },
             colors = NavigationBarItemDefaults.colors(
                 selectedTextColor = Sage,
                 selectedIconColor = Sage
