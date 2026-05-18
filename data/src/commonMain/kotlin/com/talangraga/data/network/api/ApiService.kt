@@ -3,7 +3,6 @@ package com.talangraga.data.network.api
 import com.talangraga.data.network.model.request.ChangePasswordRequest
 import com.talangraga.data.network.model.request.CreatePeriodeRequest
 import com.talangraga.data.network.model.request.LoginRequest
-import com.talangraga.data.network.model.request.RegisterRequest
 import com.talangraga.data.network.model.request.UpdateTransactionStatusRequest
 import com.talangraga.data.network.model.response.DataResponse
 import com.talangraga.data.network.model.response.PaymentResponse
@@ -26,7 +25,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
-import io.ktor.util.encodeBase64
 
 class ApiService(private val httpClient: HttpClient) {
 
@@ -76,7 +74,7 @@ class ApiService(private val httpClient: HttpClient) {
                 // File Upload (image_profile)
                 if (imageProfile != null) {
                     append(
-                        key = "file",
+                        key = "image_profile",
                         value = imageProfile,
                         headers = Headers.build {
                             append(
