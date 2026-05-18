@@ -5,6 +5,7 @@ import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.database.model.TransactionEntity
 import com.talangraga.data.local.database.model.UserEntity
 import com.talangraga.data.network.api.Result
+import com.talangraga.data.network.model.response.PeriodeResponse
 import com.talangraga.data.network.model.response.TokenResponse
 import com.talangraga.data.network.model.response.UserResponse
 import kotlinx.coroutines.flow.Flow
@@ -78,4 +79,10 @@ interface Repository {
         transactionId: Int,
         status: String
     ): Flow<Result<TransactionEntity>>
+
+    fun addPeriode(
+        periodeName: String,
+        startDate: String,
+        endDate: String
+    ): Flow<Result<PeriodeResponse>>
 }

@@ -1,7 +1,9 @@
 package com.talangraga.data.network.api
 
 import com.talangraga.data.network.model.request.ChangePasswordRequest
+import com.talangraga.data.network.model.request.CreatePeriodeRequest
 import com.talangraga.data.network.model.request.LoginRequest
+import com.talangraga.data.network.model.request.RegisterRequest
 import com.talangraga.data.network.model.request.UpdateTransactionStatusRequest
 import com.talangraga.data.network.model.response.DataResponse
 import com.talangraga.data.network.model.response.PaymentResponse
@@ -24,6 +26,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import io.ktor.util.encodeBase64
 
 class ApiService(private val httpClient: HttpClient) {
 
@@ -73,7 +76,7 @@ class ApiService(private val httpClient: HttpClient) {
                 // File Upload (image_profile)
                 if (imageProfile != null) {
                     append(
-                        key = "image_profile",
+                        key = "file",
                         value = imageProfile,
                         headers = Headers.build {
                             append(
@@ -97,6 +100,22 @@ class ApiService(private val httpClient: HttpClient) {
 
     suspend fun getPeriods(): DataResponse<List<PeriodeResponse>> {
         return httpClient.get("periodes").body()
+    }
+
+    suspend fun addPeriode(
+        periodeName: String,
+        startDate: String,
+        endDate: String
+    ): DataResponse<PeriodeResponse> {
+        val request = CreatePeriodeRequest(
+            periodeName = periodeName,
+            startDate = startDate,
+            endDate = endDate
+        )
+        return httpClient.post("periodes/") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
     }
 
     suspend fun getPayments(): DataResponse<List<PaymentResponse>> {

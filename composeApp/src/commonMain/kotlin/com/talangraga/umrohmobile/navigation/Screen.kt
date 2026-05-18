@@ -8,6 +8,7 @@ sealed class Screen {
     object BottomNavItem {
         const val HOME = "home_screen"
         const val TRANSACTION = "transaction_screen"
+        const val PERIODE = "periode_screen"
         const val MEMBER = "member_screen"
         const val PROFILE = "profile_screen"
     }
@@ -43,6 +44,9 @@ sealed class Screen {
 
     @Serializable
     data class HomeRoute(val justLogin: Boolean = false)
+
+    @Serializable
+    object PeriodeRoute
 
     @Serializable
     object ListUserRoute

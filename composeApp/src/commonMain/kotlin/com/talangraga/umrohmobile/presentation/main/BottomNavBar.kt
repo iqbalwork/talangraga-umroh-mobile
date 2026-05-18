@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -43,6 +44,16 @@ fun BottomNavBar(
             onClick = { onSelect(BottomNavRoute.Transaction) },
             icon = { Icon(Icons.Default.History, null) },
             label = { Text("Tabungan") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedTextColor = Sage,
+                selectedIconColor = Sage
+            )
+        )
+        NavigationBarItem(
+            selected = selected is BottomNavRoute.Periode,
+            onClick = { onSelect(BottomNavRoute.Periode) },
+            icon = { Icon(Icons.Default.DateRange, null) },
+            label = { Text("Periode") },
             colors = NavigationBarItemDefaults.colors(
                 selectedTextColor = Sage,
                 selectedIconColor = Sage

@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.talangraga.umrohmobile.navigation.BottomNavRoute
 import com.talangraga.umrohmobile.navigation.HomeNavHost
 import com.talangraga.umrohmobile.navigation.MemberNavHost
+import com.talangraga.umrohmobile.navigation.PeriodeNavHost
 import com.talangraga.umrohmobile.navigation.ProfileNavHost
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.navigation.TransactionNavHost
@@ -34,6 +35,7 @@ fun MainScreen(rootNavHostController: NavHostController) {
     // child nav controllers for tabs
     val homeNav = rememberNavController()
     val transactionNav = rememberNavController()
+    val periodeNav = rememberNavController()
     val memberNav = rememberNavController()
     val profileNav = rememberNavController()
 
@@ -44,6 +46,8 @@ fun MainScreen(rootNavHostController: NavHostController) {
     val homeCurrentRoute = homeBackStackEntry?.destination?.route
     val transactionBackStackEntry by transactionNav.currentBackStackEntryAsState()
     val transactionCurrentRoute = transactionBackStackEntry?.destination?.route
+    val periodeBackStackEntry by periodeNav.currentBackStackEntryAsState()
+    val periodeCurrentRoute = periodeBackStackEntry?.destination?.route
     val memberBackStackEntry by memberNav.currentBackStackEntryAsState()
     val memberCurrentRoute = memberBackStackEntry?.destination?.route
     val profileBackStackEntry by profileNav.currentBackStackEntryAsState()
@@ -99,6 +103,11 @@ fun MainScreen(rootNavHostController: NavHostController) {
 
                 BottomNavRoute.Transaction -> TransactionNavHost(
                     navController = transactionNav,
+                    rootNavController = rootNavHostController
+                )
+
+                BottomNavRoute.Periode -> PeriodeNavHost(
+                    navController = periodeNav,
                     rootNavController = rootNavHostController
                 )
 
