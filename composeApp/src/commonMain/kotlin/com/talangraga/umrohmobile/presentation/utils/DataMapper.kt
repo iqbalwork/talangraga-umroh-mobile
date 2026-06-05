@@ -1,6 +1,7 @@
 package com.talangraga.umrohmobile.presentation.utils
 
 import com.talangraga.data.local.database.model.PaymentEntity
+import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.database.model.TransactionEntity
 import com.talangraga.data.local.database.model.UserEntity
 import com.talangraga.data.network.model.response.UserResponse
@@ -36,7 +37,7 @@ fun UserEntity.toUiData(): UserUIData {
     )
 }
 
-fun TransactionEntity.toUIData(): TransactionUiData {
+fun TransactionEntity.toUIData(period: PeriodEntity? = null): TransactionUiData {
     return TransactionUiData(
         transactionId = transactionId,
         amount = amount,
@@ -50,7 +51,10 @@ fun TransactionEntity.toUIData(): TransactionUiData {
         paymentName = this.paymentName,
         userName = this.userName,
         userId = this.userId,
-        periodId = this.periodId
+        periodId = this.periodId,
+        periodName = period?.periodeName.orEmpty(),
+        periodStartDate = period?.startDate.orEmpty(),
+        periodEndDate = period?.endDate.orEmpty()
     )
 }
 

@@ -1,5 +1,6 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,26 +11,29 @@ plugins {
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotzilla)
     alias(libs.plugins.buildKonfig)
-//    alias(libs.plugins.google.services)
-//    alias(libs.plugins.crashlytics)
+    alias(libs.plugins.google.services)
 }
 
 buildkonfig {
     packageName = "com.talangraga.umrohmobile"
 
-    val kotzillaStagingKey = project.findProperty("kotzillaStagingKey") ?: ""
-    val kotzillaProductionKey = project.findProperty("kotzillaProductionKey") ?: ""
+    val secretPropertiesFile = rootProject.file("secret.properties")
+    val secretProperties = Properties().apply {
+        if (secretPropertiesFile.exists()) {
+            load(secretPropertiesFile.inputStream())
+        }
+    }
+
+    val kotzillaStagingKey = secretProperties["kotzillaStagingKey"] as? String ?: ""
+    val kotzillaProductionKey = secretProperties["kotzillaProductionKey"] as? String ?: ""
+
+    val isProduction = gradle.startParameter.taskNames.any { it.contains("production", ignoreCase = true) }
+    val isRelease = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
 
     defaultConfigs {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaStagingKey")
+        buildConfigField(BOOLEAN, "IS_DEBUG", (!isRelease).toString())
+        buildConfigField(STRING, "KOTZILLA_KEY", if (isProduction) kotzillaProductionKey else kotzillaStagingKey)
     }
-    // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("production") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
-        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaProductionKey")
-    }
-
 }
 
 kotlin {
@@ -64,6 +68,9 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            api(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.crashlytics)
+            implementation(libs.firebase.analytics)
             api(libs.ui.tooling.preview)
             api(libs.ui.tooling)
             api(libs.androidx.activity.compose)
@@ -107,9 +114,9 @@ kotlin {
             api(libs.multiplatform.settings.coroutines)
 
             // Gitlive Firebase
-//            api(libs.firebase.app)
-//            api(libs.firebase.analytic)
-//            api(libs.firebase.crashlytic)
+            api(libs.firebase.app)
+            api(libs.firebase.analytic)
+            api(libs.firebase.crashlytic)
 
             // Media Picker
             api(libs.image.picker.kmp)

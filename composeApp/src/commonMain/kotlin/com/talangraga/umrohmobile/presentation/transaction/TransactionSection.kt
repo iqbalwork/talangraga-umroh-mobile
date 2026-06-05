@@ -52,6 +52,7 @@ fun TransactionSection(
                 paymentMethod = transaction.paymentType,
                 date = transaction.transactionDate,
                 amount = transaction.amount,
+                status = transaction.statusTransaksi,
                 onClick = { onTransactionClick(transaction) }
             )
         }

@@ -59,30 +59,24 @@ fun String.formatIsoTimestampToCustom(): String {
 }
 
 fun formatDateRange(startDateString: String, endDateString: String, monthFormat: MonthNames = INDONESIA_FULL): String {
-    val startDate = LocalDate.parse(startDateString)
-    val endDate = LocalDate.parse(endDateString)
-
-    val dayMonthFormat = LocalDate.Format {
-        day(padding = Padding.NONE)
-        char(' ')
-        monthName(monthFormat)
-    }
-
-    val dayMonthYearFormat = LocalDate.Format {
-        day(padding = Padding.NONE)
-        char(' ')
-        monthName(monthFormat)
-        char(' ')
-        year()
-    }
-
-//    val monthYearFormat = LocalDate.Format {
-//        monthName(MonthNames.ENGLISH_FULL)
-//        char(' ')
-//        year()
-//    }
-
     return try {
+        val startDate = LocalDate.parse(startDateString)
+        val endDate = LocalDate.parse(endDateString)
+
+        val dayMonthFormat = LocalDate.Format {
+            day(padding = Padding.NONE)
+            char(' ')
+            monthName(monthFormat)
+        }
+
+        val dayMonthYearFormat = LocalDate.Format {
+            day(padding = Padding.NONE)
+            char(' ')
+            monthName(monthFormat)
+            char(' ')
+            year()
+        }
+
         when {
             startDate.year != endDate.year -> {
                 "${startDate.format(dayMonthYearFormat)} - ${endDate.format(dayMonthYearFormat)}"

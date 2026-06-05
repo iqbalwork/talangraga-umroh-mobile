@@ -16,5 +16,8 @@ data class TransactionUiData(
     val paymentType: String,
     val paymentName: String,
     val userId: Int,
-    val periodId: Int
+    val periodId: Int,
+    val periodName: String = "",
+    val periodStartDate: String = "",
+    val periodEndDate: String = ""
 )

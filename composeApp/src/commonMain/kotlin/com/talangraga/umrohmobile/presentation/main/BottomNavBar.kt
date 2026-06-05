@@ -49,17 +49,17 @@ fun BottomNavBar(
                 selectedIconColor = Sage
             )
         )
-        NavigationBarItem(
-            selected = selected is BottomNavRoute.Periode,
-            onClick = { onSelect(BottomNavRoute.Periode) },
-            icon = { Icon(Icons.Default.DateRange, null) },
-            label = { Text("Periode") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedTextColor = Sage,
-                selectedIconColor = Sage
-            )
-        )
         if (isLogin && userType.lowercase() == "admin") {
+            NavigationBarItem(
+                selected = selected is BottomNavRoute.Periode,
+                onClick = { onSelect(BottomNavRoute.Periode) },
+                icon = { Icon(Icons.Default.DateRange, null) },
+                label = { Text("Periode") },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedTextColor = Sage,
+                    selectedIconColor = Sage
+                )
+            )
             NavigationBarItem(
                 selected = selected is BottomNavRoute.Member,
                 onClick = { onSelect(BottomNavRoute.Member) },

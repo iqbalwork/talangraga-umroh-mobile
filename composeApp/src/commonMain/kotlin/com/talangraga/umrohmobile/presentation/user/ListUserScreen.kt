@@ -102,7 +102,7 @@ fun ListUserScreen(
             navHostController.popBackStack()
         },
         onUserClick = {
-            navHostController.navigate(Screen.MemberDetailRoute(it.id))
+            navHostController.navigate(Screen.UserRoute(it.id, false))
         },
         onAddUserClick = {
             navHostController.navigate(

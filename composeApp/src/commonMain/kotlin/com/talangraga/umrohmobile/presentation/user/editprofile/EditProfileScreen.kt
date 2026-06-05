@@ -45,6 +45,7 @@ import com.talangraga.shared.Background
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.ui.component.BasicImage
+import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.ModalImagePicker
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
@@ -257,6 +258,9 @@ fun EditProfileContent(
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
+                            .clickable {
+                                ImageViewerManager.show(imageUrl)
+                            }
                     )
                 }
                 Box(
@@ -266,7 +270,7 @@ fun EditProfileContent(
                         .clip(CircleShape)
                         .background(Color.White)
                         .border(1.dp, Color.LightGray, CircleShape)
-                        .clickable { /* Pick Image */ },
+                        .clickable { showImagePickerSheet = true },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

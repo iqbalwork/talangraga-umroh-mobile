@@ -43,6 +43,7 @@ settings = "1.3.0"
 gitlive = "2.4.0"
 crashlytics = "3.0.6"
 google = "4.4.4"
+firebase-bom = "34.14.0"
 
 assertk = "0.28.1"
 turbine = "1.2.1"
@@ -55,6 +56,8 @@ coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.re
 
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
 constraintlayout-compose-multiplatform = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "constraintlayoutComposeMultiplatform" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
 inspektify-ktor3 = { module = "io.github.bvantur:inspektify-ktor3", version.ref = "inspektifyKtor3" }
 jetbrains-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
@@ -108,6 +111,7 @@ image-picker-kmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "i
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 # Firebase Gitlive
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-app = { module = "dev.gitlive:firebase-app", version.ref = "gitlive" }
 firebase-analytic = { module = "dev.gitlive:firebase-analytics", version.ref = "gitlive" }
 firebase-crashlytic = { module = "dev.gitlive:firebase-crashlytics", version.ref = "gitlive" }

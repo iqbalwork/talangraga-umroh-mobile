@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.crashlytics)
 }
 
 kotlin {
@@ -50,6 +52,7 @@ android {
         create("staging") {
             dimension = "version"
             applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
 //            applicationIdSuffix = ".staging"
         }
         create("production") {
@@ -69,6 +72,9 @@ android {
 
 dependencies {
     implementation(project(":composeApp"))
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
 
 //    implementation(libs.androidx.core.ktx)
 //    implementation(libs.androidx.appcompat)

@@ -126,7 +126,11 @@ class TransactionViewModel(
                     }
 
                     is Result.Success -> {
-                        val allData = result.data.map { it.toUIData() }
+                        val periods = (_uiState.value.periods as? SectionState.Success)?.data ?: emptyList()
+                        val allData = result.data.map { transaction ->
+                            val period = periods.find { it.periodId == transaction.periodId }
+                            transaction.toUIData(period)
+                        }
                         val filteredData = allData.filter {
                             (userId == null || it.userId == userId) &&
                                     (periodId == null || it.periodId == periodId)

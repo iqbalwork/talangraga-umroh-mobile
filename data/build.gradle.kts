@@ -23,23 +23,16 @@ buildkonfig {
         }
     }
 
-//    val stagingBaseUrl = secretProperties["staging.baseUrl"] as? String ?: ""
-
-//    val stagingUrl = project.findProperty("stagingUrl") ?: ""
     val stagingUrl = secretProperties["stagingUrl"] as? String ?: ""
     val productionUrl = secretProperties["productionUrl"] as? String ?: ""
-//    val productionUrl = project.findProperty("productionUrl") ?: ""
+
+    val isProduction = gradle.startParameter.taskNames.any { it.contains("production", ignoreCase = true) }
+    val isRelease = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
 
     defaultConfigs {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", stagingUrl)
+        buildConfigField(BOOLEAN, "IS_DEBUG", (!isRelease).toString())
+        buildConfigField(STRING, "BASE_URL", if (isProduction) productionUrl else stagingUrl)
     }
-    // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("production") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
-        buildConfigField(STRING, "BASE_URL", productionUrl)
-    }
-
 }
 
 kotlin {

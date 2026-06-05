@@ -17,6 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.talangraga.shared.BorderColor
+import com.talangraga.shared.Green
+import com.talangraga.shared.Orange
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.TextSecondaryDark
@@ -31,8 +33,15 @@ fun TransactionItem(
     paymentMethod: String,
     amount: Int,
     date: String,
+    status: String = "",
     onClick: () -> Unit = {}
 ) {
+    val statusColor = when (status.lowercase()) {
+        "completed" -> Green
+        "sent", "on_process" -> Orange
+        else -> Sage
+    }
+
     ConstraintLayout(
         modifier = modifier.fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
@@ -71,7 +80,7 @@ fun TransactionItem(
 
         Text(
             text = amount.formatToIDR(),
-            style = TalangragaTypography.titleLarge.copy(color = Sage),
+            style = TalangragaTypography.titleLarge.copy(color = statusColor),
             modifier = Modifier.constrainAs(amountRef) {
                 top.linkTo(parent.top)
                 bottom.linkTo(parent.bottom)
@@ -84,11 +93,30 @@ fun TransactionItem(
 @Preview
 @Composable
 fun TransactionItemPreview() {
-    TransactionItem(
-        username = "John Doe",
-        paymentName = "Payment Name",
-        paymentMethod = "Payment Method",
-        amount = 100000,
-        date = "2023-01-01T12:00:00Z"
-    )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        TransactionItem(
+            username = "John Doe (Completed)",
+            paymentName = "Bank Transfer",
+            paymentMethod = "BCA",
+            amount = 100000,
+            date = "2023-01-01T12:00:00Z",
+            status = "completed"
+        )
+        TransactionItem(
+            username = "John Doe (Sent)",
+            paymentName = "Bank Transfer",
+            paymentMethod = "BCA",
+            amount = 100000,
+            date = "2023-01-01T12:00:00Z",
+            status = "sent"
+        )
+        TransactionItem(
+            username = "John Doe (On Process)",
+            paymentName = "Bank Transfer",
+            paymentMethod = "BCA",
+            amount = 100000,
+            date = "2023-01-01T12:00:00Z",
+            status = "on_process"
+        )
+    }
 }

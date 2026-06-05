@@ -287,10 +287,10 @@ fun AddUserContent(
                                 modifier = Modifier, contentAlignment = Alignment.Center
                             ) {
                                 BasicImage(
-                                    model = if (isEdit) user?.imageProfileUrl else imageUrl,
+                                    model = imageUrl ?: user?.imageProfileUrl,
                                     modifier = Modifier.size(124.dp).clip(CircleShape)
                                         .clickable {
-                                            ImageViewerManager.show(if (isEdit) user?.imageProfileUrl else imageUrl)
+                                            ImageViewerManager.show(imageUrl ?: user?.imageProfileUrl)
                                         }
                                 )
                             }
@@ -479,7 +479,7 @@ fun AddUserContent(
             val enableRegisterButton =
                 fullname.isNotBlank() && username.isNotBlank() && email.isNotBlank() && domicile.isNotBlank() && (password.isNotBlank() && confirmPassword.isNotBlank() && (confirmPassword == password))
             val enableSaveButton =
-                (fullname != user?.fullname) || (username != user.username) || (email != user.email) || (phoneNumber != user.phone) || (domicile != user.domicile)
+                (fullname != user?.fullname) || (username != user.username) || (email != user.email) || (phoneNumber != user.phone) || (domicile != user.domicile) || (imageUrl != null)
             LoadingButton(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                     .onGloballyPositioned { coordinates ->
