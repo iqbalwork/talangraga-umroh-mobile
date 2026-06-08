@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
@@ -5,6 +8,21 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.crashlytics)
 }
+
+val secretPropertiesFile = rootProject.file("secret.properties")
+val secretProperties = Properties()
+
+if (secretPropertiesFile.exists()) {
+    secretProperties.load(FileInputStream(secretPropertiesFile))
+} else {
+    secretProperties.setProperty("signing_keystore_password", System.getenv("signing_keystore_password") ?: "")
+    secretProperties.setProperty("signing_key_password", System.getenv("signing_key_password") ?: "")
+    secretProperties.setProperty("signing_key_alias", System.getenv("signing_key_alias") ?: "")
+    secretProperties.setProperty("signing_key_location", System.getenv("signing_key_location") ?: "")
+}
+
+val stagingUrl = secretProperties["stagingUrl"] as? String ?: ""
+val productionUrl = secretProperties["productionUrl"] as? String ?: ""
 
 kotlin {
     jvmToolchain(17)
@@ -30,15 +48,27 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storePassword = secretProperties["signing_keystore_password"] as? String
+            keyAlias = secretProperties["signing_key_alias"] as? String
+            keyPassword = secretProperties["signing_key_password"] as? String
+            storeFile = secretProperties["signing_key_location"]?.let { file(it) }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
         debug {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
