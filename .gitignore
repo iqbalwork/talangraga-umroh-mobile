@@ -18,3 +18,4 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 secret.properties
 .hotswan/
+/androidApp/production/release/androidApp-production-release.aab
