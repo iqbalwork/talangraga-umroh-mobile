@@ -11,7 +11,6 @@ plugins {
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotzilla)
     alias(libs.plugins.buildKonfig)
-    alias(libs.plugins.google.services)
 }
 
 buildkonfig {
@@ -27,8 +26,15 @@ buildkonfig {
     val kotzillaStagingKey = secretProperties["kotzillaStagingKey"] as? String ?: ""
     val kotzillaProductionKey = secretProperties["kotzillaProductionKey"] as? String ?: ""
 
-    val isProduction = gradle.startParameter.taskNames.any { it.contains("production", ignoreCase = true) }
-    val isRelease = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
+    val isProduction = project.hasProperty("production") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("production", ignoreCase = true) == true ||
+            System.getenv("CONFIGURATION")?.contains("production", ignoreCase = true) == true ||
+            gradle.startParameter.taskNames.any { it.contains("production", ignoreCase = true) }
+
+    val isRelease = project.hasProperty("release") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("release", ignoreCase = true) == true ||
+            System.getenv("CONFIGURATION")?.contains("release", ignoreCase = true) == true ||
+            gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
 
     defaultConfigs {
         buildConfigField(BOOLEAN, "IS_DEBUG", (!isRelease).toString())

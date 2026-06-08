@@ -26,8 +26,22 @@ buildkonfig {
     val stagingUrl = secretProperties["stagingUrl"] as? String ?: ""
     val productionUrl = secretProperties["productionUrl"] as? String ?: ""
 
-    val isProduction = gradle.startParameter.taskNames.any { it.contains("production", ignoreCase = true) }
-    val isRelease = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
+    val envConfig = System.getenv("CONFIGURATION") ?: ""
+    val taskNames = gradle.startParameter.taskNames.toString()
+    
+    // Cek dari berbagai sumber
+    val isProduction = project.hasProperty("production") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("production", ignoreCase = true) == true ||
+            envConfig.contains("production", ignoreCase = true) ||
+            taskNames.contains("production", ignoreCase = true)
+
+    // Log untuk debugging saat build (Muncul di Build Output)
+    println("BuildKonfig Debug: isProduction=$isProduction, CONFIGURATION=$envConfig, Tasks=$taskNames")
+
+    val isRelease = project.hasProperty("release") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("release", ignoreCase = true) == true ||
+            envConfig.contains("release", ignoreCase = true) ||
+            taskNames.contains("release", ignoreCase = true)
 
     defaultConfigs {
         buildConfigField(BOOLEAN, "IS_DEBUG", (!isRelease).toString())
