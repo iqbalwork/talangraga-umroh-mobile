@@ -35,6 +35,7 @@ fun App() {
     val themeManager: ThemeManager = koinInject()
     val tokenManager: TokenManager = koinInject()
     val themeMode by themeManager.themeMode.collectAsState()
+    val isDynamicColor by themeManager.isDynamicColor.collectAsState()
 
     val systemDark = isSystemInDarkTheme()
     val isDarkTheme = when (themeMode) {
@@ -54,10 +55,10 @@ fun App() {
         }
     }
 
-    Crossfade(targetState = systemDark, animationSpec = tween(400)) {
+    Crossfade(targetState = isDarkTheme, animationSpec = tween(400)) { targetDark ->
         TalangragaTheme(
-            darkTheme = isDarkTheme,
-            useDynamicColor = false
+            darkTheme = targetDark,
+            useDynamicColor = isDynamicColor
         ) {
 
 //            val navBackStack by rootNavController.currentBackStackEntryAsState()

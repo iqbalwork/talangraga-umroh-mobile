@@ -33,9 +33,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -69,6 +72,7 @@ import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import com.talangraga.umrohmobile.ui.theme.ThemeManager
 import com.talangraga.umrohmobile.ui.theme.ThemeMode
+import com.talangraga.umrohmobile.ui.theme.isDynamicColorSupported
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -384,32 +388,78 @@ fun UserMenuItem(
 }
 
 @Composable
-fun ThemeToggleScreen(modifier: Modifier, themeManager: ThemeManager) {
+fun ThemeToggleScreen(modifier: Modifier = Modifier, themeManager: ThemeManager) {
     val themeMode by themeManager.themeMode.collectAsState()
+    val isDynamicColor by themeManager.isDynamicColor.collectAsState()
+    val dynamicSupported = remember { isDynamicColorSupported() }
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Select Theme:")
+        Text(
+            text = "Pilihan Tema",
+            style = TalangragaTypography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ThemeMode.entries.forEach { mode ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.clickable { themeManager.setTheme(mode) }
-                ) {
-                    RadioButton(
-                        selected = themeMode == mode,
-                        onClick = { themeManager.setTheme(mode) })
-                    Text(text = mode.name)
+                val label = when (mode) {
+                    ThemeMode.SYSTEM -> "Sistem"
+                    ThemeMode.LIGHT -> "Terang"
+                    ThemeMode.DARK -> "Gelap"
                 }
+                val selected = themeMode == mode
+                FilterChip(
+                    selected = selected,
+                    onClick = { themeManager.setTheme(mode) },
+                    label = { Text(label, style = TalangragaTypography.bodyMedium) },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 4.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(
+                    text = "Material You (Dynamic Color)",
+                    style = TalangragaTypography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = if (dynamicSupported) {
+                        "Warna tema menyesuaikan wallpaper sistem"
+                    } else {
+                        "Hanya didukung pada perangkat Android 12+"
+                    },
+                    style = TalangragaTypography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Switch(
+                checked = isDynamicColor && dynamicSupported,
+                onCheckedChange = { enabled ->
+                    if (dynamicSupported) {
+                        themeManager.setDynamicColor(enabled)
+                    }
+                },
+                enabled = dynamicSupported
+            )
+        }
     }
 }
 

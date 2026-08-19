@@ -1,6 +1,7 @@
 package com.talangraga.data.network
 
 import com.talangraga.data.BuildKonfig
+import com.talangraga.data.network.model.response.DataResponse
 import com.talangraga.data.network.model.response.TokenResponse
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
@@ -41,8 +42,16 @@ class RefreshTokenHandler(
         }
 
         if (response.status.isSuccess()) {
-            val result = response.body<TokenResponse>()
-            val newAccessToken = result.accessToken
+            val result = try {
+                response.body<DataResponse<TokenResponse>>().data
+            } catch (e: Exception) {
+                try {
+                    response.body<TokenResponse>()
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            val newAccessToken = result?.accessToken
 
             if (!newAccessToken.isNullOrBlank()) {
                 tokenManager.saveAccessToken(newAccessToken)

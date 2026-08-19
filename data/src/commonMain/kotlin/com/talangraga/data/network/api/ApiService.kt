@@ -110,7 +110,7 @@ class ApiService(private val httpClient: HttpClient) {
             startDate = startDate,
             endDate = endDate
         )
-        return httpClient.post("periodes/") {
+        return httpClient.post("periodes") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
@@ -265,7 +265,7 @@ class ApiService(private val httpClient: HttpClient) {
         file: ByteArray?
     ): DataResponse<TransactionResponse> {
         return httpClient.submitFormWithBinaryData(
-            url = "transactions/",
+            url = "transactions",
             formData = formData {
                 // Required Strings
                 userId?.let { append("userId", it.toString()) }
