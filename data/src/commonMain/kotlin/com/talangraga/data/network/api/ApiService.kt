@@ -8,6 +8,7 @@ import com.talangraga.data.network.model.response.DataResponse
 import com.talangraga.data.network.model.response.PaymentResponse
 import com.talangraga.data.network.model.response.PeriodeResponse
 import com.talangraga.data.network.model.response.TokenResponse
+import com.talangraga.data.network.model.response.TransactionImportResultResponse
 import com.talangraga.data.network.model.response.TransactionResponse
 import com.talangraga.data.network.model.response.UserResponse
 import io.ktor.client.HttpClient
@@ -17,6 +18,7 @@ import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -306,5 +308,52 @@ class ApiService(private val httpClient: HttpClient) {
             contentType(ContentType.Application.Json)
             setBody(UpdateTransactionStatusRequest(status))
         }.body()
+    }
+
+    suspend fun deleteTransaction(
+        transactionId: Int
+    ): DataResponse<Unit> {
+        return httpClient.delete("transactions/$transactionId").body()
+    }
+
+    suspend fun exportTransactions(
+        periodId: Int? = null,
+        userId: Int? = null,
+        status: String? = null,
+        format: String = "excel"
+    ): ByteArray {
+        return httpClient.get("transactions/export") {
+            url {
+                parameters.append("format", format)
+                periodId?.let { parameters.append("periode_id", it.toString()) }
+                userId?.let { parameters.append("user_id", it.toString()) }
+                status?.let { parameters.append("status", it) }
+            }
+        }.body()
+    }
+
+    suspend fun importTransactions(
+        fileBytes: ByteArray,
+        fileName: String
+    ): DataResponse<TransactionImportResultResponse> {
+        return httpClient.submitFormWithBinaryData(
+            url = "transactions/import",
+            formData = formData {
+                append(
+                    key = "file",
+                    value = fileBytes,
+                    headers = Headers.build {
+                        append(
+                            HttpHeaders.ContentType,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                        append(
+                            HttpHeaders.ContentDisposition,
+                            "filename=\"$fileName\""
+                        )
+                    }
+                )
+            }
+        ).body()
     }
 }

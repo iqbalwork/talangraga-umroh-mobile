@@ -12,6 +12,9 @@ import org.jetbrains.compose.resources.painterResource
 import talangragaumrohmobile.composeapp.generated.resources.Res
 import talangragaumrohmobile.composeapp.generated.resources.compose_multiplatform
 
+import androidx.compose.runtime.remember
+import com.talangraga.umrohmobile.presentation.utils.resolveImageUrl
+
 @Composable
 fun BasicImage(
     model: Any?,
@@ -21,9 +24,12 @@ fun BasicImage(
     modifier: Modifier = Modifier
 ) {
     val context = LocalPlatformContext.current
+    val processedModel = remember(model) {
+        if (model is String) resolveImageUrl(model) else model
+    }
     AsyncImage(
         model = ImageRequest.Builder(context)
-            .data(model)
+            .data(processedModel)
             .crossfade(true)
             .build(),
         placeholder = placeholder,

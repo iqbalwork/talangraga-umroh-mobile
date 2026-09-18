@@ -9,6 +9,7 @@
         <domain includeSubdomains="true">192.168.101.8</domain>
         <domain includeSubdomains="true">192.168.101.9</domain>
         <domain includeSubdomains="true">192.168.101.12</domain>
+        <domain includeSubdomains="true">192.168.101.25</domain>
         <domain includeSubdomains="true">192.168.18.205</domain>
         <domain includeSubdomains="true">192.168.148.215</domain>
         <domain includeSubdomains="true">192.168.0.54</domain>

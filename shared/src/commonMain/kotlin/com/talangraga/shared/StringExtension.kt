@@ -20,6 +20,10 @@ import androidx.compose.ui.text.withStyle
 //}
 
 fun Int.formatToIDR(): String {
+    return this.toLong().formatToIDR()
+}
+
+fun Long.formatToIDR(): String {
     val amountString = this.toString()
     val reversedAmount = amountString.reversed()
     val stringBuilder = StringBuilder()
@@ -40,4 +44,13 @@ fun String.mandatory(): AnnotatedString {
             append("*")
         }
     }
+}
+
+/**
+ * Cleans a period name by stripping any trailing or embedded parenthesized date range,
+ * e.g. "Periode 1 (6 Jan - 5 Feb 2026)" -> "Periode 1".
+ */
+fun String.cleanPeriodName(): String {
+    val cleaned = this.replace(Regex("\\s*\\([^)]*\\)"), "").trim()
+    return cleaned.ifBlank { this }
 }

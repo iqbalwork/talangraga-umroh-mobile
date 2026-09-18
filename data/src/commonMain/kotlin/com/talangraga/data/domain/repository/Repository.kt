@@ -7,6 +7,8 @@ import com.talangraga.data.local.database.model.UserEntity
 import com.talangraga.data.network.api.Result
 import com.talangraga.data.network.model.response.PeriodeResponse
 import com.talangraga.data.network.model.response.TokenResponse
+import com.talangraga.data.network.model.response.TransactionImportResultResponse
+import com.talangraga.data.network.model.response.TransactionResponse
 import com.talangraga.data.network.model.response.UserResponse
 import kotlinx.coroutines.flow.Flow
 
@@ -80,9 +82,26 @@ interface Repository {
         status: String
     ): Flow<Result<TransactionEntity>>
 
+    fun deleteTransaction(
+        transactionId: Int
+    ): Flow<Result<Unit>>
+
     fun addPeriode(
         periodeName: String,
         startDate: String,
         endDate: String
     ): Flow<Result<PeriodeResponse>>
+
+    fun exportTransactions(
+        periodId: Int? = null,
+        userId: Int? = null,
+        status: String? = null,
+        format: String = "excel"
+    ): Flow<Result<ByteArray>>
+
+    fun importTransactions(
+        fileBytes: ByteArray,
+        fileName: String
+    ): Flow<Result<TransactionImportResultResponse>>
 }
+

@@ -396,4 +396,49 @@ class RepositoryImpl(
             }
         }.flowOn(Dispatchers.IO)
     }
+
+    override fun deleteTransaction(
+        transactionId: Int
+    ): Flow<Result<Unit>> {
+        return flow {
+            try {
+                val response = apiService.deleteTransaction(transactionId)
+                if (response.code == 200 || response.code == null) {
+                    databaseHelper.deleteTransactionById(transactionId.toLong())
+                    emit(Result.Success(Unit))
+                } else {
+                    emit(Result.Error(Exception(response.message ?: "Gagal menghapus data tabungan")))
+                }
+            } catch (e: JsonConvertException) {
+                val message = normalizeErrorMessage(e)
+                emit(Result.Error(Exception(message)))
+            } catch (e: Exception) {
+                val message = normalizeErrorMessage(e)
+                emit(Result.Error(Exception(message)))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun exportTransactions(
+        periodId: Int?,
+        userId: Int?,
+        status: String?,
+        format: String
+    ): Flow<Result<ByteArray>> = flow {
+        try {
+            val bytes = apiService.exportTransactions(periodId, userId, status, format)
+            emit(Result.Success(bytes))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override fun importTransactions(
+        fileBytes: ByteArray,
+        fileName: String
+    ): Flow<Result<com.talangraga.data.network.model.response.TransactionImportResultResponse>> = safeApiCall(
+        apiCall = {
+            apiService.importTransactions(fileBytes, fileName)
+        }
+    ).flowOn(Dispatchers.IO)
 }

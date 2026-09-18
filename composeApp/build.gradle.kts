@@ -42,6 +42,10 @@ buildkonfig {
     }
 }
 
+tasks.matching { it.name.contains("buildkonfig", ignoreCase = true) }.configureEach {
+    inputs.file(rootProject.file("secret.properties"))
+}
+
 kotlin {
     jvmToolchain(17)
 

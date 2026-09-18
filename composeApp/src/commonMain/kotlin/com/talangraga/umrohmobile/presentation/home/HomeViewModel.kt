@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.session.Session
+import com.talangraga.data.local.session.SessionKey
 import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
 import com.talangraga.shared.currentDate
@@ -44,6 +45,8 @@ class HomeViewModel(
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.SetSelectedPeriod -> {
+                val periodId = event.period?.periodId ?: -1
+                session.saveInt(SessionKey.LAST_HOME_PERIOD_ID, periodId)
                 _uiState.update { it.copy(selectedPeriod = event.period) }
             }
 
@@ -126,21 +129,31 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         val data = result.data
+                        val savedPeriodId = session.getInt(SessionKey.LAST_HOME_PERIOD_ID, 0)
+
+                        val finalPeriod = when {
+                            savedPeriodId == -1 -> null // User explicitly selected "Semua"
+                            savedPeriodId > 0 -> data.find { it.periodId == savedPeriodId }
+                            else -> {
+                                val currentPeriod = data.find { dataItem ->
+                                    currentDate.isDateInRange(dataItem.startDate, dataItem.endDate)
+                                }
+                                if (currentPeriod != null) {
+                                    session.saveInt(SessionKey.LAST_HOME_PERIOD_ID, currentPeriod.periodId)
+                                }
+                                currentPeriod
+                            }
+                        }
+
                         _uiState.update {
                             it.copy(
                                 periods = SectionState.Success(data),
+                                selectedPeriod = finalPeriod,
                                 isLoading = false
                             )
                         }
 
-                        // Only set initial period if it's not already set
-                        if (_uiState.value.selectedPeriod == null) {
-                            val currentPeriod = data.find { data ->
-                                currentDate.isDateInRange(data.startDate, data.endDate)
-                            }
-                            _uiState.update { it.copy(selectedPeriod = currentPeriod) }
-                            onEvent(HomeEvent.GetTransactions(currentPeriod?.periodId))
-                        }
+                        onEvent(HomeEvent.GetTransactions(finalPeriod?.periodId))
                     }
                 }
             }.launchIn(viewModelScope)

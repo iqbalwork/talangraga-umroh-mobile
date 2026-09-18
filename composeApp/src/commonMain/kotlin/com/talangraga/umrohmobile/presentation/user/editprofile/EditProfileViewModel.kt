@@ -56,11 +56,51 @@ class EditProfileViewModel(
 
     private fun saveProfile() {
         val state = _uiState.value
-        // TODO: Implement save logic
+        _uiState.update { it.copy(isLoading = true) }
         if (state.isLoginUser) {
-
+            repository.updateMe(
+                fullname = state.fullname,
+                username = state.username,
+                email = state.email,
+                phone = state.phoneNumber,
+                domicile = state.domicile,
+                userType = state.user?.userType?.lowercase() ?: "member",
+                password = "",
+                imageProfile = null
+            ).onEach { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
+                    }
+                    is Result.Success -> {
+                        repository.getLoginProfile()
+                            .onEach {
+                                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                            }.launchIn(viewModelScope)
+                    }
+                }
+            }.launchIn(viewModelScope)
         } else {
-
+            repository.updateUser(
+                userId = state.userId,
+                fullname = state.fullname,
+                username = state.username,
+                email = state.email,
+                phone = state.phoneNumber,
+                password = "",
+                domicile = state.domicile,
+                userType = state.user?.userType ?: "member",
+                imageProfile = null
+            ).onEach { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
+                    }
+                    is Result.Success -> {
+                        _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                    }
+                }
+            }.launchIn(viewModelScope)
         }
     }
 

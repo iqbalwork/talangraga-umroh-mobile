@@ -18,9 +18,9 @@ class TalangragaApplication : Application() {
         initializeKoin {
             androidLogger(Level.DEBUG)
             androidContext(this@TalangragaApplication)
-            analytics {
-                setApiKey("ktz-sdk-DZMH3UFugdk5m6UV2gMBr876g8uoFkhPBFb1A28lojM")
-            }
+            // analytics {
+            //     setApiKey("ktz-sdk-DZMH3UFugdk5m6UV2gMBr876g8uoFkhPBFb1A28lojM")
+            // }
         }
         Firebase.initialize(this)
         Firebase.crashlytics.setCrashlyticsCollectionEnabled(true)

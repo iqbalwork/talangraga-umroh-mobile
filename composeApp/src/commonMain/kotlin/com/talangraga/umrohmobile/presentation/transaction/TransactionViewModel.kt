@@ -62,6 +62,9 @@ class TransactionViewModel(
                 )
             }
 
+            is TransactionEvent.ExportTransactions -> exportTransactions(event.format)
+            is TransactionEvent.ImportTransactions -> importTransactions(event.fileBytes, event.fileName)
+            is TransactionEvent.DismissImportResult -> _uiState.update { it.copy(importResult = null) }
             is TransactionEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
         }
     }
@@ -141,6 +144,67 @@ class TransactionViewModel(
                                 isLoading = false
                             )
                         }
+                    }
+                }
+            }.launchIn(viewModelScope)
+    }
+
+    private fun exportTransactions(format: String) {
+        val periodId = _uiState.value.selectedPeriod?.periodId
+        val userId = _uiState.value.selectedUser?.id
+        _uiState.update { it.copy(isExporting = true) }
+        repository.exportTransactions(
+            periodId = periodId,
+            userId = userId,
+            format = format
+        ).onEach { result ->
+            _uiState.update { it.copy(isExporting = false) }
+            when (result) {
+                is Result.Success -> {
+                    val ext = if (format == "pdf") "pdf" else "xlsx"
+                    val fileName = "Laporan_Tabungan_${format.uppercase()}.$ext"
+                    _effect.emit(TransactionEffect.ExportSuccess(result.data, fileName, format))
+                }
+                is Result.Error -> {
+                    _effect.emit(TransactionEffect.ShowError(result.t.message ?: "Gagal mengekspor data"))
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun importTransactions(fileBytes: ByteArray, fileName: String) {
+        _uiState.update { it.copy(isImporting = true) }
+        repository.importTransactions(fileBytes, fileName)
+            .onEach { result ->
+                _uiState.update { it.copy(isImporting = false) }
+                when (result) {
+                    is Result.Success -> {
+                        val resp = result.data
+                        val uiData = ImportResultUiData(
+                            totalRows = resp.totalRows,
+                            successCount = resp.successCount,
+                            failedCount = resp.failedCount,
+                            errors = resp.errors.map {
+                                ImportRowErrorUi(
+                                    row = it.row,
+                                    data = it.data,
+                                    error = it.error
+                                )
+                            }
+                        )
+                        _uiState.update { it.copy(importResult = uiData) }
+                        if (uiData.successCount > 0) {
+                            getTransactions(
+                                periodId = _uiState.value.selectedPeriod?.periodId,
+                                userId = _uiState.value.selectedUser?.id
+                            )
+                            _effect.emit(TransactionEffect.ShowMessage("${uiData.successCount} data tabungan berhasil diimpor!"))
+                        } else {
+                            _effect.emit(TransactionEffect.ShowError("Tidak ada data yang berhasil diimpor. Periksa detail error."))
+                        }
+                    }
+                    is Result.Error -> {
+                        _effect.emit(TransactionEffect.ShowError(result.t.message ?: "Gagal mengimpor file"))
                     }
                 }
             }.launchIn(viewModelScope)

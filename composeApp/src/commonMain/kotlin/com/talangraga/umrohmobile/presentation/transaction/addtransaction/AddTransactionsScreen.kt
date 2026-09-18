@@ -75,11 +75,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.talangraga.data.local.database.model.PaymentEntity
 import com.talangraga.data.local.database.model.PeriodEntity
-import com.talangraga.shared.Background
 import com.talangraga.shared.BorderColor
 import com.talangraga.shared.INDONESIA_TRIMMED
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.cleanPeriodName
 import com.talangraga.shared.formatDateRange
 import com.talangraga.shared.toIndonesianDateFormat
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
@@ -319,7 +319,7 @@ fun AddTransactionsContent(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Background),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 modifier = Modifier.fillMaxWidth(),
             )
         },
@@ -327,7 +327,7 @@ fun AddTransactionsContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Background)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(16.dp)
             ) {
                 Button(
@@ -352,7 +352,7 @@ fun AddTransactionsContent(
                 }
             }
         },
-        containerColor = Background
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -487,7 +487,7 @@ fun AddTransactionsContent(
                     )
                 } else ""
                 TextButtonOption(
-                    text = if (selectedPeriod != null) "${selectedPeriod.periodeName}: $bulan" else "Pilih Bulan",
+                    text = if (selectedPeriod != null) "${selectedPeriod.periodeName.cleanPeriodName()}: $bulan" else "Pilih Bulan",
                     placeholder = "Pilih Bulan",
                     trailingIcon = Icons.Default.ArrowDropDown,
                     modifier = Modifier.fillMaxWidth(),
@@ -618,7 +618,7 @@ fun AddTransactionsContent(
                             1.dp,
                             BorderColor
                         ),
-                        colors = CardDefaults.cardColors(containerColor = Background),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -736,7 +736,7 @@ fun AddTransactionsContent(
         ModalBottomSheet(
             onDismissRequest = { showAddMemberSheet = false },
             sheetState = addMemberSheetState,
-            containerColor = Background
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(16.dp).padding(bottom = 24.dp)
@@ -795,7 +795,7 @@ fun AddTransactionsContent(
         ModalBottomSheet(
             onDismissRequest = { showUserBottomSheet = false },
             sheetState = sheetState,
-            containerColor = Background
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ) {
             UserSelectionContent(
                 userList = userList,
@@ -876,9 +876,9 @@ fun UserSelectionContent(
                 .border(1.dp, Sage, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp)),
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Background,
-                unfocusedContainerColor = Background,
-                disabledContainerColor = Background,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
             )
@@ -904,7 +904,7 @@ fun UserItem(
 ) {
     Card(
         onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = Background),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()

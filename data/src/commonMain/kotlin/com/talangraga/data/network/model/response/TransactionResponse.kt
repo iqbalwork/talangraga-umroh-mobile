@@ -31,3 +31,26 @@ data class TransactionResponse(
     @SerialName("periode")
     val periode: PeriodeResponse? = null,
 )
+
+@Serializable
+data class ImportRowErrorResponse(
+    @SerialName("row")
+    val row: Int,
+    @SerialName("data")
+    val data: String? = null,
+    @SerialName("error")
+    val error: String
+)
+
+@Serializable
+data class TransactionImportResultResponse(
+    @SerialName("total_rows")
+    val totalRows: Int,
+    @SerialName("success_count")
+    val successCount: Int,
+    @SerialName("failed_count")
+    val failedCount: Int,
+    @SerialName("errors")
+    val errors: List<ImportRowErrorResponse> = emptyList()
+)
+

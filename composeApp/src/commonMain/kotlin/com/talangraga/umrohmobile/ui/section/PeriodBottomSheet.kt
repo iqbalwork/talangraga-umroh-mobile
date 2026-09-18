@@ -1,5 +1,6 @@
 package com.talangraga.umrohmobile.ui.section
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +20,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -48,7 +52,10 @@ import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.shared.Background
 import com.talangraga.shared.Sage
 import com.talangraga.shared.currentDate
+import com.talangraga.shared.TalangragaTypography
+import com.talangraga.shared.cleanPeriodName
 import com.talangraga.shared.formatDateRange
+import com.talangraga.shared.formatToIDR
 import com.talangraga.shared.isDateInRange
 import com.talangraga.shared.toIndonesianDateFormat
 import com.talangraga.umrohmobile.ui.component.InputText
@@ -278,76 +285,158 @@ fun PeriodsSheet(
 
 @Composable
 fun PeriodItem(
+    modifier: Modifier = Modifier,
     isCurrent: Boolean = false,
     periodNumber: Int,
     period: PeriodEntity,
-    onPeriodClick: (PeriodEntity) -> Unit
+    totalAmount: Long? = null,
+    transactionCount: Int? = null,
+    onPeriodClick: (PeriodEntity) -> Unit = {}
 ) {
-    Box(
-        modifier = Modifier
+    Card(
+        modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .clickable(onClick = {
-                onPeriodClick(period)
-            })
+            .clickable(onClick = { onPeriodClick(period) }),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            // Number container
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Sage),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = periodNumber.toString(),
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+                // Number container
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "#$periodNumber",
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-            Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-            // Text content
-            Column(
-                modifier = Modifier.weight(1f).padding(end = 4.dp)
-            ) {
-                Text(
-                    text = period.periodeName,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = formatDateRange(period.startDate, period.endDate),
-                    fontSize = 14.sp
-                )
-            }
+                // Text content
+                Column(
+                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                ) {
+                    Text(
+                        text = period.periodeName.cleanPeriodName(),
+                        style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Text(
+                            text = formatDateRange(period.startDate, period.endDate),
+                            style = TalangragaTypography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
 
-            // Status or Target/Member count
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
+                // Status Badge
                 if (isCurrent) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Sage.copy(alpha = 0.2f))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "SEKARANG",
-                            color = Sage,
+                            text = "Sedang Berjalan",
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontSize = 11.sp
                         )
+                    }
+                }
+            }
+
+            // Summary Box (if savings details provided)
+            if (totalAmount != null && transactionCount != null) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    ),
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Total Terkumpul:",
+                                style = TalangragaTypography.bodySmall.copy(
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = totalAmount.formatToIDR(),
+                                style = TalangragaTypography.titleMedium.copy(
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Transaksi:",
+                                style = TalangragaTypography.bodySmall.copy(
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "$transactionCount setoran",
+                                style = TalangragaTypography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -362,8 +451,7 @@ fun PreviewPeriodItems() {
         PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
         PeriodEntity(1, "Bulan ke 2", "2025-09-06", "2025-10-05"),
         PeriodEntity(2, "Bulan ke 3", "2025-10-06", "2025-11-05"),
-
-        )
+    )
     TalangragaTheme {
         LazyColumn {
             itemsIndexed(
@@ -373,7 +461,9 @@ fun PreviewPeriodItems() {
                 PeriodItem(
                     isCurrent = index == 0,
                     periodNumber = index + 1,
-                    period = item
+                    period = item,
+                    totalAmount = 7000000L,
+                    transactionCount = 4
                 ) {
 
                 }

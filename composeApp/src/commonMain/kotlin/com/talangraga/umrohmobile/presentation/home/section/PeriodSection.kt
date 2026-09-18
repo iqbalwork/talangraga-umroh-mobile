@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.shared.INDONESIA_TRIMMED
+import com.talangraga.shared.cleanPeriodName
 import com.talangraga.shared.formatDateRange
 import com.talangraga.umrohmobile.ui.component.TextButton
 import com.talangraga.umrohmobile.ui.component.TextButtonOption
@@ -45,7 +46,7 @@ fun PeriodSection(
             )
         } else ""
         TextButtonOption(
-            text = "${period?.periodeName}: $bulan",
+            text = if (period != null) "${period.periodeName.cleanPeriodName()}: $bulan" else "",
             placeholder = "Pilih Bulan",
             trailingIcon = Icons.Default.ArrowDropDown,
             modifier = Modifier.fillMaxWidth(),

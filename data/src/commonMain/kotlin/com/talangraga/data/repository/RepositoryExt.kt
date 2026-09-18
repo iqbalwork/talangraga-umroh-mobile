@@ -37,16 +37,16 @@ fun normalizeErrorMessage(throwable: Throwable): String {
     }
 }
 
-inline fun <T> safeApiCall(
-    crossinline apiCall: suspend () -> DataResponse<T>,
-    crossinline onSuccess: suspend (T) -> Unit = {}
+fun <T> safeApiCall(
+    apiCall: suspend () -> DataResponse<T>,
+    onSuccess: (suspend (T) -> Unit)? = null
 ): Flow<Result<T>> = flow {
     try {
         val response = apiCall()
         val data = response.data
 
         if (data != null) {
-            onSuccess(data)
+            onSuccess?.invoke(data)
             emit(Result.Success(data))
         } else {
             emit(Result.Error(Exception(response.message)))

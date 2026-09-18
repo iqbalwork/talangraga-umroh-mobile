@@ -1,5 +1,6 @@
 package com.talangraga.umrohmobile.presentation.login
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,29 +13,32 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.shared.SageDark
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.shared.TextSecondaryDark
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.LoadingButton
@@ -43,6 +47,7 @@ import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.ToastManager
 import com.talangraga.umrohmobile.ui.component.ToastType
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import com.talangraga.umrohmobile.ui.utils.isWideScreen
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -60,7 +65,6 @@ fun LoginScreen(
     navHostController: NavHostController,
     viewModel: LoginViewModel = koinViewModel(),
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -98,20 +102,13 @@ fun LoginContent(
     onIdentifierChange: (String) -> Unit,
     onLoginClick: () -> Unit,
 ) {
+    val isWide = isWideScreen()
+
     TalangragaScaffold { _ ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(SageDark, Color.White),
-                        start = Offset(0f, 0f), // Top-left
-                        end = Offset(
-                            0f,
-                            Float.POSITIVE_INFINITY
-                        ) // Bottom-right
-                    )
-                )
+                .background(MaterialTheme.colorScheme.background)
                 .imePadding(),
             contentAlignment = Alignment.Center
         ) {
@@ -121,63 +118,92 @@ fun LoginContent(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer(alpha = 0.45f),
+                    .graphicsLayer(alpha = 0.25f),
             )
-            Column(
+
+            Card(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .padding(24.dp)
+                    .widthIn(max = 440.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                elevation = CardDefaults.cardElevation(defaultElevation = if (isWide) 6.dp else 2.dp)
             ) {
-                Image(
-                    painter = painterResource(Res.drawable.talangraga_logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(200.dp)
-                )
-                Text(
-                    "Masuk",
-                    style = TalangragaTypography.titleMedium.copy(
-                        textAlign = TextAlign.Center,
-                        fontSize = 20.sp
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    "Masuk via email, nomor hp, atau username",
-                    style = TalangragaTypography.titleMedium.copy(
-                        fontSize = 16.sp,
-                        color = TextSecondaryDark,
-                        textAlign = TextAlign.Center
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                InputText(
-                    title = stringResource(Res.string.label_username_or_email),
-                    value = identifier,
-                    onValueChange = onIdentifierChange,
-                    placeholder = stringResource(Res.string.input_here),
-                    leadingIcon = Icons.Filled.AccountCircle,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                PasswordInput(
-                    title = stringResource(Res.string.password),
-                    password = password,
-                    onPasswordChange = onPasswordChange,
-                    placeholder = stringResource(Res.string.input_password_here),
-                    leadingIcon = Icons.Filled.Security,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                LoadingButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    isLoading = isLoading,
-                    text = stringResource(Res.string.login),
-                    enabled = identifier.isNotBlank() && password.isNotBlank(),
-                    onClick = onLoginClick
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.talangraga_logo),
+                        contentDescription = "Logo",
+                        modifier = Modifier.size(130.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Masuk",
+                        style = TalangragaTypography.headlineSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Masuk via email, nomor hp, atau username",
+                        style = TalangragaTypography.bodyMedium.copy(
+                            textAlign = TextAlign.Center
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    InputText(
+                        title = stringResource(Res.string.label_username_or_email),
+                        value = identifier,
+                        onValueChange = onIdentifierChange,
+                        placeholder = stringResource(Res.string.input_here),
+                        leadingIcon = Icons.Filled.AccountCircle,
+                        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    PasswordInput(
+                        title = stringResource(Res.string.password),
+                        password = password,
+                        onPasswordChange = onPasswordChange,
+                        placeholder = stringResource(Res.string.input_password_here),
+                        leadingIcon = Icons.Filled.Security,
+                        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(28.dp))
+
+                    LoadingButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        isLoading = isLoading,
+                        text = stringResource(Res.string.login),
+                        enabled = identifier.isNotBlank() && password.isNotBlank(),
+                        onClick = onLoginClick
+                    )
+                }
             }
         }
     }
