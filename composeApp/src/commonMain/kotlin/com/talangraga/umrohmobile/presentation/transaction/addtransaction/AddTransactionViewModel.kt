@@ -199,7 +199,7 @@ class AddTransactionViewModel(
 
         viewModelScope.launch {
             var allSuccess = true
-            val reportedByUserId = session.userProfile.value?.id ?: 1
+            val reportedByUserId = session.userProfile.value?.id.orEmpty()
             val periodeId = state.selectedPeriod?.periodId ?: 1
             val paymentId = state.selectedPayment?.paymentId ?: 1
             val imageFile = state.imageUri
@@ -264,7 +264,7 @@ class AddTransactionViewModel(
         _uiState.update { it.copy(isLoading = true) }
         repository.addTransaction(
             userId = userId,
-            reportedByUserId = session.userProfile.value?.id ?: 1,
+            reportedByUserId = session.userProfile.value?.id.orEmpty(),
             amount = amount,
             transactionDate = transactionDate,
             periodeId = uiState.value.selectedPeriod?.periodId ?: 1,

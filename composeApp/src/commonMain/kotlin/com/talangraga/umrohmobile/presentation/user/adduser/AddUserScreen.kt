@@ -85,7 +85,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AddUserScreen(
     navController: NavHostController,
     isEdit: Boolean,
-    userId: Int,
+    userId: String,
     isLoginUser: Boolean,
     viewModel: AddUserViewModel = koinViewModel()
 ) {

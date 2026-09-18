@@ -35,7 +35,7 @@ data class TransactionState(
 sealed interface TransactionEvent {
     data object GetPeriods : TransactionEvent
     data object GetUsers : TransactionEvent
-    data class GetTransactions(val periodId: Int? = null, val userId: Int? = null) : TransactionEvent
+    data class GetTransactions(val periodId: Int? = null, val userId: String? = null) : TransactionEvent
     data class SelectPeriod(val period: PeriodEntity?) : TransactionEvent
     data class SelectUser(val user: UserUIData?) : TransactionEvent
     data class ExportTransactions(val format: String) : TransactionEvent

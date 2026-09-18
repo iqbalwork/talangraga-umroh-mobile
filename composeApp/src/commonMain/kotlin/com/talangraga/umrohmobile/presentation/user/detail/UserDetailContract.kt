@@ -9,7 +9,7 @@ data class UserDetailState(
 )
 
 sealed interface UserDetailEvent {
-    data class GetUser(val userId: Int) : UserDetailEvent
+    data class GetUser(val userId: String) : UserDetailEvent
     data object ClearError : UserDetailEvent
 }
 

@@ -28,16 +28,16 @@ sealed class Screen {
     data class AddTransactionRoute(val isCollective: Boolean = false)
 
     @Serializable
-    data class AddUserRoute(val userId: Int, val isEdit: Boolean, val isLoginUser: Boolean)
+    data class AddUserRoute(val userId: String = "", val isEdit: Boolean, val isLoginUser: Boolean)
 
     @Serializable
-    data class EditProfileRoute(val userId: Int, val isLoginUser: Boolean)
+    data class EditProfileRoute(val userId: String = "", val isLoginUser: Boolean)
 
     @Serializable
-    data class MemberDetailRoute(val userId: Int)
+    data class MemberDetailRoute(val userId: String)
 
     @Serializable
-    data class ChangePasswordRoute(val userId: Int)
+    data class ChangePasswordRoute(val userId: String)
 
     @Serializable
     data class TransactionDetailRoute(val transactionJson: String)
@@ -52,5 +52,5 @@ sealed class Screen {
     object ListUserRoute
 
     @Serializable
-    data class UserRoute(val userId: Int, val isLoginUser: Boolean)
+    data class UserRoute(val userId: String, val isLoginUser: Boolean)
 }

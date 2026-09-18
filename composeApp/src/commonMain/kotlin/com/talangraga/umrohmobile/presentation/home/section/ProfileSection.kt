@@ -114,7 +114,7 @@ fun ProfileSection(
 @Composable
 fun PreviewProfileSection() {
     val dummyUser = UserUIData(
-        id = 1,
+        id = "1",
         fullname = "Iqbal Fauzi",
         email = "work.iqbalfauzi@gmail.com",
         phone = "087822882668",

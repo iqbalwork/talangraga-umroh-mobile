@@ -1,5 +1,5 @@
 CREATE TABLE UserData (
-    userId Integer PRIMARY KEY,
+    userId TEXT PRIMARY KEY,
     username TEXT NOT NULL ,
     fullname TEXT NOT NULL,
     email TEXT,

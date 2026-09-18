@@ -7,12 +7,11 @@ import com.talangraga.data.local.database.model.UserEntity
 import com.talangraga.data.network.api.Result
 import com.talangraga.data.network.model.response.PeriodeResponse
 import com.talangraga.data.network.model.response.TokenResponse
-import com.talangraga.data.network.model.response.TransactionImportResultResponse
-import com.talangraga.data.network.model.response.TransactionResponse
 import com.talangraga.data.network.model.response.UserResponse
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
+    fun getEmailByIdentifier(identifier: String): Flow<Result<String>>
     fun login(identifier: String, password: String): Flow<Result<TokenResponse>>
     fun getLoginProfile(): Flow<Result<UserResponse>>
     fun getPeriods(): Flow<Result<List<PeriodEntity>>>
@@ -24,7 +23,7 @@ interface Repository {
 
     fun getPayments(): Flow<Result<List<PaymentEntity>>>
     fun getListUsers(): Flow<Result<List<UserEntity>>>
-    fun getUser(userId: Int): Flow<Result<UserEntity>>
+    fun getUser(userId: String): Flow<Result<UserEntity>>
     fun getLocalUsers(): Flow<Result<List<UserEntity>>>
     fun registerNewUser(
         fullname: String,
@@ -34,10 +33,10 @@ interface Repository {
         password: String,
         domicile: String?,
         userType: String,
-        imageProfile: ByteArray?
+        imageProfile: ByteArray? = null
     ): Flow<Result<UserResponse>>
 
-    fun getLocalUser(userId: Int): Flow<Result<UserEntity>>
+    fun getLocalUser(userId: String): Flow<Result<UserEntity>>
     fun updateMe(
         fullname: String,
         username: String,
@@ -46,11 +45,11 @@ interface Repository {
         password: String,
         domicile: String?,
         userType: String,
-        imageProfile: ByteArray?
+        imageProfile: ByteArray? = null
     ): Flow<Result<UserResponse>>
 
     fun updateUser(
-        userId: Int,
+        userId: String,
         fullname: String,
         username: String,
         email: String,
@@ -58,7 +57,7 @@ interface Repository {
         password: String,
         domicile: String?,
         userType: String,
-        imageProfile: ByteArray?
+        imageProfile: ByteArray? = null
     ): Flow<Result<UserResponse>>
 
     fun changePassword(
@@ -68,8 +67,8 @@ interface Repository {
     ): Flow<Result<Unit>>
 
     fun addTransaction(
-        userId: Int?,
-        reportedByUserId: Int?,
+        userId: String?,
+        reportedByUserId: String?,
         amount: Double?,
         transactionDate: String?,
         periodeId: Int?,
@@ -94,14 +93,8 @@ interface Repository {
 
     fun exportTransactions(
         periodId: Int? = null,
-        userId: Int? = null,
+        userId: String? = null,
         status: String? = null,
         format: String = "excel"
     ): Flow<Result<ByteArray>>
-
-    fun importTransactions(
-        fileBytes: ByteArray,
-        fileName: String
-    ): Flow<Result<TransactionImportResultResponse>>
 }
-

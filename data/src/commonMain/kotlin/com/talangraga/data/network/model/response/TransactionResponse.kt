@@ -15,17 +15,25 @@ data class TransactionResponse(
     @SerialName("bukti_transfer_url")
     val buktiTransfer: String? = null,
     @SerialName("status")
-    val statusTransaksi: String?,
+    val statusTransaksi: String? = null,
     @SerialName("user_id")
-    val userId: Int,
+    val userId: String,
     @SerialName("user")
     val user: UserResponse? = null,
     @SerialName("reported_date")
-    val reportedDate: String,
+    val reportedDate: String? = null,
+    @SerialName("reported_by_id")
+    val reportedById: String? = null,
     @SerialName("reported_by")
     val reportedByUser: UserResponse? = null,
+    @SerialName("confirmed_by_id")
+    val confirmedById: String? = null,
     @SerialName("confirmed_by")
     val confirmedByUser: UserResponse? = null,
+    @SerialName("periode_id")
+    val periodeId: Int? = null,
+    @SerialName("payment_id")
+    val paymentId: Int? = null,
     @SerialName("payment")
     val payment: PaymentResponse? = null,
     @SerialName("periode")

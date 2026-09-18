@@ -52,7 +52,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserDetailScreen(
-    userId: Int,
+    userId: String,
     onBackClick: () -> Unit,
     viewModel: UserDetailViewModel = koinViewModel()
 ) {
@@ -249,7 +249,7 @@ fun InfoRow(label: String, value: String) {
 fun UserDetailScreenPreview() {
     TalangragaTheme {
         UserDetailScreen(
-            userId = 1,
+            userId = "1",
             onBackClick = {}
         )
     }

@@ -11,7 +11,7 @@ data class MemberDetailState(
 )
 
 sealed interface MemberDetailEvent {
-    data class GetUser(val userId: Int) : MemberDetailEvent
+    data class GetUser(val userId: String) : MemberDetailEvent
 }
 
 sealed interface MemberDetailEffect {

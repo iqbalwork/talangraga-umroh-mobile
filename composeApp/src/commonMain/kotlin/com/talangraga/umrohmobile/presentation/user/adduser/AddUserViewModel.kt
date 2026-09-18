@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
+import com.talangraga.umrohmobile.presentation.utils.ImageCompressor
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,11 +16,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class AddUserViewModel(
     private val session: Session,
     private val repository: Repository
 ) : ViewModel() {
+
+    private val imageCompressor = ImageCompressor()
 
     private val _uiState = MutableStateFlow(AddUserState())
     val uiState: StateFlow<AddUserState> = _uiState.asStateFlow()
@@ -31,9 +35,18 @@ class AddUserViewModel(
         when (event) {
             is AddUserEvent.InitScope -> {
                 _uiState.update { it.copy(userId = event.userId, isLoginUser = event.isLoginUser, isEdit = event.isEdit) }
-                if (event.userId > 0) getUser(event.userId)
+                if (event.userId.isNotEmpty()) getUser(event.userId)
             }
-            is AddUserEvent.OnImageChange -> _uiState.update { it.copy(imageUri = event.bytes) }
+            is AddUserEvent.OnImageChange -> {
+                viewModelScope.launch {
+                    val compressed = try {
+                        imageCompressor.compress(event.bytes, 200 * 1024L)
+                    } catch (_: Exception) {
+                        event.bytes
+                    }
+                    _uiState.update { it.copy(imageUri = compressed) }
+                }
+            }
             is AddUserEvent.OnFullnameChange -> _uiState.update { it.copy(fullname = event.newValue) }
             is AddUserEvent.OnUsernameChange -> _uiState.update { it.copy(username = event.newValue) }
             is AddUserEvent.OnPhoneNumberChange -> _uiState.update { it.copy(phoneNumber = event.newValue) }
@@ -164,7 +177,7 @@ class AddUserViewModel(
         }.launchIn(viewModelScope)
     }
 
-    private fun getUser(userId: Int) {
+    private fun getUser(userId: String) {
         val state = _uiState.value
         if (state.isLoginUser) {
             val data = session.userProfile.value?.toUiData()

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserUIData(
-    val id: Int,
+    val id: String,
     val username: String,
     val fullname: String,
     val email: String,

@@ -1,0 +1,28 @@
+DROP TABLE IF EXISTS UserData;
+CREATE TABLE UserData (
+    userId TEXT PRIMARY KEY,
+    username TEXT NOT NULL ,
+    fullname TEXT NOT NULL,
+    email TEXT,
+    phone TEXT,
+    domisili TEXT,
+    userType TEXT,
+    imageProfileUrl TEXT
+);
+
+DROP TABLE IF EXISTS TransactionData;
+CREATE TABLE TransactionData (
+  transactionId INTEGER PRIMARY KEY,
+  amount INTEGER NOT NULL,
+  reportedDate TEXT NOT NULL,
+  transactionDate TEXT NOT NULL,
+  statusTransaksi TEXT NOT NULL,
+  buktiTransferUrl TEXT NOT NULL,
+  paymentType TEXT,
+  paymentName TEXT,
+  reportedBy TEXT,
+  confirmedBy TEXT,
+  userName TEXT,
+  userId TEXT,
+  periodId INTEGER
+);

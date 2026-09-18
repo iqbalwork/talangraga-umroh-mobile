@@ -229,7 +229,7 @@ fun PreviewHomeContent() {
                 PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
             ),
             user = UserUIData(
-                id = 1,
+                id = "1",
                 username = "iqbalf",
                 fullname = "Iqbal Fauzi",
                 email = "",
@@ -242,7 +242,7 @@ fun PreviewHomeContent() {
             uiState = HomeState(
                 profile = SectionState.Success(
                     UserUIData(
-                        id = 1,
+                        id = "1",
                         username = "iqbalf",
                         fullname = "Iqbal Fauzi",
                         email = "",

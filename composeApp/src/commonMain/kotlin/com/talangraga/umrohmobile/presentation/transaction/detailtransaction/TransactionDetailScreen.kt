@@ -703,7 +703,7 @@ fun TransactionDetailScreenPreview() {
                 paymentType = "Virtual Account",
                 paymentName = "Mandiri Virtual Account",
                 userName = "Siti Rahma",
-                userId = 2,
+                userId = "2",
                 periodId = 2,
                 periodName = "Periode 2",
                 periodStartDate = "2026-02-06",

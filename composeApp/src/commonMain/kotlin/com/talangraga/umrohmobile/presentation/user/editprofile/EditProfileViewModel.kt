@@ -104,7 +104,7 @@ class EditProfileViewModel(
         }
     }
 
-    private fun getUser(userId: Int) {
+    private fun getUser(userId: String) {
         repository.getUser(userId)
             .onEach { result ->
                 when (result) {

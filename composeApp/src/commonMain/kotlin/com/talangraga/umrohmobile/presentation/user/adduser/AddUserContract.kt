@@ -7,7 +7,7 @@ data class AddUserState(
     val isSuccess: Boolean = false,
     val errorMessage: String? = null,
     val user: UserUIData? = null,
-    val userId: Int = 0,
+    val userId: String = "",
     val isLoginUser: Boolean = false,
     val isEdit: Boolean = false,
     val fullname: String = "",
@@ -22,7 +22,7 @@ data class AddUserState(
 )
 
 sealed interface AddUserEvent {
-    data class InitScope(val userId: Int, val isLoginUser: Boolean, val isEdit: Boolean) : AddUserEvent
+    data class InitScope(val userId: String, val isLoginUser: Boolean, val isEdit: Boolean) : AddUserEvent
     data class OnImageChange(val bytes: ByteArray) : AddUserEvent
     data class OnFullnameChange(val newValue: String) : AddUserEvent
     data class OnUsernameChange(val newValue: String) : AddUserEvent

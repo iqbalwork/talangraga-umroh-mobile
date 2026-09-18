@@ -32,7 +32,7 @@ class UserDetailViewModel(
         }
     }
 
-    private fun getUser(userId: Int) {
+    private fun getUser(userId: String) {
         _uiState.update { it.copy(isLoading = true) }
         repository.getUser(userId)
             .onEach { result ->

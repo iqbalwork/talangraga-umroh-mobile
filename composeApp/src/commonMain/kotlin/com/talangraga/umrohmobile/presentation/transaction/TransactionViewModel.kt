@@ -113,7 +113,7 @@ class TransactionViewModel(
             }.launchIn(viewModelScope)
     }
 
-    private fun getTransactions(periodId: Int? = null, userId: Int? = null) {
+    private fun getTransactions(periodId: Int? = null, userId: String? = null) {
         getTransactionsJob?.cancel()
         _uiState.update { it.copy(transactions = SectionState.Loading, isLoading = true) }
         getTransactionsJob = repository.getTransactions(periodId = periodId)
@@ -173,40 +173,7 @@ class TransactionViewModel(
     }
 
     private fun importTransactions(fileBytes: ByteArray, fileName: String) {
-        _uiState.update { it.copy(isImporting = true) }
-        repository.importTransactions(fileBytes, fileName)
-            .onEach { result ->
-                _uiState.update { it.copy(isImporting = false) }
-                when (result) {
-                    is Result.Success -> {
-                        val resp = result.data
-                        val uiData = ImportResultUiData(
-                            totalRows = resp.totalRows,
-                            successCount = resp.successCount,
-                            failedCount = resp.failedCount,
-                            errors = resp.errors.map {
-                                ImportRowErrorUi(
-                                    row = it.row,
-                                    data = it.data,
-                                    error = it.error
-                                )
-                            }
-                        )
-                        _uiState.update { it.copy(importResult = uiData) }
-                        if (uiData.successCount > 0) {
-                            getTransactions(
-                                periodId = _uiState.value.selectedPeriod?.periodId,
-                                userId = _uiState.value.selectedUser?.id
-                            )
-                            _effect.emit(TransactionEffect.ShowMessage("${uiData.successCount} data tabungan berhasil diimpor!"))
-                        } else {
-                            _effect.emit(TransactionEffect.ShowError("Tidak ada data yang berhasil diimpor. Periksa detail error."))
-                        }
-                    }
-                    is Result.Error -> {
-                        _effect.emit(TransactionEffect.ShowError(result.t.message ?: "Gagal mengimpor file"))
-                    }
-                }
-            }.launchIn(viewModelScope)
+        _uiState.update { it.copy(isImporting = false) }
+        _effect.tryEmit(TransactionEffect.ShowError("Fitur import tidak didukung pada Supabase API"))
     }
 }

@@ -58,7 +58,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun MemberDetailScreen(
     navHostController: NavHostController,
-    userId: Int,
+    userId: String,
     viewModel: MemberDetailViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -199,7 +199,7 @@ fun PreviewHomeMemberContent() {
     TalangragaTheme {
         HomeMemberContent(
             user = UserUIData(
-                id = 1,
+                id = "1",
                 username = "iqbalwork",
                 fullname = "Iqbal Fauzi",
                 email = "work.iqbalfauzi@gmail.com",
@@ -223,7 +223,7 @@ fun PreviewHomeMemberContent() {
                         paymentType = "Transfer Bank",
                         paymentName = "BCA",
                         userName = "Iqbal Fauzi",
-                        userId = 1,
+                        userId = "1",
                         periodId = 1
                     )
                 )

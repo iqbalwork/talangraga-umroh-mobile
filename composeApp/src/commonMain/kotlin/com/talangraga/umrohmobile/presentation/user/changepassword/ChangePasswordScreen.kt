@@ -53,7 +53,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ChangePasswordScreen(
     navHostController: NavHostController,
-    userId: Int,
+    userId: String,
     viewModel: ChangePasswordViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

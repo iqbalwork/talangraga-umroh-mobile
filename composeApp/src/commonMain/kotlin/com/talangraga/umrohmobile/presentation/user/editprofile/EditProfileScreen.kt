@@ -69,7 +69,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun EditProfileScreen(
     navHostController: NavHostController,
-    userId: Int,
+    userId: String,
     isLoginUser: Boolean,
     viewModel: EditProfileViewModel = koinViewModel()
 ) {

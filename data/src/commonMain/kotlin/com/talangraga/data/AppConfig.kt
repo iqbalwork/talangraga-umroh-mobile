@@ -6,4 +6,5 @@ package com.talangraga.data
 object AppConfig {
     val BASE_URL: String = BuildKonfig.BASE_URL
     val IS_DEBUG: Boolean = BuildKonfig.IS_DEBUG
+    val SUPABASE_ANON_KEY: String = BuildKonfig.SUPABASE_ANON_KEY
 }

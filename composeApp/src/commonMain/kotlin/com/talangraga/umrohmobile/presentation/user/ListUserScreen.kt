@@ -110,7 +110,7 @@ fun ListUserScreen(
         onAddUserClick = {
             navHostController.navigate(
                 Screen.AddUserRoute(
-                    userId = 0,
+                    userId = "",
                     isEdit = false,
                     isLoginUser = false
                 )
@@ -134,7 +134,7 @@ fun ListUserScreen(
 fun ListUserContent(
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit),
-    onEditUser: (Int) -> Unit,
+    onEditUser: (String) -> Unit,
     onUserClick: (UserUIData) -> Unit,
     state: ListUserUiState,
     searchQuery: String,
@@ -273,7 +273,7 @@ fun ListUserContent(
 @Composable
 fun UserItem(
     user: UserUIData,
-    onEditUser: (Int) -> Unit,
+    onEditUser: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -383,7 +383,7 @@ fun UserItemPreview() {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             UserItem(
                 user = UserUIData(
-                    id = 1,
+                    id = "1",
                     fullname = "Iqbal Fauzi",
                     email = "work.iqbalfauzi@gmail.com",
                     phone = "087822882668",

@@ -9,7 +9,7 @@ data class EditProfileState(
     val user: UserUIData? = null,
     val isLoginUser: Boolean = false,
     val isMember: Boolean = false,
-    val userId: Int = 0,
+    val userId: String = "",
     val username: String = "",
     val fullname: String = "",
     val phoneNumber: String = "",
@@ -19,7 +19,7 @@ data class EditProfileState(
 )
 
 sealed interface EditProfileEvent {
-    data class InitScope(val userId: Int, val isLoginUser: Boolean) : EditProfileEvent
+    data class InitScope(val userId: String, val isLoginUser: Boolean) : EditProfileEvent
     data class OnUsernameChange(val value: String) : EditProfileEvent
     data class OnFullnameChange(val value: String) : EditProfileEvent
     data class OnPhoneNumberChange(val value: String) : EditProfileEvent

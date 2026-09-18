@@ -96,7 +96,12 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        _uiState.update { it.copy(profile = SectionState.Success(response.data.toUiData())) }
+                        _uiState.update {
+                            it.copy(
+                                profile = SectionState.Success(response.data.toUiData()),
+                                userType = if (it.userType.isNullOrBlank()) response.data.userType else it.userType
+                            )
+                        }
                     }
                 }
             }

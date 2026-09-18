@@ -975,7 +975,7 @@ fun UserItem(
 fun PreviewAddTransactionContent() {
     val mockUsers = listOf(
         UserUIData(
-            id = 1, fullname = "Iqbal Fauzi", phone = "087822882668", userType = "admin",
+            id = "1", fullname = "Iqbal Fauzi", phone = "087822882668", userType = "admin",
             username = "iqbalfauzi",
             email = "work.iqbalfauzi@gmail.com",
             domicile = "Bandung",
@@ -983,7 +983,7 @@ fun PreviewAddTransactionContent() {
             isActive = true
         ),
         UserUIData(
-            id = 2, fullname = "Jane Doe", phone = "081234567890", userType = "member",
+            id = "2", fullname = "Jane Doe", phone = "081234567890", userType = "member",
             username = "janedoe",
             email = "jandoe@gmail.com",
             domicile = "Texas",

@@ -10,7 +10,7 @@ CREATE TABLE TransactionData (
   reportedBy TEXT,
   confirmedBy TEXT,
   userName TEXT,
-  userId INTEGER,
+  userId TEXT,
   periodId INTEGER
 );
 

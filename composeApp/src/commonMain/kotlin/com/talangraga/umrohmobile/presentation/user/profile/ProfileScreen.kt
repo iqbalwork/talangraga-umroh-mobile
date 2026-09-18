@@ -128,14 +128,14 @@ fun ProfileScreen(
         onClickEdit = {
             navHostController.navigate(
                 Screen.AddUserRoute(
-                    userId = profile?.id ?: 0,
+                    userId = profile?.id.orEmpty(),
                     isEdit = true,
                     isLoginUser = true
                 )
             )
         },
         onChangePassword = {
-            navHostController.navigate(Screen.ChangePasswordRoute(profile?.id ?: 0))
+            navHostController.navigate(Screen.ChangePasswordRoute(profile?.id.orEmpty()))
         },
     )
 }
@@ -485,7 +485,7 @@ fun PreviewProfileContent() {
     TalangragaTheme(useDynamicColor = false) {
         ProfileContent(
             user = UserUIData(
-                1, "iqbalfauzi", "Iqbal Fauzi", "work.iqbalfauzi@gmail.com", "087822882668",
+                "1", "iqbalfauzi", "Iqbal Fauzi", "work.iqbalfauzi@gmail.com", "087822882668",
                 domicile = "Bandung",
                 userType = "admin",
                 imageProfileUrl = "",

@@ -27,7 +27,9 @@ fun normalizeErrorMessage(throwable: Throwable): String {
         message.contains("timed out", ignoreCase = true) ->
             "Connection timed out."
 
-        message.contains("Unauthorized", ignoreCase = true) ->
+        message.contains("Unauthorized", ignoreCase = true) ||
+                message.contains("invalid_credentials", ignoreCase = true) ||
+                message.contains("Invalid login credentials", ignoreCase = true) ->
             "Unauthorized. Please check your credentials."
 
         message.contains("Network is unreachable", ignoreCase = true) ->
@@ -60,6 +62,23 @@ fun <T> safeApiCall(
     }
 }
 
+fun <T> safeApiCallDirect(
+    apiCall: suspend () -> T,
+    onSuccess: (suspend (T) -> Unit)? = null
+): Flow<Result<T>> = flow {
+    try {
+        val data = apiCall()
+        onSuccess?.invoke(data)
+        emit(Result.Success(data))
+    } catch (e: JsonConvertException) {
+        val message = normalizeErrorMessage(e)
+        emit(Result.Error(Exception(message)))
+    } catch (e: Exception) {
+        val message = normalizeErrorMessage(e)
+        emit(Result.Error(Exception(message)))
+    }
+}
+
 fun <LocalType, NetworkType> networkBoundResource(
     query: () -> Flow<LocalType>?,
     fetch: suspend () -> DataResponse<NetworkType>,
@@ -75,24 +94,50 @@ fun <LocalType, NetworkType> networkBoundResource(
 
     launch(Dispatchers.IO) {
         try {
-            // Fetch new data
             val networkResponse = fetch()
             if (networkResponse.data != null) {
                 val mappedData = mapper(networkResponse.data)
-                // Replace cache
                 saveFetchResult(mappedData)
-                // Emit updated data
                 send(Result.Success(mappedData))
             } else {
                 send(Result.Error(Exception(networkResponse.message)))
             }
         } catch (e: JsonConvertException) {
-            val message =
-                normalizeErrorMessage(e)
+            val message = normalizeErrorMessage(e)
             send(Result.Error(Exception(message)))
         } catch (e: Exception) {
-            val message =
-                normalizeErrorMessage(e)
+            val message = normalizeErrorMessage(e)
+            send(Result.Error(Exception(message)))
+        }
+    }
+
+    awaitClose { db.cancel() }
+}
+
+fun <LocalType, NetworkType> networkBoundResourceDirect(
+    query: () -> Flow<LocalType>?,
+    fetch: suspend () -> NetworkType,
+    saveFetchResult: suspend (LocalType) -> Unit,
+    mapper: (NetworkType) -> LocalType
+): Flow<Result<LocalType>> = channelFlow {
+
+    val db = launch {
+        query()?.collectLatest { data ->
+            send(Result.Success(data))
+        }
+    }
+
+    launch(Dispatchers.IO) {
+        try {
+            val networkData = fetch()
+            val mappedData = mapper(networkData)
+            saveFetchResult(mappedData)
+            send(Result.Success(mappedData))
+        } catch (e: JsonConvertException) {
+            val message = normalizeErrorMessage(e)
+            send(Result.Error(Exception(message)))
+        } catch (e: Exception) {
+            val message = normalizeErrorMessage(e)
             send(Result.Error(Exception(message)))
         }
     }

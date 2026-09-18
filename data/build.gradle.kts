@@ -25,6 +25,7 @@ buildkonfig {
 
     val stagingUrl = secretProperties["stagingUrl"] as? String ?: ""
     val productionUrl = secretProperties["productionUrl"] as? String ?: ""
+    val supabaseAnonKey = secretProperties["supabaseAnonKey"] as? String ?: ""
 
     val envConfig = System.getenv("CONFIGURATION") ?: ""
     val taskNames = gradle.startParameter.taskNames.toString()
@@ -46,6 +47,7 @@ buildkonfig {
     defaultConfigs {
         buildConfigField(BOOLEAN, "IS_DEBUG", (!isRelease).toString())
         buildConfigField(STRING, "BASE_URL", if (isProduction) productionUrl else stagingUrl)
+        buildConfigField(STRING, "SUPABASE_ANON_KEY", supabaseAnonKey)
     }
 }
 
@@ -137,7 +139,7 @@ sqldelight {
     databases {
         create("TalangragaDatabase") {
             packageName.set("com.talangraga")
-            version = 2
+            version = 3
             // optional: specify srcDirs if you place .sq files outside default
             // srcDirs.setFrom("src/commonMain/sqldelight")
 //            verifyMigrations.set(false)
