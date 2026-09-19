@@ -3,18 +3,24 @@
 package com.talangraga.umrohmobile.presentation.user.profile
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +31,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
@@ -33,11 +40,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,12 +62,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.shared.AccentRed
-import com.talangraga.shared.Red
-import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.home.section.LogoutDialog
@@ -69,6 +76,8 @@ import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import com.talangraga.umrohmobile.ui.theme.ThemeManager
 import com.talangraga.umrohmobile.ui.theme.ThemeMode
+import com.talangraga.umrohmobile.ui.theme.isDynamicColorSupported
+import com.talangraga.umrohmobile.ui.utils.isWideScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -82,9 +91,12 @@ fun ProfileScreen(
     isLoginUser: Boolean,
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
-
     val profile by viewModel.session.userProfile.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(ProfileEvent.FetchProfile)
+    }
 
     val themeManager: ThemeManager = koinInject()
     val themeMode by themeManager.themeMode.collectAsState()
@@ -96,11 +108,14 @@ fun ProfileScreen(
         ThemeMode.SYSTEM -> systemDark
     }
 
+    val userUiData = profile?.toUiData()
+    val displayImageUrl = userUiData?.imageProfileUrl?.ifBlank { null } ?: uiState.imageUrl
+
     ProfileContent(
         isDarkMode = isDarkTheme,
         isLoginUser = isLoginUser,
-        user = profile?.toUiData(),
-        imageUrl = uiState.imageUrl,
+        user = userUiData,
+        imageUrl = displayImageUrl,
         themeManager = themeManager,
         onLogout = {
             viewModel.onEvent(ProfileEvent.ClearSession)
@@ -113,14 +128,14 @@ fun ProfileScreen(
         onClickEdit = {
             navHostController.navigate(
                 Screen.AddUserRoute(
-                    userId = profile?.id ?: 0,
+                    userId = profile?.id.orEmpty(),
                     isEdit = true,
                     isLoginUser = true
                 )
             )
         },
         onChangePassword = {
-            navHostController.navigate(Screen.ChangePasswordRoute(profile?.id ?: 0))
+            navHostController.navigate(Screen.ChangePasswordRoute(profile?.id.orEmpty()))
         },
     )
 }
@@ -137,7 +152,7 @@ fun ProfileContent(
     onChangePassword: () -> Unit,
     onLogout: () -> Unit,
 ) {
-
+    val isWide = isWideScreen()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     if (showLogoutDialog) {
@@ -156,183 +171,182 @@ fun ProfileContent(
             CenterAlignedTopAppBar(
                 title = {
                     val title = if (isLoginUser) "Profil Saya" else "Profil Pengguna"
-                    Text(text = title, style = TalangragaTypography.titleLarge)
+                    Text(
+                        text = title,
+                        style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 },
-                modifier = Modifier,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { paddingValues ->
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(16.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter
         ) {
-            item {
-                ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
-                    val (imageProfileRef, fullNameRef, usernameRef) = createRefs()
-
-                    BasicImage(
-                        model = imageUrl.orEmpty(),
-                        modifier = Modifier
-                            .clickable {
-                                ImageViewerManager.show(imageUrl)
-                            }
-                            .size(124.dp)
-                            .clip(CircleShape)
-                            .constrainAs(imageProfileRef) {
-                                top.linkTo(parent.top)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            }
-                    )
-
-                    Text(
-                        text = user?.fullname.orEmpty(),
-                        style = TalangragaTypography.titleLarge,
-                        modifier = Modifier.constrainAs(fullNameRef) {
-                            top.linkTo(imageProfileRef.bottom, 8.dp)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        }
-                    )
-
-                    val username = "@${user?.username.orEmpty()}"
-                    Text(
-                        text = username,
-                        modifier = Modifier.constrainAs(usernameRef) {
-                            top.linkTo(fullNameRef.bottom)
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                        }
-                    )
-                }
-            }
-
-            item {
-                Card(
-                    modifier = Modifier,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
+            LazyColumn(
+                modifier = Modifier
+                    .widthIn(max = 760.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = if (isWide) 24.dp else 120.dp
+                )
+            ) {
+                item {
+                    // Profile Header
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        UserMenuItem(icon = Icons.Filled.Phone, text = user?.phone.orEmpty())
-                        UserMenuItem(icon = Icons.Filled.Email, text = user?.email.orEmpty())
-                        UserMenuItem(icon = Icons.Filled.Place, text = user?.domicile.orEmpty())
-                    }
-                }
-            }
+                        Box(
+                            modifier = Modifier
+                                .size(110.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (!imageUrl.isNullOrBlank()) {
+                                BasicImage(
+                                    model = imageUrl,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(CircleShape)
+                                        .clickable { ImageViewerManager.show(imageUrl) }
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Avatar",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(60.dp)
+                                )
+                            }
+                        }
 
-            item {
-                Card(
-                    modifier = Modifier,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    ConstraintLayout(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        val (settingLabelRef, settingRef, iconRef, modeRef, switchRef) = createRefs()
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "Pengaturan",
-                            style = TalangragaTypography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
-                            ),
-                            modifier = Modifier.constrainAs(settingLabelRef) {
-                                top.linkTo(parent.top)
-                                start.linkTo(parent.start)
-                            }
+                            text = user?.fullname.orEmpty(),
+                            style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
-                        Column(modifier = Modifier.constrainAs(settingRef) {
-                            top.linkTo(settingLabelRef.bottom, 8.dp)
-                            start.linkTo(parent.start); end.linkTo(parent.end)
-                        }, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "@${user?.username.orEmpty()}",
+                            style = TalangragaTypography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                item {
+                    // User details card
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            UserMenuItem(icon = Icons.Filled.Phone, text = user?.phone.orEmpty().ifBlank { "-" })
+                            UserMenuItem(icon = Icons.Filled.Email, text = user?.email.orEmpty().ifBlank { "-" })
+                            UserMenuItem(icon = Icons.Filled.Place, text = user?.domicile.orEmpty().ifBlank { "-" })
+                        }
+                    }
+                }
+
+                item {
+                    // Settings card
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Pengaturan",
+                                style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
                             UserMenuItem(
                                 icon = Icons.Default.Edit,
                                 text = "Ubah Profil",
                                 showArrow = true,
                                 modifier = Modifier.clickable(onClick = onClickEdit)
                             )
+
                             UserMenuItem(
                                 icon = Icons.Default.Password,
                                 text = "Ganti Kata Sandi",
                                 showArrow = true,
                                 modifier = Modifier.clickable(onClick = onChangePassword)
                             )
-                        }
 
-                        IconBlock(
-                            icon = Icons.Filled.LightMode,
-                            startColor = Sage,
-                            endColor = Sage,
-                            size = 40.dp,
-                            iconSize = 24.dp,
-                            modifier = Modifier.constrainAs(iconRef) {
-                                top.linkTo(settingRef.bottom, 8.dp)
-                                start.linkTo(parent.start)
-                            }
-                        )
-                        val mode = if (isDarkMode) "Gelap" else "Terang"
-                        Text(
-                            text = "Mode $mode",
-                            style = TalangragaTypography.titleLarge.copy(
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 18.sp
-                            ),
-                            modifier = Modifier.constrainAs(modeRef) {
-                                top.linkTo(iconRef.top)
-                                bottom.linkTo(iconRef.bottom)
-                                start.linkTo(iconRef.end, 16.dp)
-                            }
-                        )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = 4.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                            )
 
-                        themeManager?.let {
-                            ThemeToggleScreen(
-                                themeManager = it,
-                                modifier = Modifier.fillMaxWidth().constrainAs(switchRef) {
-                                    start.linkTo(iconRef.start)
-                                    top.linkTo(iconRef.bottom, 16.dp)
-                                })
+                            themeManager?.let {
+                                ThemeToggleScreen(
+                                    themeManager = it,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            item {
-                Button(
-                    onClick = {
-                        // Show Logout Dialog
-                        showLogoutDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = AccentRed),
-                    border = BorderStroke(width = 1.dp, color = Red)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                item {
+                    // Logout button
+                    Button(
+                        onClick = { showLogoutDialog = true },
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = "Logout",
-                            tint = Red,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(
-                            text = stringResource(Res.string.logout),
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            color = Red
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Logout,
+                                contentDescription = "Logout",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(Res.string.logout),
+                                style = TalangragaTypography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
                 }
             }
@@ -348,71 +362,122 @@ fun UserMenuItem(
     showArrow: Boolean = false
 ) {
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
-            modifier = Modifier,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.weight(1f)
         ) {
-            IconBlock(
-                icon = icon,
-                startColor = Sage,
-                endColor = Sage,
-                size = 40.dp,
-                iconSize = 24.dp,
+            Box(
                 modifier = Modifier
-            )
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
             Text(
                 text = text,
-                style = TalangragaTypography.titleLarge.copy(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 18.sp
-                ),
-                modifier = Modifier
+                style = TalangragaTypography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
         if (showArrow) {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
-                contentDescription = null
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
 @Composable
-fun ThemeToggleScreen(modifier: Modifier, themeManager: ThemeManager) {
+fun ThemeToggleScreen(modifier: Modifier = Modifier, themeManager: ThemeManager) {
     val themeMode by themeManager.themeMode.collectAsState()
+    val isDynamicColor by themeManager.isDynamicColor.collectAsState()
+    val dynamicSupported = remember { isDynamicColorSupported() }
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Select Theme:")
+        Text(
+            text = "Pilihan Tema",
+            style = TalangragaTypography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ThemeMode.entries.forEach { mode ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.clickable { themeManager.setTheme(mode) }
-                ) {
-                    RadioButton(
-                        selected = themeMode == mode,
-                        onClick = { themeManager.setTheme(mode) })
-                    Text(text = mode.name)
+                val label = when (mode) {
+                    ThemeMode.SYSTEM -> "Sistem"
+                    ThemeMode.LIGHT -> "Terang"
+                    ThemeMode.DARK -> "Gelap"
                 }
+                val selected = themeMode == mode
+                FilterChip(
+                    selected = selected,
+                    onClick = { themeManager.setTheme(mode) },
+                    label = { Text(label, style = TalangragaTypography.bodyMedium) },
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
 
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 4.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(
+                    text = "Material You (Dynamic Color)",
+                    style = TalangragaTypography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = if (dynamicSupported) {
+                        "Warna tema menyesuaikan wallpaper sistem"
+                    } else {
+                        "Hanya didukung pada perangkat Android 12+"
+                    },
+                    style = TalangragaTypography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Switch(
+                checked = isDynamicColor && dynamicSupported,
+                onCheckedChange = { enabled ->
+                    if (dynamicSupported) {
+                        themeManager.setDynamicColor(enabled)
+                    }
+                },
+                enabled = dynamicSupported
+            )
+        }
     }
 }
-
 
 @Composable
 @Preview(showBackground = true)
@@ -420,7 +485,7 @@ fun PreviewProfileContent() {
     TalangragaTheme(useDynamicColor = false) {
         ProfileContent(
             user = UserUIData(
-                1, "iqbalfauzi", "Iqbal Fauzi", "work.iqbalfauzi@gmail.com", "087822882668",
+                "1", "iqbalfauzi", "Iqbal Fauzi", "work.iqbalfauzi@gmail.com", "087822882668",
                 domicile = "Bandung",
                 userType = "admin",
                 imageProfileUrl = "",

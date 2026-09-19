@@ -7,3 +7,6 @@ import androidx.compose.runtime.Composable
 actual fun dynamicColorScheme(darkTheme: Boolean): ColorScheme? {
     return null
 }
+
+actual fun isDynamicColorSupported(): Boolean = false
+

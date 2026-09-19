@@ -7,19 +7,24 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -29,11 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.shared.Background
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.presentation.home.SectionState
 import com.talangraga.umrohmobile.presentation.home.section.HomeInfoTransactionSection
@@ -53,10 +58,9 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun MemberDetailScreen(
     navHostController: NavHostController,
-    userId: Int,
+    userId: String,
     viewModel: MemberDetailViewModel = koinViewModel()
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(userId) {
@@ -82,95 +86,108 @@ fun HomeMemberContent(
                 title = {
                     Text(
                         text = "Profil Anggota",
-                        style = TalangragaTypography.titleLarge
+                        style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = {
+                        if (ImageViewerManager.isVisible) {
+                            ImageViewerManager.hide()
+                        } else {
+                            onBackClick()
+                        }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Background)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter
         ) {
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Background),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Box(
-                        modifier = Modifier.padding(bottom = 8.dp)
+            LazyColumn(
+                modifier = Modifier
+                    .widthIn(max = 640.dp)
+                    .fillMaxWidth()
+            ) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(
-                            modifier = Modifier
-                                .clickable {
-                                    ImageViewerManager.show(user?.imageProfileUrl)
-                                }
-                                .size(100.dp)
-                                .clip(CircleShape),
-                            contentAlignment = Alignment.Center
+                            modifier = Modifier.padding(bottom = 12.dp)
                         ) {
-                            BasicImage(
-                                model = user?.imageProfileUrl.orEmpty(),
+                            Box(
                                 modifier = Modifier
                                     .size(100.dp)
                                     .clip(CircleShape)
-                            )
+                                    .background(MaterialTheme.colorScheme.primaryContainer),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (!user?.imageProfileUrl.isNullOrBlank()) {
+                                    BasicImage(
+                                        model = user?.imageProfileUrl.orEmpty(),
+                                        modifier = Modifier
+                                            .size(100.dp)
+                                            .clip(CircleShape)
+                                            .clickable {
+                                                ImageViewerManager.show(user?.imageProfileUrl)
+                                            }
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = "Avatar",
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(52.dp)
+                                    )
+                                }
+                            }
                         }
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(bottom = 4.dp, end = 4.dp)
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(Color.White)
-                                .border(1.dp, Color.LightGray, CircleShape)
-                                .clickable { /* Pick Image */ },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CameraAlt,
-                                contentDescription = "Change Photo",
-                                modifier = Modifier.size(20.dp),
-                                tint = Color.Black
-                            )
-                        }
+
+                        Text(
+                            text = user?.fullname.orEmpty(),
+                            style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        val infoLabel = "@${user?.username.orEmpty()}${if (!user?.domicile.isNullOrBlank()) " | ${user?.domicile}" else ""}"
+                        Text(
+                            text = infoLabel,
+                            style = TalangragaTypography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
+                }
 
-                    Text(
-                        text = user?.fullname.orEmpty(),
-                        style = TalangragaTypography.titleLarge,
+                item {
+                    HomeInfoTransactionSection(
                         modifier = Modifier
-                    )
-
-                    val infoLabel = "@${user?.username.orEmpty()} | ${user?.domicile.orEmpty()}"
-                    Text(
-                        text = infoLabel,
-                        style = TalangragaTypography.bodyMedium,
-                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        isHomeAdminDashboard = false,
+                        state = transactionState,
+                        onAddTransaction = {},
+                        onClickSeeMore = { }
                     )
                 }
-            }
-
-            item {
-                HomeInfoTransactionSection(
-                    modifier = Modifier.background(color = Background).padding(16.dp),
-                    isHomeAdminDashboard = false,
-                    state = transactionState,
-                    onAddTransaction = {},
-                    onClickSeeMore = { }
-                )
             }
         }
     }
@@ -182,10 +199,10 @@ fun PreviewHomeMemberContent() {
     TalangragaTheme {
         HomeMemberContent(
             user = UserUIData(
-                id = 1,
+                id = "1",
                 username = "iqbalwork",
                 fullname = "Iqbal Fauzi",
-                email = "work.iqbalfauzi",
+                email = "work.iqbalfauzi@gmail.com",
                 phone = "087822882668",
                 domicile = "Bandung",
                 userType = "member",
@@ -206,7 +223,8 @@ fun PreviewHomeMemberContent() {
                         paymentType = "Transfer Bank",
                         paymentName = "BCA",
                         userName = "Iqbal Fauzi",
-                        userId = 1
+                        userId = "1",
+                        periodId = 1
                     )
                 )
             ),

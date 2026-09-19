@@ -35,7 +35,7 @@ fun TransactionResponse.toTransactionEntity(): TransactionEntity {
     return TransactionEntity(
         transactionId = id,
         amount = amount.toInt(),
-        reportedDate = reportedDate,
+        reportedDate = reportedDate.orEmpty(),
         transactionDate = transactionDate,
         statusTransaksi = statusTransaksi.orEmpty(),
         buktiTransferUrl = buktiTransfer.orEmpty(),
@@ -44,7 +44,8 @@ fun TransactionResponse.toTransactionEntity(): TransactionEntity {
         reportedBy = reportedByUser?.fullname.orEmpty(),
         confirmedBy = confirmedByUser?.fullname.orEmpty(),
         userName = user?.fullname.orEmpty(),
-        userId = userId
+        userId = userId,
+        periodId = periode?.id ?: periodeId ?: 1
     )
 }
 

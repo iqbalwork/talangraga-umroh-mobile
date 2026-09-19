@@ -20,6 +20,7 @@ data class AddTransactionState(
     val imageUri: ByteArray? = null,
     val isLoading: Boolean = false,
     val isCollective: Boolean = false,
+    val isMemberUser: Boolean = false,
     val collectiveMembers: List<CollectiveMember> = emptyList()
 )
 

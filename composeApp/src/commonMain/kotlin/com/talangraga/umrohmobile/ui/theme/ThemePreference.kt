@@ -13,6 +13,7 @@ class ThemePreference(private val settings: ObservableSettings) {
 
     companion object {
         private const val THEME_KEY = "theme_mode"
+        private const val DYNAMIC_COLOR_KEY = "dynamic_color_enabled"
     }
 
     fun getTheme(): ThemeMode =
@@ -25,5 +26,15 @@ class ThemePreference(private val settings: ObservableSettings) {
         settings.toFlowSettings()
             .getStringFlow(THEME_KEY, ThemeMode.SYSTEM.name)
             .map { ThemeMode.valueOf(it) }
+
+    fun getDynamicColor(): Boolean =
+        settings.getBoolean(DYNAMIC_COLOR_KEY, true)
+
+    fun setDynamicColor(enabled: Boolean) =
+        settings.putBoolean(DYNAMIC_COLOR_KEY, enabled)
+
+    fun getDynamicColorFlow(): Flow<Boolean> =
+        settings.toFlowSettings()
+            .getBooleanFlow(DYNAMIC_COLOR_KEY, true)
 }
 

@@ -2,6 +2,7 @@ package com.talangraga.umrohmobile.presentation.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,9 +37,12 @@ import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
+import com.talangraga.umrohmobile.ui.component.ToastManager
+import com.talangraga.umrohmobile.ui.component.ToastType
 import com.talangraga.umrohmobile.ui.section.DialogUserType
 import com.talangraga.umrohmobile.ui.section.PeriodsSheet
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import com.talangraga.umrohmobile.ui.utils.isWideScreen
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.koin.compose.viewmodel.koinViewModel
@@ -50,7 +54,6 @@ fun HomeScreen(
     onNavigateToTransaction: () -> Unit,
     viewModel: HomeViewModel = koinViewModel(),
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val userProfile by viewModel.session.userProfile.collectAsStateWithLifecycle()
 
@@ -60,7 +63,7 @@ fun HomeScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is HomeEffect.ShowToastError -> {
-                    // handeled locally, or if needed can map to snackbar here.
+                    ToastManager.show(message = effect.message, type = ToastType.Error)
                 }
             }
         }
@@ -79,16 +82,17 @@ fun HomeScreen(
             viewModel.onEvent(HomeEvent.GetTransactions(it?.periodId))
         },
         onFetchProfile = { viewModel.onEvent(HomeEvent.GetProfile) },
+        onRefresh = {
+            viewModel.onEvent(HomeEvent.GetProfile)
+            viewModel.onEvent(HomeEvent.GetPeriods)
+        },
         onSeeMoreTransaction = onNavigateToTransaction,
         onAddTransaction = {
-            rootNavHostController.navigate(Screen.AddTransactionRoute(false))
-        },
-        onFetchAllTransaction = {
-            viewModel.onEvent(HomeEvent.GetTransactions(null))
+            navHostController.navigate(Screen.AddTransactionRoute(false))
         },
         onTransactionClick = { transaction ->
             val transactionJson = Json.encodeToString(transaction)
-            rootNavHostController.navigate(Screen.TransactionDetailRoute(transactionJson))
+            navHostController.navigate(Screen.TransactionDetailRoute(transactionJson))
         }
     )
 }
@@ -107,10 +111,10 @@ fun HomeContent(
     onSeeMoreTransaction: () -> Unit,
     onAddTransaction: () -> Unit,
     onFetchProfile: () -> Unit,
-    onFetchAllTransaction: () -> Unit,
+    onRefresh: () -> Unit,
     onTransactionClick: (com.talangraga.umrohmobile.presentation.transaction.model.TransactionUiData) -> Unit = {}
 ) {
-
+    val isWide = isWideScreen()
     val refreshState = rememberPullToRefreshState()
 
     val userTypeSheetState = rememberModalBottomSheetState()
@@ -161,21 +165,17 @@ fun HomeContent(
 
         PullToRefreshBox(
             isRefreshing = uiState.isLoading,
-            onRefresh = {
-                onFetchProfile()
-                if (selectedPeriod != null) {
-                    onPeriodChange(selectedPeriod)
-                } else {
-                    onFetchAllTransaction()
-                }
-            },
+            onRefresh = onRefresh,
             state = refreshState,
-            modifier = Modifier
+            modifier = Modifier.fillMaxSize()
         ) {
             LazyColumn(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.background)
                     .fillMaxSize(),
+                contentPadding = PaddingValues(
+                    bottom = if (isWide) 24.dp else 120.dp
+                ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item {
@@ -185,7 +185,6 @@ fun HomeContent(
                             .padding(top = paddingValues.calculateTopPadding()),
                         userType = userType,
                         user = user,
-//                        state = uiState.profile,
                         onRetry = onFetchProfile,
                         onClickImage = {
                             ImageViewerManager.show(it)
@@ -201,7 +200,6 @@ fun HomeContent(
                         period = selectedPeriod,
                         onClickAll = {
                             onPeriodChange(null)
-                            onFetchAllTransaction()
                         },
                         onShowPeriodSheet = { showPeriodBottom = true }
                     )
@@ -210,7 +208,7 @@ fun HomeContent(
                 item {
                     HomeInfoTransactionSection(
                         modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(),
-                        isHomeAdminDashboard = false,
+                        isHomeAdminDashboard = userType.lowercase() == "admin",
                         state = uiState.transactions,
                         onAddTransaction = onAddTransaction,
                         onClickSeeMore = onSeeMoreTransaction,
@@ -219,7 +217,6 @@ fun HomeContent(
                 }
             }
         }
-
     }
 }
 
@@ -232,7 +229,7 @@ fun PreviewHomeContent() {
                 PeriodEntity(periodId = 0, "Bulan ke 1", "2025-08-06", "2025-09-05"),
             ),
             user = UserUIData(
-                id = 1,
+                id = "1",
                 username = "iqbalf",
                 fullname = "Iqbal Fauzi",
                 email = "",
@@ -245,7 +242,7 @@ fun PreviewHomeContent() {
             uiState = HomeState(
                 profile = SectionState.Success(
                     UserUIData(
-                        id = 1,
+                        id = "1",
                         username = "iqbalf",
                         fullname = "Iqbal Fauzi",
                         email = "",
@@ -268,7 +265,7 @@ fun PreviewHomeContent() {
             onUserTypeChange = { },
             onSeeMoreTransaction = { },
             onAddTransaction = { },
-            onFetchAllTransaction = {},
+            onRefresh = {},
             selectedPeriod = null,
         )
     }

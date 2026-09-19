@@ -3,6 +3,7 @@ package com.talangraga.umrohmobile.presentation.user.editprofile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
+import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.api.Result
 import com.talangraga.umrohmobile.presentation.utils.toUiData
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,7 +22,8 @@ import kotlinx.coroutines.flow.update
  * Github: https://github.com/iqbalwork
  */
 class EditProfileViewModel(
-    private val repository: Repository
+    private val repository: Repository,
+    private val session: Session
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditProfileState())
@@ -30,12 +32,18 @@ class EditProfileViewModel(
     private val _effect = MutableSharedFlow<EditProfileEffect>()
     val effect: SharedFlow<EditProfileEffect> = _effect.asSharedFlow()
 
+    init {
+        val isMember = session.userProfile.value?.userType?.lowercase() != "admin"
+        _uiState.update { it.copy(isMember = isMember) }
+    }
+
     fun onEvent(event: EditProfileEvent) {
         when (event) {
             is EditProfileEvent.InitScope -> {
                 _uiState.update { it.copy(userId = event.userId, isLoginUser = event.isLoginUser) }
                 getUser(event.userId)
             }
+            is EditProfileEvent.OnUsernameChange -> _uiState.update { it.copy(username = event.value) }
             is EditProfileEvent.OnFullnameChange -> _uiState.update { it.copy(fullname = event.value) }
             is EditProfileEvent.OnPhoneNumberChange -> _uiState.update { it.copy(phoneNumber = event.value) }
             is EditProfileEvent.OnEmailChange -> _uiState.update { it.copy(email = event.value) }
@@ -48,15 +56,55 @@ class EditProfileViewModel(
 
     private fun saveProfile() {
         val state = _uiState.value
-        // TODO: Implement save logic
+        _uiState.update { it.copy(isLoading = true) }
         if (state.isLoginUser) {
-
+            repository.updateMe(
+                fullname = state.fullname,
+                username = state.username,
+                email = state.email,
+                phone = state.phoneNumber,
+                domicile = state.domicile,
+                userType = state.user?.userType?.lowercase() ?: "member",
+                password = "",
+                imageProfile = null
+            ).onEach { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
+                    }
+                    is Result.Success -> {
+                        repository.getLoginProfile()
+                            .onEach {
+                                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                            }.launchIn(viewModelScope)
+                    }
+                }
+            }.launchIn(viewModelScope)
         } else {
-
+            repository.updateUser(
+                userId = state.userId,
+                fullname = state.fullname,
+                username = state.username,
+                email = state.email,
+                phone = state.phoneNumber,
+                password = "",
+                domicile = state.domicile,
+                userType = state.user?.userType ?: "member",
+                imageProfile = null
+            ).onEach { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
+                    }
+                    is Result.Success -> {
+                        _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                    }
+                }
+            }.launchIn(viewModelScope)
         }
     }
 
-    private fun getUser(userId: Int) {
+    private fun getUser(userId: String) {
         repository.getUser(userId)
             .onEach { result ->
                 when (result) {
@@ -69,6 +117,7 @@ class EditProfileViewModel(
                         _uiState.update {
                             it.copy(
                                 user = data,
+                                username = data.username,
                                 fullname = data.fullname,
                                 phoneNumber = data.phone,
                                 email = data.email,

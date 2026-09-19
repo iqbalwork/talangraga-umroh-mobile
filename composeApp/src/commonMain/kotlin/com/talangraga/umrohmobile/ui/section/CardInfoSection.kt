@@ -1,29 +1,35 @@
 package com.talangraga.umrohmobile.ui.section
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.talangraga.shared.Aqua
 import com.talangraga.shared.Green
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.shared.TextOnColor
 import com.talangraga.umrohmobile.ui.component.IconBlock
-import com.talangraga.umrohmobile.ui.component.TitleTextIcon
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 
 @Composable
@@ -34,63 +40,70 @@ fun CardInfoSection(
     notes: String? = null,
     icon: ImageVector,
     notesColor: Color = Green,
-    cardColor: Color = Sage,
+    cardColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     illustrationIcon: ImageVector,
     startIconColor: Color,
     endIconColor: Color
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = cardColor
         ),
-        elevation = CardDefaults.cardElevation(4.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        ConstraintLayout(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            val (valueRef, notesRef) = createRefs()
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = title,
+                        style = TalangragaTypography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
-            Column(modifier = Modifier.constrainAs(valueRef) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                start.linkTo(parent.start)
-            }) {
-                TitleTextIcon(
-                    text = title,
-                    leadingIcon = icon,
-                )
                 Text(
                     text = value,
-                    style = TalangragaTypography.titleLarge.copy(color = TextOnColor),
+                    style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
-            }
 
-            notes?.let {
-                Text(
-                    text = notes,
-                    style = TalangragaTypography.bodySmall.copy(
-                        color = notesColor
-                    ),
-                    modifier = Modifier.constrainAs(notesRef) {
-                        top.linkTo(valueRef.bottom, 4.dp)
-                        start.linkTo(parent.start)
-                    }
-                )
+                if (!notes.isNullOrBlank()) {
+                    Text(
+                        text = notes,
+                        style = TalangragaTypography.bodySmall.copy(
+                            color = notesColor,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
 
             IconBlock(
                 icon = illustrationIcon,
                 startColor = startIconColor,
                 endColor = endIconColor,
-                modifier = Modifier.constrainAs(createRef()) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    end.linkTo(parent.end)
-                }
+                modifier = Modifier.padding(start = 12.dp)
             )
         }
     }
@@ -103,7 +116,6 @@ fun CardInfoSectionPreview() {
         CardInfoSection(
             title = "Total Saldo",
             value = "Rp 380.000.000",
-            cardColor = Sage,
             illustrationIcon = Icons.Default.AttachMoney,
             startIconColor = Aqua,
             endIconColor = Aqua.copy(alpha = 0.5f),
@@ -112,4 +124,3 @@ fun CardInfoSectionPreview() {
         )
     }
 }
-

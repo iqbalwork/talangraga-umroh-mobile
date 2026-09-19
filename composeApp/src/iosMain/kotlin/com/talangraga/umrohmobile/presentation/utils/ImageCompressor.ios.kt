@@ -22,6 +22,7 @@ import platform.posix.memcpy
  * Email: work.iqbalfauzi@gmail.com
  * Github: https://github.com/iqbalwork
  */
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class ImageCompressor actual constructor() {
     actual suspend fun compress(byteArray: ByteArray, maxSizeBytes: Long): ByteArray {
         val nsData = byteArray.toNSData()

@@ -35,16 +35,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.shared.Background
 import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.ui.component.BasicImage
+import com.talangraga.umrohmobile.ui.component.ImageViewerManager
 import com.talangraga.umrohmobile.ui.component.InputText
 import com.talangraga.umrohmobile.ui.component.ModalImagePicker
 import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
@@ -65,7 +69,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun EditProfileScreen(
     navHostController: NavHostController,
-    userId: Int,
+    userId: String,
     isLoginUser: Boolean,
     viewModel: EditProfileViewModel = koinViewModel()
 ) {
@@ -91,6 +95,10 @@ fun EditProfileScreen(
 
     EditProfileContent(
         onBackClick = { navHostController.popBackStack() },
+        isMember = uiState.isMember,
+        isLoginUser = uiState.isLoginUser,
+        username = uiState.username,
+        onUsernameChange = { viewModel.onEvent(EditProfileEvent.OnUsernameChange(it)) },
         fullname = uiState.fullname,
         onFullnameChange = { viewModel.onEvent(EditProfileEvent.OnFullnameChange(it)) },
         phoneNumber = uiState.phoneNumber,
@@ -110,6 +118,10 @@ fun EditProfileScreen(
 @Composable
 fun EditProfileContent(
     onBackClick: () -> Unit,
+    isMember: Boolean,
+    isLoginUser: Boolean,
+    username: String,
+    onUsernameChange: (String) -> Unit,
     fullname: String,
     onFullnameChange: (String) -> Unit,
     phoneNumber: String,
@@ -208,119 +220,151 @@ fun EditProfileContent(
                 title = {
                     Text(
                         text = "Ubah Profil",
-                        style = TalangragaTypography.titleLarge
+                        style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = {
+                        if (ImageViewerManager.isVisible) {
+                            ImageViewerManager.hide()
+                        } else {
+                            onBackClick()
+                        }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Background)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        containerColor = Background
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter
         ) {
-            // Profile Image Placeholder
-            Box(
+            Column(
                 modifier = Modifier
-                    .padding(vertical = 16.dp)
+                    .widthIn(max = 640.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Profile Image Placeholder
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Color.Gray.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
+                        .padding(vertical = 16.dp)
                 ) {
-                    BasicImage(
-                        model = imageUrl.orEmpty(),
+                    Box(
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                    )
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BasicImage(
+                            model = imageUrl.orEmpty(),
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    ImageViewerManager.show(imageUrl)
+                                }
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
+                            .clickable { showImagePickerSheet = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CameraAlt,
+                            contentDescription = "Change Photo",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .border(1.dp, Color.LightGray, CircleShape)
-                        .clickable { /* Pick Image */ },
-                    contentAlignment = Alignment.Center
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                InputText(
+                    title = "Nama Pengguna",
+                    value = username,
+                    onValueChange = onUsernameChange,
+                    placeholder = "Masukkan nama pengguna",
+                    backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !(isLoginUser && isMember)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                InputText(
+                    title = "Nama Lengkap",
+                    value = fullname,
+                    onValueChange = onFullnameChange,
+                    placeholder = "Masukkan nama lengkap",
+                    backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                InputText(
+                    title = "Nomor Telepon",
+                    value = phoneNumber,
+                    onValueChange = onPhoneNumberChange,
+                    placeholder = "Masukkan nomor telepon",
+                    keyboardType = KeyboardType.Phone,
+                    backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                InputText(
+                    title = "Email",
+                    value = email,
+                    onValueChange = onEmailChange,
+                    placeholder = "Masukkan email",
+                    keyboardType = KeyboardType.Email,
+                    backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                InputText(
+                    title = "Domisili",
+                    value = domicile,
+                    onValueChange = onDomicileChange,
+                    placeholder = "Masukkan domisili",
+                    backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = onSaveClick,
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = fullname.isNotBlank() && domicile.isNotBlank() && !isLoading
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "Change Photo",
-                        modifier = Modifier.size(20.dp),
-                        tint = Color.Black
-                    )
+                    Text("Simpan Perubahan")
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            InputText(
-                title = "Nama Lengkap",
-                value = fullname,
-                onValueChange = onFullnameChange,
-                placeholder = "Masukkan nama lengkap",
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            InputText(
-                title = "Nomor Telepon",
-                value = phoneNumber,
-                onValueChange = onPhoneNumberChange,
-                placeholder = "Masukkan nomor telepon",
-                keyboardType = KeyboardType.Phone,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            InputText(
-                title = "Email",
-                value = email,
-                onValueChange = onEmailChange,
-                placeholder = "Masukkan email",
-                keyboardType = KeyboardType.Email,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            InputText(
-                title = "Domisili",
-                value = domicile,
-                onValueChange = onDomicileChange,
-                placeholder = "Masukkan domisili",
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = onSaveClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Sage),
-                enabled = fullname.isNotBlank() && domicile.isNotBlank()
-            ) {
-                Text("Simpan Perubahan")
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -330,6 +374,10 @@ fun EditProfileContent(
 fun PreviewEditProfileContent() {
     EditProfileContent(
         onBackClick = { },
+        isMember = false,
+        isLoginUser = true,
+        username = "",
+        onUsernameChange = { },
         fullname = "",
         onFullnameChange = { },
         phoneNumber = "",

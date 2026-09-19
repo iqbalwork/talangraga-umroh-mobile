@@ -8,6 +8,7 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class SharedFileReader(private val context: Context) {
     actual suspend fun readBytes(uri: String): ByteArray? = withContext(Dispatchers.IO) {
         try {

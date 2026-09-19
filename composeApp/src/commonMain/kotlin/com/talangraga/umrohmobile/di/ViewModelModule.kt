@@ -3,11 +3,14 @@ package com.talangraga.umrohmobile.di
 import com.talangraga.umrohmobile.presentation.home.HomeViewModel
 import com.talangraga.umrohmobile.presentation.home.member.MemberDetailViewModel
 import com.talangraga.umrohmobile.presentation.login.LoginViewModel
+import com.talangraga.umrohmobile.presentation.periode.PeriodeViewModel
 import com.talangraga.umrohmobile.presentation.splash.SplashViewModel
 import com.talangraga.umrohmobile.presentation.transaction.TransactionViewModel
 import com.talangraga.umrohmobile.presentation.transaction.addtransaction.AddTransactionViewModel
+import com.talangraga.umrohmobile.presentation.transaction.detailtransaction.TransactionDetailViewModel
 import com.talangraga.umrohmobile.presentation.user.ListUserViewModel
 import com.talangraga.umrohmobile.presentation.user.adduser.AddUserViewModel
+import com.talangraga.umrohmobile.presentation.user.detail.UserDetailViewModel
 import com.talangraga.umrohmobile.presentation.user.changepassword.ChangePasswordViewModel
 import com.talangraga.umrohmobile.presentation.user.editprofile.EditProfileViewModel
 import com.talangraga.umrohmobile.presentation.user.profile.ProfileViewModel
@@ -21,9 +24,12 @@ val viewModelModule = module {
     viewModelOf(::ListUserViewModel)
     viewModelOf(::ProfileViewModel)
     viewModelOf(::AddUserViewModel)
+    viewModelOf(::UserDetailViewModel)
     viewModelOf(::EditProfileViewModel)
     viewModelOf(::MemberDetailViewModel)
     viewModelOf(::ChangePasswordViewModel)
     viewModelOf(::TransactionViewModel)
     viewModelOf(::AddTransactionViewModel)
+    viewModelOf(::TransactionDetailViewModel)
+    viewModelOf(::PeriodeViewModel)
 }

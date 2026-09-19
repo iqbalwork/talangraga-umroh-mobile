@@ -27,6 +27,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -55,7 +56,6 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.talangraga.shared.Background
 import com.talangraga.shared.Red
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.mandatory
@@ -85,7 +85,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun AddUserScreen(
     navController: NavHostController,
     isEdit: Boolean,
-    userId: Int,
+    userId: String,
     isLoginUser: Boolean,
     viewModel: AddUserViewModel = koinViewModel()
 ) {
@@ -246,18 +246,28 @@ fun AddUserContent(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = titleLabel, style = TalangragaTypography.titleLarge
+                        text = titleLabel,
+                        style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                }, navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        if (ImageViewerManager.isVisible) {
+                            ImageViewerManager.hide()
+                        } else {
+                            onBackClick()
+                        }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
-                }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Background)
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
-        }, containerColor = Background
+        }
     ) { paddingValues ->
 
         ConstraintLayout(
@@ -287,10 +297,10 @@ fun AddUserContent(
                                 modifier = Modifier, contentAlignment = Alignment.Center
                             ) {
                                 BasicImage(
-                                    model = if (isEdit) user?.imageProfileUrl else imageUrl,
+                                    model = imageUrl ?: user?.imageProfileUrl,
                                     modifier = Modifier.size(124.dp).clip(CircleShape)
                                         .clickable {
-                                            ImageViewerManager.show(if (isEdit) user?.imageProfileUrl else imageUrl)
+                                            ImageViewerManager.show(imageUrl ?: user?.imageProfileUrl)
                                         }
                                 )
                             }
@@ -479,7 +489,7 @@ fun AddUserContent(
             val enableRegisterButton =
                 fullname.isNotBlank() && username.isNotBlank() && email.isNotBlank() && domicile.isNotBlank() && (password.isNotBlank() && confirmPassword.isNotBlank() && (confirmPassword == password))
             val enableSaveButton =
-                (fullname != user?.fullname) || (username != user.username) || (email != user.email) || (phoneNumber != user.phone) || (domicile != user.domicile)
+                (fullname != user?.fullname) || (username != user.username) || (email != user.email) || (phoneNumber != user.phone) || (domicile != user.domicile) || (imageUrl != null)
             LoadingButton(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                     .onGloballyPositioned { coordinates ->

@@ -10,5 +10,7 @@ data class TokenResponse(
     @SerialName("refresh_token")
     val refreshToken: String? = null,
     @SerialName("user")
-    val userResponse: UserResponse? = null
+    val userResponse: UserResponse? = null,
+    @SerialName("id")
+    val id: String? = null
 )

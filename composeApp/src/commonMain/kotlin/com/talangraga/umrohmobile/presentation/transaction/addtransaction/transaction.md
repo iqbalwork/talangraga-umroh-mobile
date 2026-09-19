@@ -41,6 +41,6 @@ Make this composable as dump as possible because this class to shows UI and not 
     - Title Label: Daftar Anggota
     - List of joined member
     - Add jumlah tabungan on each member
-## Tambah Transaksi
-    - Button label: Tambah Transaksi
+## Tambah Tabungan
+    - Button label: Tambah Tabungan
     - Button action: tap to add transaction by triggering add transaction API

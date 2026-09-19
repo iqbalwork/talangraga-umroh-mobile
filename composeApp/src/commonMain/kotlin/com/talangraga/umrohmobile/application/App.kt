@@ -28,13 +28,39 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 
-@OptIn(ExperimentalAnimationApi::class)
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.compose.ui.backhandler.BackHandler
+import com.talangraga.umrohmobile.ui.component.ImageViewerManager
+import com.talangraga.umrohmobile.ui.component.ZoomableCoilImage
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun App() {
 
     val themeManager: ThemeManager = koinInject()
     val tokenManager: TokenManager = koinInject()
     val themeMode by themeManager.themeMode.collectAsState()
+    val isDynamicColor by themeManager.isDynamicColor.collectAsState()
 
     val systemDark = isSystemInDarkTheme()
     val isDarkTheme = when (themeMode) {
@@ -54,65 +80,108 @@ fun App() {
         }
     }
 
-    Crossfade(targetState = systemDark, animationSpec = tween(400)) {
+    Crossfade(targetState = isDarkTheme, animationSpec = tween(400)) { targetDark ->
         TalangragaTheme(
-            darkTheme = isDarkTheme,
-            useDynamicColor = false
+            darkTheme = targetDark,
+            useDynamicColor = isDynamicColor
         ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                NavHost(
+                    navController = rootNavController,
+                    startDestination = Screen.SplashRoute,
+                ) {
 
-//            val navBackStack by rootNavController.currentBackStackEntryAsState()
-//            val currentRoute = navBackStack?.destination?.route
-//
-//            val showBottomBar = currentRoute !in listOf(
-//                Screen.SplashRoute::class.qualifiedName,
-//                Screen.LoginRoute::class.qualifiedName
-//            )
+                    composable<Screen.SplashRoute> {
+                        SplashScreen(rootNavController)
+                    }
 
-            NavHost(
-                navController = rootNavController,
-                startDestination = Screen.SplashRoute,
-            ) {
+                    composable<Screen.LoginRoute> {
+                        LoginScreen(rootNavController)
+                    }
 
-                composable<Screen.SplashRoute> {
-                    SplashScreen(rootNavController)
+                    // MAIN CONTENT AREA (Persistent)
+                    composable(Screen.MainRoute.ROUTE) {
+                        MainScreen(
+                            rootNavHostController = rootNavController
+                        )
+                    }
+
+                    composable<Screen.AddTransactionRoute> { backStackEntry ->
+                        val args = backStackEntry.toRoute<Screen.AddTransactionRoute>()
+                        AddTransactionScreen(rootNavController, args.isCollective)
+                    }
+
+                    composable<Screen.AddUserRoute> { backStackEntry ->
+                        val args = backStackEntry.toRoute<Screen.AddUserRoute>()
+                        AddUserScreen(
+                            navController = rootNavController,
+                            isEdit = args.isEdit,
+                            userId = args.userId,
+                            isLoginUser = args.isLoginUser
+                        )
+                    }
+
+                    composable<Screen.TransactionDetailRoute> { backStackEntry ->
+                        val args = backStackEntry.toRoute<Screen.TransactionDetailRoute>()
+                        val transaction = Json.decodeFromString<TransactionUiData>(args.transactionJson)
+                        TransactionDetailScreen(
+                            transaction = transaction,
+                            onBackClick = { rootNavController.popBackStack() }
+                        )
+                    }
                 }
 
-                composable<Screen.LoginRoute> {
-                    LoginScreen(rootNavController)
+                // Global Fullscreen Image Viewer Overlay
+                val activeImage = ImageViewerManager.activeImage
+                var backgroundAlpha by remember { mutableStateOf(1f) }
+
+                LaunchedEffect(activeImage) {
+                    if (activeImage != null) backgroundAlpha = 1f
                 }
 
-                // MAIN CONTENT AREA (Persistent)
-                composable(Screen.MainRoute.ROUTE) {
-                    MainScreen(
-                        rootNavHostController = rootNavController
-                    )
+                BackHandler(enabled = activeImage != null) {
+                    ImageViewerManager.hide()
                 }
 
-                composable<Screen.AddTransactionRoute> { backStackEntry ->
-                    val args = backStackEntry.toRoute<Screen.AddTransactionRoute>()
-                    AddTransactionScreen(rootNavController, args.isCollective)
-                }
+                AnimatedVisibility(
+                    visible = activeImage != null,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(99f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = backgroundAlpha))
+                    ) {
+                        if (activeImage != null) {
+                            ZoomableCoilImage(
+                                model = activeImage,
+                                onDismiss = {
+                                    ImageViewerManager.hide()
+                                },
+                                onDragChange = { progress ->
+                                    backgroundAlpha = (1f - progress * 4).coerceIn(0f, 1f)
+                                }
+                            )
+                        }
 
-                composable<Screen.AddUserRoute> { backStackEntry ->
-                    val args = backStackEntry.toRoute<Screen.AddUserRoute>()
-                    AddUserScreen(
-                        navController = rootNavController,
-                        isEdit = args.isEdit,
-                        userId = args.userId,
-                        isLoginUser = args.isLoginUser
-                    )
-                }
-
-                composable<Screen.TransactionDetailRoute> { backStackEntry ->
-                    val args = backStackEntry.toRoute<Screen.TransactionDetailRoute>()
-                    val transaction = Json.decodeFromString<TransactionUiData>(args.transactionJson)
-                    TransactionDetailScreen(
-                        transaction = transaction,
-                        onBackClick = { rootNavController.popBackStack() }
-                    )
+                        if (backgroundAlpha > 0.8f) {
+                            IconButton(
+                                onClick = { ImageViewerManager.hide() },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(16.dp)
+                                    .statusBarsPadding()
+                            ) {
+                                Icon(Icons.Default.Close, "Close", tint = Color.White)
+                            }
+                        }
+                    }
                 }
             }
-
         }
     }
 }

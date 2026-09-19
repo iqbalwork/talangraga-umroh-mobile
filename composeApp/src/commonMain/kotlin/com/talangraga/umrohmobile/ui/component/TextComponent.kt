@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Wallet
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,23 +23,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import com.talangraga.shared.Background
-import com.talangraga.shared.BorderColor
-import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
-import com.talangraga.shared.TextOnColor
-import com.talangraga.shared.TextSecondaryDark
+import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 
 @Composable
 fun TitleTextIcon(
     modifier: Modifier = Modifier,
     text: String,
     leadingIcon: ImageVector? = null,
-    tint: Color = TextOnColor
+    tint: Color = MaterialTheme.colorScheme.onSurface
 ) {
     ConstraintLayout(modifier = modifier) {
         val (iconRef, textRef) = createRefs()
@@ -75,14 +73,17 @@ fun TextButton(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (isSelected) Sage else Background
-    val borderColor = if (isSelected) Sage else BorderColor
-    val textColor = if (isSelected) TextOnColor else TextSecondaryDark
+    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    val textColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
     val roundedCornerShape = RoundedCornerShape(12.dp)
 
     Text(
         text = text,
-        style = TalangragaTypography.bodyMedium.copy(color = textColor),
+        style = TalangragaTypography.bodyMedium.copy(
+            color = textColor,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+        ),
         modifier = modifier
             .clip(roundedCornerShape)
             .clickable { onClick() }
@@ -90,7 +91,6 @@ fun TextButton(
             .border(width = 1.dp, color = borderColor, shape = roundedCornerShape)
             .padding(horizontal = 16.dp, vertical = 10.dp),
     )
-
 }
 
 @Composable
@@ -101,11 +101,10 @@ fun TextButtonOption(
     trailingIcon: ImageVector? = Icons.Default.ArrowDropDown,
     onClick: () -> Unit
 ) {
-
     val isEmptyText = text.isBlank() || text.contains("null")
-    val backgroundColor = if (!isEmptyText) Sage else Background
-    val borderColor = if (!isEmptyText) Sage else BorderColor
-    val selectedTextColor = if (!isEmptyText) TextOnColor else TextSecondaryDark
+    val backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh
+    val borderColor = if (!isEmptyText) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    val textColor = if (!isEmptyText) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
     val roundedCornerShape = RoundedCornerShape(12.dp)
 
     Row(
@@ -116,54 +115,50 @@ fun TextButtonOption(
             .clickable { onClick() }
             .background(backgroundColor)
             .border(width = 1.dp, color = borderColor, shape = roundedCornerShape)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
-
         val label = if (isEmptyText) placeholder else text
 
         Text(
             text = label,
-            style = TalangragaTypography.bodyMedium.copy(color = selectedTextColor),
+            style = TalangragaTypography.bodyMedium.copy(
+                color = textColor,
+                fontWeight = if (!isEmptyText) FontWeight.Medium else FontWeight.Normal
+            ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
+            modifier = Modifier.weight(1f, fill = false)
         )
         Spacer(Modifier.width(12.dp))
         trailingIcon?.let {
             Icon(
                 imageVector = it,
                 contentDescription = null,
-                tint = selectedTextColor,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
             )
         }
     }
-
 }
 
 @Preview
 @Composable
 fun TextRoundedPreview() {
-    Column {
-        TitleTextIcon(text = "Total Tabungan", leadingIcon = Icons.Default.Wallet)
-        Row(
-            modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(text = "Semua", isSelected = true, modifier = Modifier) { }
-            TextButtonOption(
-                text = "Bulan ke 31: 6 Nov - 5 Des 2025",
-                placeholder = "Pilih Bulan",
-                trailingIcon = Icons.Default.ArrowDropDown,
-                modifier = Modifier.weight(1f)
-            ) { }
+    TalangragaTheme {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TitleTextIcon(text = "Total Tabungan", leadingIcon = Icons.Default.Wallet)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(text = "Semua", isSelected = true, modifier = Modifier) { }
+                TextButtonOption(
+                    text = "Bulan ke 31: 6 Nov - 5 Des 2025",
+                    placeholder = "Pilih Bulan",
+                    trailingIcon = Icons.Default.ArrowDropDown,
+                    modifier = Modifier.weight(1f)
+                ) { }
+            }
         }
-        TextButtonOption(
-            text = "",
-            placeholder = "Pilih Bulan",
-            trailingIcon = Icons.Default.ArrowDropDown,
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
-        ) { }
     }
 }

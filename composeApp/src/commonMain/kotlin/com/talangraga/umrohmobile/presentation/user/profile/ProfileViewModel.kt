@@ -2,20 +2,26 @@ package com.talangraga.umrohmobile.presentation.user.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.talangraga.data.domain.repository.Repository
 import com.talangraga.data.local.session.Session
 import com.talangraga.data.network.TokenManager
+import com.talangraga.data.network.api.Result
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     val session: Session,
     private val tokenManager: TokenManager,
+    private val repository: Repository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileState(imageUrl = session.userProfile.value?.imageProfile))
@@ -24,11 +30,43 @@ class ProfileViewModel(
     private val _effect = MutableSharedFlow<ProfileEffect>()
     val effect: SharedFlow<ProfileEffect> = _effect.asSharedFlow()
 
+    init {
+        fetchProfile()
+        viewModelScope.launch {
+            session.userProfile.collectLatest { user ->
+                _uiState.update { it.copy(imageUrl = user?.imageProfile) }
+            }
+        }
+    }
+
     fun onEvent(event: ProfileEvent) {
         when (event) {
             is ProfileEvent.OnImageChange -> _uiState.update { it.copy(imageUrl = event.uri) }
             is ProfileEvent.ClearSession -> clearSession()
+            is ProfileEvent.FetchProfile -> fetchProfile()
         }
+    }
+
+    fun fetchProfile() {
+        _uiState.update { it.copy(isLoading = true) }
+        repository.getLoginProfile()
+            .onEach { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _uiState.update { it.copy(isLoading = false, errorMessage = result.t.message) }
+                    }
+                    is Result.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                imageUrl = result.data.imageProfile,
+                                errorMessage = null
+                            )
+                        }
+                    }
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun clearSession() {

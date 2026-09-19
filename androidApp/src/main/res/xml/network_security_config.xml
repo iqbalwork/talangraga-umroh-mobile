@@ -2,12 +2,14 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.101.2</domain>
+        <domain includeSubdomains="true">192.168.101.4</domain>
         <domain includeSubdomains="true">192.168.101.5</domain>
         <domain includeSubdomains="true">192.168.101.6</domain>
         <domain includeSubdomains="true">192.168.101.7</domain>
         <domain includeSubdomains="true">192.168.101.8</domain>
         <domain includeSubdomains="true">192.168.101.9</domain>
         <domain includeSubdomains="true">192.168.101.12</domain>
+        <domain includeSubdomains="true">192.168.101.25</domain>
         <domain includeSubdomains="true">192.168.18.205</domain>
         <domain includeSubdomains="true">192.168.148.215</domain>
         <domain includeSubdomains="true">192.168.0.54</domain>
@@ -19,5 +21,15 @@
         <domain includeSubdomains="true">10.50.10.134</domain>
         <domain includeSubdomains="true">10.143.177.143</domain>
         <domain includeSubdomains="true">192.168.100.137</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">27.112.78.97</domain>
     </domain-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
 </network-security-config>

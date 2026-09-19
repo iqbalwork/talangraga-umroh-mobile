@@ -39,6 +39,9 @@ class AddTransactionViewModel(
     private val imageCompressor = ImageCompressor()
 
     init {
+        val isMemberUser = session.userProfile.value?.userType?.lowercase() != "admin"
+        _uiState.update { it.copy(isMemberUser = isMemberUser) }
+
         onEvent(AddTransactionEvent.GetListUser)
         onEvent(AddTransactionEvent.GetPeriods)
         onEvent(AddTransactionEvent.GetListPayments)
@@ -114,7 +117,14 @@ class AddTransactionViewModel(
 
                 is Result.Success -> {
                     val data = result.data.map { it.toUiData() }
-                    _uiState.update { it.copy(users = data) }
+                    _uiState.update { state -> 
+                        var updatedSelectedUser = state.selectedUser
+                        if (state.isMemberUser) {
+                            val currentUserId = session.userProfile.value?.id
+                            updatedSelectedUser = data.find { it.id == currentUserId }
+                        }
+                        state.copy(users = data, selectedUser = updatedSelectedUser) 
+                    }
                 }
             }
         }.launchIn(viewModelScope)
@@ -189,7 +199,7 @@ class AddTransactionViewModel(
 
         viewModelScope.launch {
             var allSuccess = true
-            val reportedByUserId = session.userProfile.value?.id ?: 1
+            val reportedByUserId = session.userProfile.value?.id.orEmpty()
             val periodeId = state.selectedPeriod?.periodId ?: 1
             val paymentId = state.selectedPayment?.paymentId ?: 1
             val imageFile = state.imageUri
@@ -213,10 +223,10 @@ class AddTransactionViewModel(
 
             _uiState.update { it.copy(isLoading = false) }
             if (allSuccess) {
-                _effect.emit(AddTransactionEffect.ShowToastSuccess("Semua transaksi kolektif berhasil ditambahkan"))
+                _effect.emit(AddTransactionEffect.ShowToastSuccess("Semua tabungan kolektif berhasil ditambahkan"))
                 _effect.emit(AddTransactionEffect.NavigateBack)
             } else {
-                _effect.emit(AddTransactionEffect.ShowToastError("Beberapa transaksi gagal ditambahkan"))
+                _effect.emit(AddTransactionEffect.ShowToastError("Beberapa tabungan gagal ditambahkan"))
             }
         }
     }
@@ -254,7 +264,7 @@ class AddTransactionViewModel(
         _uiState.update { it.copy(isLoading = true) }
         repository.addTransaction(
             userId = userId,
-            reportedByUserId = session.userProfile.value?.id ?: 1,
+            reportedByUserId = session.userProfile.value?.id.orEmpty(),
             amount = amount,
             transactionDate = transactionDate,
             periodeId = uiState.value.selectedPeriod?.periodId ?: 1,
@@ -265,12 +275,12 @@ class AddTransactionViewModel(
             when (result) {
                 is Result.Success -> {
                     Napier.i { "TEST => Add Transaction Succeed" }
-                    _effect.emit(AddTransactionEffect.ShowToastSuccess("Transaksi berhasil ditambahkan"))
+                    _effect.emit(AddTransactionEffect.ShowToastSuccess("Tabungan berhasil ditambahkan"))
                     _effect.emit(AddTransactionEffect.NavigateBack)
                 }
                 is Result.Error -> {
                     Napier.i { "TEST => Add Transaction Error" }
-                    _effect.emit(AddTransactionEffect.ShowToastError(result.t.message ?: "Gagal menambahkan transaksi"))
+                    _effect.emit(AddTransactionEffect.ShowToastError(result.t.message ?: "Gagal menambahkan tabungan"))
                 }
             }
         }.launchIn(viewModelScope)

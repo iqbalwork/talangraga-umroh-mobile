@@ -1,6 +1,6 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,47 +11,53 @@ plugins {
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.kotzilla)
     alias(libs.plugins.buildKonfig)
-//    alias(libs.plugins.google.services)
-//    alias(libs.plugins.crashlytics)
 }
 
 buildkonfig {
     packageName = "com.talangraga.umrohmobile"
 
-    val kotzillaStagingKey = project.findProperty("kotzillaStagingKey") ?: ""
-    val kotzillaProductionKey = project.findProperty("kotzillaProductionKey") ?: ""
+    val secretPropertiesFile = rootProject.file("secret.properties")
+    val secretProperties = Properties().apply {
+        if (secretPropertiesFile.exists()) {
+            load(secretPropertiesFile.inputStream())
+        }
+    }
+
+    val kotzillaStagingKey = secretProperties["kotzillaStagingKey"] as? String ?: ""
+    val kotzillaProductionKey = secretProperties["kotzillaProductionKey"] as? String ?: ""
+
+    val isProduction = project.hasProperty("production") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("production", ignoreCase = true) == true ||
+            System.getenv("CONFIGURATION")?.contains("production", ignoreCase = true) == true ||
+            gradle.startParameter.taskNames.any { it.contains("production", ignoreCase = true) }
+
+    val isRelease = project.hasProperty("release") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("release", ignoreCase = true) == true ||
+            System.getenv("CONFIGURATION")?.contains("release", ignoreCase = true) == true ||
+            gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
 
     defaultConfigs {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaStagingKey")
+        buildConfigField(BOOLEAN, "IS_DEBUG", (!isRelease).toString())
+        buildConfigField(STRING, "KOTZILLA_KEY", if (isProduction) kotzillaProductionKey else kotzillaStagingKey)
     }
-    // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("production") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
-        buildConfigField(STRING, "KOTZILLA_KEY", "$kotzillaProductionKey")
-    }
+}
 
+tasks.matching { it.name.contains("buildkonfig", ignoreCase = true) }.configureEach {
+    inputs.file(rootProject.file("secret.properties"))
 }
 
 kotlin {
-//    androidTarget {
-//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-//        compilerOptions {
-//            jvmTarget.set(JvmTarget.JVM_11)
-//            freeCompilerArgs.add("-Xexpect-actual-classes")
-//        }
-//    }
+    jvmToolchain(17)
 
-    androidLibrary {
+    android {
         namespace = "com.talangraga.umrohmobile"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-        experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
 
         androidResources {
             enable = true
+        }
+        withHostTest {
+
         }
     }
 
@@ -72,6 +78,9 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            api(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.crashlytics)
+            implementation(libs.firebase.analytics)
             api(libs.ui.tooling.preview)
             api(libs.ui.tooling)
             api(libs.androidx.activity.compose)
@@ -115,15 +124,15 @@ kotlin {
             api(libs.multiplatform.settings.coroutines)
 
             // Gitlive Firebase
-//            api(libs.firebase.app)
-//            api(libs.firebase.analytic)
-//            api(libs.firebase.crashlytic)
+            api(libs.firebase.app)
+            api(libs.firebase.analytic)
+            api(libs.firebase.crashlytic)
 
             // Media Picker
             api(libs.image.picker.kmp)
 
-            api(projects.data)
-            api(projects.shared)
+            api(project(":data"))
+            api(project(":shared"))
         }
         iosMain.dependencies {
             api(libs.ktor.client.darwin)

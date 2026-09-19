@@ -20,10 +20,6 @@
             "package_name": "com.talangraga.app",
             "certificate_hash": "c30fc3d71583dfd5200436ccf49fae92ff340601"
           }
-        },
-        {
-          "client_id": "330111307406-geub0evis3ufdmj4s6dcph7s3ld98eb6.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
@@ -33,28 +29,18 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "330111307406-geub0evis3ufdmj4s6dcph7s3ld98eb6.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:330111307406:android:be77870aeb76ef03edc3df",
+        "mobilesdk_app_id": "1:330111307406:android:bcdb9a1439981bbbedc3df",
         "android_client_info": {
-          "package_name": "com.talangraga.umrohmobile"
+          "package_name": "com.talangraga.umroh"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "330111307406-geub0evis3ufdmj4s6dcph7s3ld98eb6.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyC_DmO2zSzFSlnW0xGi83fZ8iDn0iEL0L0"
@@ -62,28 +48,18 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "330111307406-geub0evis3ufdmj4s6dcph7s3ld98eb6.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:330111307406:android:25c3f29594877e02edc3df",
+        "mobilesdk_app_id": "1:330111307406:android:b7d011a8ef4b9f00edc3df",
         "android_client_info": {
-          "package_name": "com.talangraga.umrohmobile.staging"
+          "package_name": "com.talangraga.umroh.dev"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "330111307406-geub0evis3ufdmj4s6dcph7s3ld98eb6.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
           "current_key": "AIzaSyC_DmO2zSzFSlnW0xGi83fZ8iDn0iEL0L0"
@@ -91,12 +67,7 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "330111307406-geub0evis3ufdmj4s6dcph7s3ld98eb6.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

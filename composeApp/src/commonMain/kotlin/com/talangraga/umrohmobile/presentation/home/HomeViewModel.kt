@@ -3,14 +3,15 @@ package com.talangraga.umrohmobile.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.talangraga.data.domain.repository.Repository
-import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.session.Session
+import com.talangraga.data.local.session.SessionKey
 import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.Result
 import com.talangraga.shared.currentDate
 import com.talangraga.shared.isDateInRange
 import com.talangraga.umrohmobile.presentation.utils.toUIData
 import com.talangraga.umrohmobile.presentation.utils.toUiData
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -34,6 +35,8 @@ class HomeViewModel(
     private val _effect = MutableSharedFlow<HomeEffect>()
     val effect: SharedFlow<HomeEffect> = _effect.asSharedFlow()
 
+    private var getTransactionsJob: Job? = null
+
     init {
         onEvent(HomeEvent.GetProfile)
         onEvent(HomeEvent.GetPeriods)
@@ -42,26 +45,35 @@ class HomeViewModel(
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.SetSelectedPeriod -> {
+                val periodId = event.period?.periodId ?: -1
+                session.saveInt(SessionKey.LAST_HOME_PERIOD_ID, periodId)
                 _uiState.update { it.copy(selectedPeriod = event.period) }
             }
+
             is HomeEvent.SetUserType -> {
                 _uiState.update { it.copy(userType = event.type) }
             }
+
             is HomeEvent.GetProfile -> {
                 getProfile()
             }
+
             is HomeEvent.GetLocalProfile -> {
                 getLocalProfile()
             }
+
             is HomeEvent.GetPeriods -> {
                 getPeriods()
             }
+
             is HomeEvent.GetTransactions -> {
                 getTransactions(event.periodId)
             }
+
             is HomeEvent.ClearSession -> {
                 clearSession()
             }
+
             is HomeEvent.ClearError -> {
                 _uiState.update { it.copy(errorMessage = null) }
             }
@@ -75,11 +87,21 @@ class HomeViewModel(
                 when (response) {
                     is Result.Error -> {
                         val errorMsg = response.t.message
-                        _uiState.update { it.copy(profile = SectionState.Error(errorMsg), errorMessage = errorMsg) }
+                        _uiState.update {
+                            it.copy(
+                                profile = SectionState.Error(errorMsg),
+                                errorMessage = errorMsg
+                            )
+                        }
                     }
 
                     is Result.Success -> {
-                        _uiState.update { it.copy(profile = SectionState.Success(response.data.toUiData())) }
+                        _uiState.update {
+                            it.copy(
+                                profile = SectionState.Success(response.data.toUiData()),
+                                userType = if (it.userType.isNullOrBlank()) response.data.userType else it.userType
+                            )
+                        }
                     }
                 }
             }
@@ -112,43 +134,64 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         val data = result.data
+                        val savedPeriodId = session.getInt(SessionKey.LAST_HOME_PERIOD_ID, 0)
+
+                        val finalPeriod = when {
+                            savedPeriodId == -1 -> null // User explicitly selected "Semua"
+                            savedPeriodId > 0 -> data.find { it.periodId == savedPeriodId }
+                            else -> {
+                                val currentPeriod = data.find { dataItem ->
+                                    currentDate.isDateInRange(dataItem.startDate, dataItem.endDate)
+                                }
+                                if (currentPeriod != null) {
+                                    session.saveInt(SessionKey.LAST_HOME_PERIOD_ID, currentPeriod.periodId)
+                                }
+                                currentPeriod
+                            }
+                        }
+
                         _uiState.update {
                             it.copy(
                                 periods = SectionState.Success(data),
+                                selectedPeriod = finalPeriod,
                                 isLoading = false
                             )
                         }
 
-                        if (_uiState.value.selectedPeriod == null) {
-                            setInitialPeriodAndTransactions(data)
-                        }
+                        onEvent(HomeEvent.GetTransactions(finalPeriod?.periodId))
                     }
                 }
             }.launchIn(viewModelScope)
     }
 
-    private fun setInitialPeriodAndTransactions(periods: List<PeriodEntity>) {
-        val currentPeriod = periods.find { data ->
-            currentDate.isDateInRange(data.startDate, data.endDate)
-        }
-
-        onEvent(HomeEvent.SetSelectedPeriod(currentPeriod))
-        onEvent(HomeEvent.GetTransactions(currentPeriod?.periodId))
-    }
-
     private fun getTransactions(periodId: Int? = null) {
+        getTransactionsJob?.cancel()
         _uiState.update { it.copy(transactions = SectionState.Loading) }
-        repository.getTransactions(periodId)
+        getTransactionsJob = repository.getTransactions(periodId)
             .onEach { result ->
                 when (result) {
                     is Result.Error -> {
                         val errorMsg = result.t.message
-                        _uiState.update { it.copy(errorMessage = errorMsg) }
+                        _uiState.update {
+                            it.copy(
+                                errorMessage = errorMsg,
+                                transactions = SectionState.Error(errorMsg),
+                            )
+                        }
                     }
 
                     is Result.Success -> {
-                        val data = result.data.map { it.toUIData() }
-                        _uiState.update { it.copy(transactions = SectionState.Success(data)) }
+                        val periods = (_uiState.value.periods as? SectionState.Success)?.data ?: emptyList()
+                        val allData = result.data.map { transaction ->
+                            val period = periods.find { it.periodId == transaction.periodId }
+                            transaction.toUIData(period)
+                        }
+                        val filteredData = if (periodId != null) {
+                            allData.filter { it.periodId == periodId }
+                        } else {
+                            allData
+                        }
+                        _uiState.update { it.copy(transactions = SectionState.Success(filteredData)) }
                     }
                 }
             }

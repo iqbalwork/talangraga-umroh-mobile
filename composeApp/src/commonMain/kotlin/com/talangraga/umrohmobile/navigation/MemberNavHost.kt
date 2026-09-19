@@ -8,6 +8,7 @@ import androidx.navigation.toRoute
 import com.talangraga.umrohmobile.presentation.home.member.MemberDetailScreen
 import com.talangraga.umrohmobile.presentation.user.ListUserScreen
 import com.talangraga.umrohmobile.presentation.user.adduser.AddUserScreen
+import com.talangraga.umrohmobile.presentation.user.detail.UserDetailScreen
 import com.talangraga.umrohmobile.presentation.user.editprofile.EditProfileScreen
 
 @Composable
@@ -42,6 +43,13 @@ fun MemberNavHost(navController: NavHostController, rootNavController: NavHostCo
             MemberDetailScreen(
                 navHostController = navController,
                 userId = args.userId,
+            )
+        }
+        composable<Screen.UserRoute> { backStackEntry ->
+            val args = backStackEntry.toRoute<Screen.UserRoute>()
+            UserDetailScreen(
+                userId = args.userId,
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

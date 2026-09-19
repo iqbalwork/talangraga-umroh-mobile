@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -39,9 +40,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.talangraga.shared.Background
-import com.talangraga.shared.BorderColor
-import com.talangraga.shared.Sage
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
 import org.jetbrains.compose.resources.stringResource
@@ -59,13 +57,12 @@ fun InputText(
     onValueChange: (String) -> Unit,
     placeholder: String,
     enabled: Boolean = true,
-    backgroundColor: Color = Color.White,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
     keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.Unspecified,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
-    val borderColor = if (value.isNotBlank()) Sage else BorderColor
     val focusManager = LocalFocusManager.current
 
     Column(
@@ -76,16 +73,20 @@ fun InputText(
             Text(
                 text = title,
                 style = TalangragaTypography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(4.dp))
         }
-        Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             placeholder = {
-                Text(placeholder)
+                Text(
+                    text = placeholder,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
             },
             singleLine = true,
             enabled = enabled,
@@ -101,7 +102,8 @@ fun InputText(
                 {
                     Icon(
                         imageVector = leadingIcon,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else null,
@@ -109,16 +111,20 @@ fun InputText(
                 {
                     Icon(
                         imageVector = trailingIcon,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = borderColor,
-                unfocusedBorderColor = BorderColor,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedContainerColor = backgroundColor,
-                unfocusedContainerColor = backgroundColor
+                unfocusedContainerColor = backgroundColor,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier.fillMaxWidth()
         )
@@ -133,13 +139,12 @@ fun InputTextWithStylingTitle(
     onValueChange: (String) -> Unit,
     placeholder: String,
     enabled: Boolean = true,
-    backgroundColor: Color = Color.White,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
     keyboardCapitalization: KeyboardCapitalization = KeyboardCapitalization.Unspecified,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
-    val borderColor = if (value.isNotBlank()) Sage else BorderColor
     val focusManager = LocalFocusManager.current
 
     Column(
@@ -150,16 +155,20 @@ fun InputTextWithStylingTitle(
             Text(
                 text = title,
                 style = TalangragaTypography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(4.dp))
         }
-        Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             placeholder = {
-                Text(placeholder)
+                Text(
+                    text = placeholder,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
             },
             singleLine = true,
             enabled = enabled,
@@ -175,7 +184,8 @@ fun InputTextWithStylingTitle(
                 {
                     Icon(
                         imageVector = leadingIcon,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else null,
@@ -183,16 +193,20 @@ fun InputTextWithStylingTitle(
                 {
                     Icon(
                         imageVector = trailingIcon,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = borderColor,
-                unfocusedBorderColor = BorderColor,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedContainerColor = backgroundColor,
-                unfocusedContainerColor = backgroundColor
+                unfocusedContainerColor = backgroundColor,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier.fillMaxWidth()
         )
@@ -207,9 +221,8 @@ fun CurrencyInputText(
     onValueChange: (String) -> Unit,
     placeholder: String,
     enabled: Boolean = true,
-    backgroundColor: Color = Background
+    backgroundColor: Color = MaterialTheme.colorScheme.surface
 ) {
-    val borderColor = if (value.isNotBlank()) Sage else BorderColor
     val focusManager = LocalFocusManager.current
     Column(
         modifier = modifier,
@@ -219,11 +232,12 @@ fun CurrencyInputText(
             Text(
                 text = title,
                 style = TalangragaTypography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(4.dp))
         }
-        Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = value,
             onValueChange = { newValue ->
@@ -234,7 +248,10 @@ fun CurrencyInputText(
                 }
             },
             placeholder = {
-                Text(placeholder)
+                Text(
+                    text = placeholder,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
             },
             singleLine = true,
             enabled = enabled,
@@ -248,10 +265,13 @@ fun CurrencyInputText(
             visualTransformation = CurrencyVisualTransformation(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = borderColor,
-                unfocusedBorderColor = BorderColor,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 focusedContainerColor = backgroundColor,
-                unfocusedContainerColor = backgroundColor
+                unfocusedContainerColor = backgroundColor,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier.fillMaxWidth()
         )
@@ -301,62 +321,6 @@ class CurrencyVisualTransformation : VisualTransformation {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun InputTextPreview() {
-    var text by remember { mutableStateOf("") }
-    TalangragaTheme {
-        Column {
-            InputText(
-                modifier = Modifier.padding(16.dp),
-                title = stringResource(Res.string.label_username_or_email),
-                value = text,
-                onValueChange = { text = it },
-                placeholder = "Enter your username or email",
-                leadingIcon = Icons.Default.AccountCircle
-            )
-            InputText(
-                modifier = Modifier.padding(16.dp),
-                title = stringResource(Res.string.label_username_or_email),
-                value = text,
-                onValueChange = { text = it },
-                placeholder = "Enter your username or email",
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-fun CurrencyInputTextPreview() {
-    var text by remember { mutableStateOf("") }
-    TalangragaTheme {
-        CurrencyInputText(
-            modifier = Modifier.padding(16.dp),
-            title = "Jumlah Tabungan",
-            value = text,
-            onValueChange = { text = it },
-            placeholder = "Rp xxx.xxx.xxx"
-        )
-    }
-}
-
-@Preview
-@Composable
-fun PasswordInputPreview() {
-    var password by remember { mutableStateOf("") }
-    TalangragaTheme {
-        PasswordInput(
-            modifier = Modifier.padding(16.dp),
-            title = stringResource(Res.string.password),
-            password = password,
-            onPasswordChange = { password = it },
-            placeholder = "Enter your password",
-            leadingIcon = Icons.Default.Security
-        )
-    }
-}
-
 @Composable
 fun PasswordInput(
     modifier: Modifier = Modifier,
@@ -365,10 +329,10 @@ fun PasswordInput(
     onPasswordChange: (String) -> Unit,
     placeholder: String,
     enabled: Boolean = true,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     leadingIcon: ImageVector? = null
 ) {
     var passwordVisibility by remember { mutableStateOf(false) }
-    val borderColor = if (password.isNotBlank()) Sage else BorderColor
     val focusManager = LocalFocusManager.current
 
     Column(
@@ -379,6 +343,7 @@ fun PasswordInput(
             text = title,
             textAlign = TextAlign.Start,
             style = TalangragaTypography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(4.dp))
@@ -386,7 +351,10 @@ fun PasswordInput(
             value = password,
             onValueChange = onPasswordChange,
             placeholder = {
-                Text(placeholder)
+                Text(
+                    text = placeholder,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
             },
             singleLine = true,
             enabled = enabled,
@@ -401,7 +369,8 @@ fun PasswordInput(
                 {
                     Icon(
                         imageVector = leadingIcon,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else null,
@@ -417,17 +386,42 @@ fun PasswordInput(
                 )
 
                 IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-                    Icon(imageVector = image, description)
+                    Icon(
+                        imageVector = image,
+                        contentDescription = description,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = borderColor,
-                unfocusedBorderColor = BorderColor,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedContainerColor = backgroundColor,
+                unfocusedContainerColor = backgroundColor,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.primary
             ),
             modifier = Modifier.fillMaxWidth()
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InputTextPreview() {
+    var text by remember { mutableStateOf("") }
+    TalangragaTheme {
+        Column {
+            InputText(
+                modifier = Modifier.padding(16.dp),
+                title = stringResource(Res.string.label_username_or_email),
+                value = text,
+                onValueChange = { text = it },
+                placeholder = "Enter your username or email",
+                leadingIcon = Icons.Default.AccountCircle
+            )
+        }
     }
 }

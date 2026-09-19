@@ -1,6 +1,5 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
@@ -24,38 +23,49 @@ buildkonfig {
         }
     }
 
-//    val stagingBaseUrl = secretProperties["staging.baseUrl"] as? String ?: ""
-
-//    val stagingUrl = project.findProperty("stagingUrl") ?: ""
     val stagingUrl = secretProperties["stagingUrl"] as? String ?: ""
     val productionUrl = secretProperties["productionUrl"] as? String ?: ""
-//    val productionUrl = project.findProperty("productionUrl") ?: ""
+    val supabaseAnonKey = secretProperties["supabaseAnonKey"] as? String ?: ""
+
+    val envConfig = System.getenv("CONFIGURATION") ?: ""
+    val taskNames = gradle.startParameter.taskNames.toString()
+    
+    // Cek dari berbagai sumber
+    val isProduction = project.hasProperty("production") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("production", ignoreCase = true) == true ||
+            envConfig.contains("production", ignoreCase = true) ||
+            taskNames.contains("production", ignoreCase = true)
+
+    // Log untuk debugging saat build (Muncul di Build Output)
+    println("BuildKonfig Debug: isProduction=$isProduction, CONFIGURATION=$envConfig, Tasks=$taskNames")
+
+    val isRelease = project.hasProperty("release") ||
+            project.findProperty("android.injected.build.variant")?.toString()?.contains("release", ignoreCase = true) == true ||
+            envConfig.contains("release", ignoreCase = true) ||
+            taskNames.contains("release", ignoreCase = true)
 
     defaultConfigs {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "true")
-        buildConfigField(STRING, "BASE_URL", stagingUrl)
+        buildConfigField(BOOLEAN, "IS_DEBUG", (!isRelease).toString())
+        buildConfigField(STRING, "BASE_URL", if (isProduction) productionUrl else stagingUrl)
+        buildConfigField(STRING, "SUPABASE_ANON_KEY", supabaseAnonKey)
     }
-    // flavor is passed as a first argument of defaultConfigs
-    defaultConfigs("production") {
-        buildConfigField(BOOLEAN, "IS_DEBUG", "false")
-        buildConfigField(STRING, "BASE_URL", productionUrl)
-    }
+}
 
+tasks.matching { it.name.contains("buildkonfig", ignoreCase = true) }.configureEach {
+    inputs.file(rootProject.file("secret.properties"))
 }
 
 kotlin {
+    jvmToolchain(17)
 
-    androidLibrary {
+    android {
         namespace = "com.talangraga.data"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
 
         androidResources {
             enable = true
         }
+        withHostTest {  }
     }
 
     listOf(
@@ -107,7 +117,7 @@ kotlin {
             implementation(libs.multiplatform.settings.serialization)
             implementation(libs.multiplatform.settings.coroutines)
 
-            implementation(projects.shared)
+            implementation(project(":shared"))
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -129,7 +139,7 @@ sqldelight {
     databases {
         create("TalangragaDatabase") {
             packageName.set("com.talangraga")
-            version = 2
+            version = 3
             // optional: specify srcDirs if you place .sq files outside default
             // srcDirs.setFrom("src/commonMain/sqldelight")
 //            verifyMigrations.set(false)

@@ -8,6 +8,8 @@ sealed class BottomNavRoute() {
     @Serializable
     data object Transaction : BottomNavRoute()
     @Serializable
+    data object Periode : BottomNavRoute()
+    @Serializable
     data object Member : BottomNavRoute()
     @Serializable
     data object Profile : BottomNavRoute()

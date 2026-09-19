@@ -39,13 +39,14 @@ fun TransactionData.toTransactionEntity(): TransactionEntity {
         reportedBy = reportedBy.orEmpty(),
         confirmedBy = confirmedBy.orEmpty(),
         userName = userName.orEmpty(),
-        userId = (userId ?: 0L).toInt()
+        userId = userId.orEmpty(),
+        periodId = (periodId ?: 0L).toInt()
     )
 }
 
 fun UserData.toUserEntity(): UserEntity {
     return UserEntity(
-        userId = userId.toInt(),
+        userId = userId,
         userName = username,
         fullname = fullname,
         email = email.orEmpty(),

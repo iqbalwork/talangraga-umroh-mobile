@@ -1,5 +1,6 @@
 package com.talangraga.umrohmobile.presentation.user
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -46,14 +50,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.talangraga.shared.TalangragaTypography
 import com.talangraga.umrohmobile.navigation.Screen
 import com.talangraga.umrohmobile.presentation.user.model.UserUIData
 import com.talangraga.umrohmobile.ui.component.BasicImage
@@ -62,6 +65,7 @@ import com.talangraga.umrohmobile.ui.component.TalangragaScaffold
 import com.talangraga.umrohmobile.ui.component.ToastManager
 import com.talangraga.umrohmobile.ui.component.ToastType
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import com.talangraga.umrohmobile.ui.utils.isWideScreen
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import talangragaumrohmobile.composeapp.generated.resources.Res
@@ -73,7 +77,6 @@ fun ListUserScreen(
     navHostController: NavHostController,
     viewModel: ListUserViewModel = koinViewModel(),
 ) {
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val errorMessage = uiState.errorMessage
 
@@ -102,12 +105,12 @@ fun ListUserScreen(
             navHostController.popBackStack()
         },
         onUserClick = {
-            navHostController.navigate(Screen.MemberDetailRoute(it.id))
+            navHostController.navigate(Screen.UserRoute(it.id, false))
         },
         onAddUserClick = {
             navHostController.navigate(
                 Screen.AddUserRoute(
-                    userId = 0,
+                    userId = "",
                     isEdit = false,
                     isLoginUser = false
                 )
@@ -121,7 +124,6 @@ fun ListUserScreen(
                     isLoginUser = false
                 )
             )
-//            navHostController.navigate(Screen.EditProfileRoute(userId = it, isLoginUser = false))
         },
         onRefresh = { viewModel.onEvent(ListUserEvent.GetListUser) }
     )
@@ -132,114 +134,131 @@ fun ListUserScreen(
 fun ListUserContent(
     onBackClick: (() -> Unit)? = null,
     onAddUserClick: (() -> Unit),
-    onEditUser: (Int) -> Unit,
+    onEditUser: (String) -> Unit,
     onUserClick: (UserUIData) -> Unit,
     state: ListUserUiState,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onRefresh: () -> Unit
 ) {
-
-    val localDensity = LocalDensity.current
-    var buttonHeight by remember { mutableStateOf(0.dp) }
-
+    val isWide = isWideScreen()
     val refreshState = rememberPullToRefreshState()
 
     TalangragaScaffold(
         contentWindowInsets = WindowInsets.statusBars,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Daftar Anggota", style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Text(
+                        text = "Daftar Anggota",
+                        style = TalangragaTypography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    onAddUserClick()
-                },
+                onClick = onAddUserClick,
                 containerColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .onGloballyPositioned { coordinates ->
-                        buttonHeight = with(localDensity) { coordinates.size.height.toDp() }
-                    }
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(bottom = if (isWide) 16.dp else 100.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add Transaction",
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    contentDescription = "Tambah Anggota"
                 )
             }
         }
     ) { paddingValues ->
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            InputText(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                placeholder = stringResource(Res.string.search_username),
+                backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                InputText(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    placeholder = stringResource(Res.string.search_username),
-                    backgroundColor = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .padding(horizontal = 16.dp)
-                )
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
 
-                PullToRefreshBox(
-                    state = refreshState,
-                    isRefreshing = state is ListUserUiState.Loading && searchQuery.isEmpty(), // Only show refresh indicator when loading full list
-                    onRefresh = onRefresh,
-                    modifier = Modifier.weight(1f) // Fill remaining space for list
-                ) {
-                    when (state) {
-                        ListUserUiState.EmptyData -> {
+            PullToRefreshBox(
+                state = refreshState,
+                isRefreshing = state is ListUserUiState.Loading && searchQuery.isEmpty(),
+                onRefresh = onRefresh,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                when (state) {
+                    ListUserUiState.EmptyData -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Tidak ada anggota ditemukan",
+                                style = TalangragaTypography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    ListUserUiState.Loading -> {
+                        if (refreshState.isAnimating) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Tidak ada data.")
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             }
                         }
+                    }
 
-                        ListUserUiState.Loading -> {
-                            // Show loading indicator only if not refreshing (initial load)
-                            // PullToRefreshBox handles the spinner for refresh
-                            if (refreshState.isAnimating) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            } else {
-                                // Empty content while refreshing if you prefer, or keep showing list
-                                Box(modifier = Modifier.fillMaxSize())
-                            }
-                        }
-
-                        is ListUserUiState.Success -> {
-                            LazyColumn(
+                    is ListUserUiState.Success -> {
+                        if (isWide) {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 320.dp),
                                 modifier = Modifier.fillMaxSize(),
                                 contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                itemsIndexed(state.users) { index, user ->
+                                items(state.users, key = { it.id }) { user ->
                                     UserItem(
                                         user = user,
                                         onEditUser = onEditUser,
-                                        modifier = Modifier.padding(bottom = if (index == state.users.lastIndex) buttonHeight + 16.dp else 0.dp)
-                                            .clickable {
-                                                onUserClick(user)
-                                            }
+                                        modifier = Modifier
                                             .fillMaxWidth()
+                                            .clickable { onUserClick(user) }
+                                    )
+                                }
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    top = 8.dp,
+                                    bottom = 120.dp
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(state.users, key = { it.id }) { user ->
+                                    UserItem(
+                                        user = user,
+                                        onEditUser = onEditUser,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { onUserClick(user) }
                                     )
                                 }
                             }
@@ -254,16 +273,17 @@ fun ListUserContent(
 @Composable
 fun UserItem(
     user: UserUIData,
-    onEditUser: (Int) -> Unit,
+    onEditUser: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
             modifier = Modifier
@@ -276,27 +296,27 @@ fun UserItem(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                if (user.imageProfileUrl.isNotBlank()) {
+                if (user.imageProfileUrl.isNotEmpty()) {
                     BasicImage(
                         model = user.imageProfileUrl,
                         modifier = Modifier
-                            .size(48.dp)
+                            .fillMaxSize()
                             .clip(CircleShape)
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.Person,
-                        contentDescription = "User Avatar",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(30.dp)
+                        contentDescription = "Avatar",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(28.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
             // User Info
             Column(
@@ -304,90 +324,77 @@ fun UserItem(
             ) {
                 Text(
                     text = user.fullname,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = "@${user.username}",
+                    style = TalangragaTypography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Role Badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            if (user.userType == "admin")
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                            else
-                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (user.userType.lowercase() == "admin")
+                            MaterialTheme.colorScheme.primaryContainer
+                        else
+                            MaterialTheme.colorScheme.secondaryContainer
+                    )
                 ) {
                     Text(
-                        text = user.userType.replaceFirstChar { it.uppercase() },
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = if (user.userType == "admin")
-                            MaterialTheme.colorScheme.primary
+                        text = user.userType.replaceFirstChar { it.titlecase() },
+                        style = TalangragaTypography.bodySmall.copy(
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = if (user.userType.lowercase() == "admin")
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         else
-                            MaterialTheme.colorScheme.secondary,
-                        fontSize = 12.sp
+                            MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(4.dp))
-
+            // Edit Action
             IconButton(
-                modifier = Modifier,
-                onClick = { onEditUser(user.id) }
+                onClick = { onEditUser(user.id) },
+                modifier = Modifier.size(36.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = null,
+                    contentDescription = "Edit User",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
-fun ListUserContentSuccessPreview() {
-    val users = listOf(
-        UserUIData(
-            id = 1,
-            fullname = "John Doe",
-            phone = "081234567890",
-            userType = "Admin",
-            username = "",
-            email = "johndoe@mail.com",
-            domicile = "Bandung",
-            imageProfileUrl = "",
-            isActive = true
-        ),
-        UserUIData(
-            id = 1,
-            fullname = "John Doe",
-            phone = "081234567890",
-            userType = "Member",
-            username = "",
-            email = "johndoe@mail.com",
-            domicile = "Bandung",
-            imageProfileUrl = "",
-            isActive = true
-        )
-    )
-    TalangragaTheme(useDynamicColor = false) {
-        ListUserContent(
-            onUserClick = {},
-            state = ListUserUiState.Success(users),
-            onBackClick = { },
-            onAddUserClick = { },
-            onEditUser = {},
-            searchQuery = "",
-            onSearchQueryChange = {},
-            onRefresh = {}
-        )
+fun UserItemPreview() {
+    TalangragaTheme {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            UserItem(
+                user = UserUIData(
+                    id = "1",
+                    fullname = "Iqbal Fauzi",
+                    email = "work.iqbalfauzi@gmail.com",
+                    phone = "087822882668",
+                    imageProfileUrl = "",
+                    userType = "Admin",
+                    username = "iqbalf",
+                    domicile = "Bandung",
+                    isActive = true
+                ),
+                onEditUser = {}
+            )
+        }
     }
 }

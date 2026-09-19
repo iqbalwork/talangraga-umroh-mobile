@@ -1,6 +1,7 @@
 package com.talangraga.umrohmobile.presentation.utils
 
 import com.talangraga.data.local.database.model.PaymentEntity
+import com.talangraga.data.local.database.model.PeriodEntity
 import com.talangraga.data.local.database.model.TransactionEntity
 import com.talangraga.data.local.database.model.UserEntity
 import com.talangraga.data.network.model.response.UserResponse
@@ -17,7 +18,7 @@ fun UserResponse.toUiData(): UserUIData {
         phone = phone.orEmpty(),
         domicile = domisili.orEmpty(),
         userType = userType.orEmpty(),
-        imageProfileUrl = imageProfile.orEmpty(),
+        imageProfileUrl = resolveImageUrl(imageProfile).orEmpty(),
         isActive = isActive ?: false,
     )
 }
@@ -31,25 +32,29 @@ fun UserEntity.toUiData(): UserUIData {
         phone = phone,
         domicile = domisili,
         userType = userType,
-        imageProfileUrl = imageProfileUrl,
+        imageProfileUrl = resolveImageUrl(imageProfileUrl).orEmpty(),
         isActive = true,
     )
 }
 
-fun TransactionEntity.toUIData(): TransactionUiData {
+fun TransactionEntity.toUIData(period: PeriodEntity? = null): TransactionUiData {
     return TransactionUiData(
         transactionId = transactionId,
         amount = amount,
         transactionDate = this.transactionDate,
         statusTransaksi = this.statusTransaksi,
         reportedDate = this.reportedDate,
-        buktiTransferUrl = this.buktiTransferUrl,
+        buktiTransferUrl = resolveImageUrl(this.buktiTransferUrl).orEmpty(),
         reportedBy = this.reportedBy,
         confirmedBy = this.confirmedBy,
         paymentType = this.paymentType,
         paymentName = this.paymentName,
         userName = this.userName,
-        userId = this.userId
+        userId = this.userId,
+        periodId = this.periodId,
+        periodName = period?.periodeName.orEmpty(),
+        periodStartDate = period?.startDate.orEmpty(),
+        periodEndDate = period?.endDate.orEmpty()
     )
 }
 

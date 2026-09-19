@@ -12,5 +12,6 @@ data class TransactionEntity(
     val reportedBy: String,
     val confirmedBy: String,
     val userName: String,
-    val userId: Int
+    val userId: String,
+    val periodId: Int
 )

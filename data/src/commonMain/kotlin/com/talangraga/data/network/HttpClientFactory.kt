@@ -1,9 +1,11 @@
 package com.talangraga.data.network
 
+import com.talangraga.data.AppConfig
 import com.talangraga.data.BuildKonfig
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -15,10 +17,6 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -37,6 +35,12 @@ object HttpClientFactory {
     ): HttpClient {
 
         val client = HttpClient(engine) {
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 30000
+                connectTimeoutMillis = 15000
+                socketTimeoutMillis = 30000
+            }
 
             if (BuildKonfig.IS_DEBUG) {
 
@@ -66,14 +70,17 @@ object HttpClientFactory {
 
             install(Auth) {
                 bearer {
-                    // Always attach token, even if server doesn't send WWW-Authenticate
-                    sendWithoutRequest { true }
+                    // Attach token automatically for authenticated endpoints
+                    sendWithoutRequest { request ->
+                        val url = request.url.buildString()
+                        !url.contains("auth/v1/token") && !url.contains("auth/v1/signup")
+                    }
 
                     loadTokens {
                         val access = tokenManager.getAccessToken()
                         val refresh = tokenManager.getRefreshToken()
-                        if (access.isNotBlank() && refresh.isNotBlank())
-                            BearerTokens(access, refresh)
+                        if (access.isNotBlank())
+                            BearerTokens(access, refresh.ifBlank { access })
                         else null
                     }
 
@@ -104,19 +111,7 @@ object HttpClientFactory {
 
             defaultRequest {
                 url(BuildKonfig.BASE_URL)
-            }
-        }
-
-        // Reactive header updates when token changes
-        CoroutineScope(Dispatchers.Default).launch {
-            tokenManager.tokenFlow.collectLatest { token ->
-                client.config {
-                    defaultRequest {
-                        if (token.isNotEmpty()) {
-                            header(HttpHeaders.Authorization, "Bearer $token")
-                        }
-                    }
-                }
+                header("apikey", AppConfig.SUPABASE_ANON_KEY)
             }
         }
 

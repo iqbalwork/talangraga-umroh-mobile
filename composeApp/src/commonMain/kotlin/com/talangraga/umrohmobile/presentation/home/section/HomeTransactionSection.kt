@@ -4,13 +4,17 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
@@ -32,16 +36,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.talangraga.shared.Aqua
 import com.talangraga.shared.Green
 import com.talangraga.shared.MediumPurple
-import com.talangraga.shared.PorcelainDark
 import com.talangraga.shared.RosePink
 import com.talangraga.shared.TalangragaTypography
 import com.talangraga.shared.formatToIDR
@@ -51,6 +54,7 @@ import com.talangraga.umrohmobile.ui.component.IconBlock
 import com.talangraga.umrohmobile.ui.component.TransactionItem
 import com.talangraga.umrohmobile.ui.section.CardInfoSection
 import com.talangraga.umrohmobile.ui.theme.TalangragaTheme
+import com.talangraga.umrohmobile.ui.utils.isWideScreen
 
 @Composable
 fun HomeInfoTransactionSection(
@@ -61,13 +65,26 @@ fun HomeInfoTransactionSection(
     onClickSeeMore: () -> Unit,
     onTransactionClick: (TransactionUiData) -> Unit = {}
 ) {
+    val isWide = isWideScreen()
+
     when (state) {
         is SectionState.Error -> {
-
+            Box(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Gagal memuat data transaksi",
+                    style = TalangragaTypography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         }
 
         is SectionState.Loading -> {
-
+            // Skeleton or loading placeholder handled by parent PullToRefresh
         }
 
         is SectionState.Success -> {
@@ -87,39 +104,90 @@ fun HomeInfoTransactionSection(
                 }
 
                 if (transactionAvailable) {
-                    CardInfoSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        title = "Total Tabungan Periode ini",
-                        value = if (transactionAvailable) totalAmount.formatToIDR() else "Belum Ada Transaksi",
-                        icon = Icons.Default.Wallet,
-                        illustrationIcon = Icons.Default.AttachMoney,
-                        startIconColor = Aqua,
-                        endIconColor = Green
-                    )
                     val totalMember = transactions.distinctBy { it.reportedBy }.size
                     val average = transactions.map { it.amount }.average()
-                    if (isHomeAdminDashboard) {
-                        CardInfoSection(
+
+                    if (isWide) {
+                        // Wide Screen: Responsive Row of Summary KPI Cards
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            title = "Anggota yang Menabung",
-                            value = if (transactionAvailable) totalMember.toString() else "Belum ada yang menabung",
-                            notes = if (transactionAvailable) "Bulan ini" else "",
-                            notesColor = PorcelainDark,
-                            icon = Icons.Default.People,
-                            illustrationIcon = Icons.Default.AccountCircle,
-                            startIconColor = MediumPurple,
-                            endIconColor = MediumPurple
-                        )
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CardInfoSection(
+                                modifier = Modifier.weight(1f),
+                                title = "Total Tabungan Periode ini",
+                                value = totalAmount.formatToIDR(),
+                                icon = Icons.Default.Wallet,
+                                illustrationIcon = Icons.Default.AttachMoney,
+                                startIconColor = Aqua,
+                                endIconColor = Green
+                            )
+
+                            if (isHomeAdminDashboard) {
+                                CardInfoSection(
+                                    modifier = Modifier.weight(1f),
+                                    title = "Anggota Menabung",
+                                    value = totalMember.toString(),
+                                    notes = "Bulan ini",
+                                    notesColor = MaterialTheme.colorScheme.primary,
+                                    icon = Icons.Default.People,
+                                    illustrationIcon = Icons.Default.AccountCircle,
+                                    startIconColor = MediumPurple,
+                                    endIconColor = MediumPurple
+                                )
+                            }
+
+                            CardInfoSection(
+                                modifier = Modifier.weight(1f),
+                                title = "Rata-rata Tabungan",
+                                value = average.toInt().formatToIDR(),
+                                icon = Icons.Default.CreditCard,
+                                illustrationIcon = Icons.Default.Calculate,
+                                startIconColor = RosePink,
+                                endIconColor = RosePink
+                            )
+                        }
+                    } else {
+                        // Phone Screen: Vertical stack of KPI cards
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            CardInfoSection(
+                                modifier = Modifier.fillMaxWidth(),
+                                title = "Total Tabungan Periode ini",
+                                value = totalAmount.formatToIDR(),
+                                icon = Icons.Default.Wallet,
+                                illustrationIcon = Icons.Default.AttachMoney,
+                                startIconColor = Aqua,
+                                endIconColor = Green
+                            )
+
+                            if (isHomeAdminDashboard) {
+                                CardInfoSection(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    title = "Anggota yang Menabung",
+                                    value = totalMember.toString(),
+                                    notes = "Bulan ini",
+                                    notesColor = MaterialTheme.colorScheme.primary,
+                                    icon = Icons.Default.People,
+                                    illustrationIcon = Icons.Default.AccountCircle,
+                                    startIconColor = MediumPurple,
+                                    endIconColor = MediumPurple
+                                )
+                            }
+
+                            CardInfoSection(
+                                modifier = Modifier.fillMaxWidth(),
+                                title = "Rata-rata Tabungan",
+                                value = average.toInt().formatToIDR(),
+                                icon = Icons.Default.CreditCard,
+                                illustrationIcon = Icons.Default.Calculate,
+                                startIconColor = RosePink,
+                                endIconColor = RosePink
+                            )
+                        }
                     }
-                    CardInfoSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        title = "Rata-rata Tabungan",
-                        value = average.toInt().formatToIDR(),
-                        icon = Icons.Default.CreditCard,
-                        illustrationIcon = Icons.Default.Calculate,
-                        startIconColor = RosePink,
-                        endIconColor = RosePink
-                    )
 
                     TransactionsList(
                         modifier = Modifier,
@@ -142,21 +210,43 @@ fun TransactionsList(
     onClickSeeMore: () -> Unit,
     onTransactionClick: (TransactionUiData) -> Unit = {}
 ) {
+    val isWide = isWideScreen()
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing between items
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Tabungan Terakhir",
+                style = TalangragaTypography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
 
-        Text(
-            text = "Transaksi Terakhir",
-            style = TalangragaTypography.titleLarge,
-        )
+            if (!isHomeAdminDashboard && transactions.isNotEmpty()) {
+                Text(
+                    text = "Lihat Semua",
+                    style = TalangragaTypography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onClickSeeMore() }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+        }
 
         HorizontalDivider(
             modifier = Modifier.fillMaxWidth(),
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
             thickness = 1.dp
         )
 
@@ -164,23 +254,51 @@ fun TransactionsList(
             visible = transactions.isEmpty(),
         ) {
             Text(
-                text = "Tidak ada transaksi terkini.",
+                text = "Tidak ada tabungan terkini.",
                 style = TalangragaTypography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
             )
         }
 
         AnimatedVisibility(
-            transactions.isNotEmpty(),
+            visible = transactions.isNotEmpty(),
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                transactions.take(if (isHomeAdminDashboard) transactions.size else 3)
-                    .forEach { transaction ->
+            val displayList = transactions.take(if (isHomeAdminDashboard) transactions.size else 4)
+
+            if (isWide && displayList.size > 1) {
+                // 2-column adaptive layout on tablet
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    displayList.chunked(2).forEach { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            rowItems.forEach { transaction ->
+                                TransactionItem(
+                                    modifier = Modifier.weight(1f),
+                                    username = transaction.userName,
+                                    paymentName = transaction.paymentName,
+                                    paymentMethod = transaction.paymentType,
+                                    date = transaction.transactionDate,
+                                    amount = transaction.amount,
+                                    status = transaction.statusTransaksi,
+                                    onClick = { onTransactionClick(transaction) }
+                                )
+                            }
+                            if (rowItems.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    displayList.forEach { transaction ->
                         TransactionItem(
                             modifier = Modifier.fillMaxWidth(),
                             username = transaction.userName,
@@ -188,22 +306,8 @@ fun TransactionsList(
                             paymentMethod = transaction.paymentType,
                             date = transaction.transactionDate,
                             amount = transaction.amount,
+                            status = transaction.statusTransaksi,
                             onClick = { onTransactionClick(transaction) }
-                        )
-                    }
-                if (!isHomeAdminDashboard) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onClickSeeMore()
-                            },
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Semua transaksi", style = TalangragaTypography.bodySmall)
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null
                         )
                     }
                 }
@@ -216,21 +320,20 @@ fun TransactionsList(
 fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: () -> Unit) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        ConstraintLayout(
+        Column(
             modifier = Modifier
-                .background(color = MaterialTheme.colorScheme.surfaceBright)
-                .padding(16.dp)
-                .fillMaxWidth()
+                .padding(24.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            val (iconRef, titleRef, descRef) = createRefs()
             Row(
-                modifier = Modifier.constrainAs(iconRef) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 IconBlock(
@@ -242,7 +345,6 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
                     icon = Icons.Default.MoneyOff,
                     startColor = Aqua,
                     endColor = Green,
-                    modifier = Modifier
                 )
                 IconBlock(
                     icon = Icons.Default.Calculate,
@@ -250,40 +352,33 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
                     endColor = RosePink,
                 )
             }
+
+            Spacer(Modifier.height(16.dp))
+
             Text(
                 text = "Belum ada data tabungan",
                 style = TalangragaTypography.titleLarge.copy(
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .constrainAs(titleRef) {
-                        top.linkTo(iconRef.bottom, 16.dp)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
+                color = MaterialTheme.colorScheme.onSurface
             )
+
+            Spacer(Modifier.height(8.dp))
+
             Text(
                 text = "Data tabungan dan anggota akan muncul disini setelah kamu mulai menambahkan tabungan.",
                 style = TalangragaTypography.bodyMedium.copy(
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Normal
+                    textAlign = TextAlign.Center
                 ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .constrainAs(descRef) {
-                        top.linkTo(titleRef.bottom, 16.dp)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Spacer(Modifier.height(20.dp))
+
             Button(
                 onClick = onClickAddTabungan,
-                modifier = Modifier.constrainAs(createRef()) {
-                    top.linkTo(descRef.bottom, 24.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -291,10 +386,7 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text(
-//                        text = stringResource(Res.string.login),
-                        text = "Tambah Tabungan",
-                    )
+                    Text(text = "Tambah Tabungan")
                 }
             }
         }
@@ -304,68 +396,7 @@ fun EmptyTransactionSection(modifier: Modifier = Modifier, onClickAddTabungan: (
 @Preview
 @Composable
 fun PreviewEmptyTransactionSection() {
-    EmptyTransactionSection { }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewTransactionSection() {
-    val dummyTransactions = listOf(
-        TransactionUiData(
-            transactionId = 1,
-            amount = 500000,
-            transactionDate = "2025-08-29T22:15:00.000Z",
-            statusTransaksi = "",
-            reportedDate = "2025-08-29T22:15:00.000Z",
-            buktiTransferUrl = "",
-            paymentType = "Bank Transfer",
-            paymentName = "BCA",
-            reportedBy = "Iqbal Fauzi",
-            confirmedBy = "",
-            userName = "Iqbal Fauzi",
-            userId = 1
-        ),
-        TransactionUiData(
-            transactionId = 2,
-            amount = 250000,
-            transactionDate = "2025-08-29T22:15:00.000Z",
-            statusTransaksi = "",
-            reportedDate = "2025-08-29T22:15:00.000Z",
-            buktiTransferUrl = "",
-            paymentType = "Bank Transfer",
-            paymentName = "BCA",
-            reportedBy = "Iqbal Fauzi",
-            confirmedBy = "",
-            userName = "Iqbal Fauzi",
-            userId = 1
-        ),
-        TransactionUiData(
-            transactionId = 3,
-            amount = 200000,
-            transactionDate = "2025-08-29T22:15:00.000Z",
-            statusTransaksi = "",
-            reportedDate = "2025-08-29T22:15:00.000Z",
-            buktiTransferUrl = "",
-            paymentType = "Bank Transfer",
-            paymentName = "BCA",
-            reportedBy = "Iqbal Fauzi",
-            confirmedBy = "",
-            userName = "Iqbal Fauzi",
-            userId = 1
-        )
-    )
-    TalangragaTheme(useDynamicColor = false) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            TransactionsList(
-                transactions = dummyTransactions,
-                isHomeAdminDashboard = true,
-                onClickSeeMore = {}
-            )
-            TransactionsList(
-                transactions = emptyList(),
-                isHomeAdminDashboard = false,
-                onClickSeeMore = {}
-            ) // Preview for empty state
-        }
+    TalangragaTheme {
+        EmptyTransactionSection { }
     }
 }

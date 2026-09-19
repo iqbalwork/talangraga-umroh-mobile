@@ -37,6 +37,7 @@ import androidx.compose.ui.util.fastForEach
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import com.talangraga.umrohmobile.presentation.utils.resolveImageUrl
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -115,8 +116,11 @@ fun ZoomableCoilImage(
             }
             .onSizeChanged { size = it } // Standard Modifier
     ) {
+        val processedModel = remember(model) {
+            if (model is String) resolveImageUrl(model) else model
+        }
         SubcomposeAsyncImage(
-            model = model,
+            model = processedModel,
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize()

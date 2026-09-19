@@ -15,13 +15,12 @@ import com.talangraga.data.mapper.toUserEntity
 import com.talangraga.data.network.TokenManager
 import com.talangraga.data.network.api.ApiService
 import com.talangraga.data.network.api.Result
-import com.talangraga.data.network.model.response.DataResponse
+import com.talangraga.data.network.model.response.PeriodeResponse
 import com.talangraga.data.network.model.response.TokenResponse
 import com.talangraga.data.network.model.response.UserResponse
 import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
@@ -29,7 +28,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 class RepositoryImpl(
     private val apiService: ApiService,
@@ -38,94 +36,46 @@ class RepositoryImpl(
     private val databaseHelper: DatabaseHelper
 ) : Repository {
 
-    inline fun <T> safeApiCall(
-        crossinline apiCall: suspend () -> DataResponse<T>,
-        crossinline onSuccess: suspend (T) -> Unit = {}
-    ): Flow<Result<T>> = flow {
-        try {
-            val response = apiCall()
-            val data = response.data
-
-            if (data != null) {
-                onSuccess(data)
-                emit(Result.Success(data))
-            } else {
-                emit(Result.Error(Exception(response.message)))
-            }
-        } catch (e: JsonConvertException) {
-            val message = normalizeErrorMessage(e)
-            emit(Result.Error(Exception(message)))
-        } catch (e: Exception) {
-            val message = normalizeErrorMessage(e)
-            emit(Result.Error(Exception(message)))
-        }
-    }
-
-    fun <LocalType, NetworkType> networkBoundResource(
-        query: () -> Flow<LocalType>?,
-        fetch: suspend () -> DataResponse<NetworkType>,
-        saveFetchResult: suspend (LocalType) -> Unit,
-        mapper: (NetworkType) -> LocalType
-    ): Flow<Result<LocalType>> = channelFlow {
-
-        val db = launch {
-            query()?.collectLatest { data ->
-                send(Result.Success(data))
-            }
-        }
-
-        launch(Dispatchers.IO) {
-            try {
-                // Fetch new data
-                val networkResponse = fetch()
-                if (networkResponse.data != null) {
-                    val mappedData = mapper(networkResponse.data)
-                    // Replace cache
-                    saveFetchResult(mappedData)
-                    // Emit updated data
-                    send(Result.Success(mappedData))
-                } else {
-                    send(Result.Error(Exception(networkResponse.message)))
-                }
-            } catch (e: JsonConvertException) {
-                val message =
-                    normalizeErrorMessage(e)
-                send(Result.Error(Exception(message)))
-            } catch (e: Exception) {
-                val message =
-                    normalizeErrorMessage(e)
-                send(Result.Error(Exception(message)))
-            }
-        }
-
-        awaitClose { db.cancel() }
+    override fun getEmailByIdentifier(identifier: String): Flow<Result<String>> {
+        return safeApiCallDirect(
+            apiCall = { apiService.getEmailByIdentifier(identifier) }
+        )
     }
 
     override fun login(
         identifier: String,
         password: String
     ): Flow<Result<TokenResponse>> {
-        return safeApiCall(
+        return safeApiCallDirect(
             apiCall = {
                 tokenManager.clearToken()
-                apiService.login(identifier, password)
+                val token = apiService.login(identifier, password)
+                if (token.accessToken.isNullOrBlank()) {
+                    throw Exception("Invalid login credentials")
+                }
+                token
             },
             onSuccess = { token ->
-                tokenManager.saveAccessToken(token.accessToken.orEmpty())
-                tokenManager.saveRefreshToken(token.refreshToken.orEmpty())
-                token.userResponse?.let {
-                    session.saveProfile(token.userResponse)
+                val accessToken = token.accessToken.orEmpty()
+                if (accessToken.isNotBlank()) {
+                    tokenManager.saveAccessToken(accessToken)
+                    tokenManager.saveRefreshToken(token.refreshToken.orEmpty())
                     session.saveBoolean(SessionKey.IS_LOGGED_IN, true)
+                    token.userResponse?.let {
+                        session.saveProfile(it)
+                    }
                 }
             }
         )
     }
 
     override fun getLoginProfile(): Flow<Result<UserResponse>> {
-        return safeApiCall(
-            apiCall = { apiService.getLoginProfile() },
+        val currentUserId = session.getProfile()?.id.orEmpty()
+        return safeApiCallDirect(
+            apiCall = { apiService.getLoginProfile(currentUserId) },
             onSuccess = {
                 session.saveProfile(it)
+                databaseHelper.insertUsers(listOf(it.toUserEntity()))
             }
         )
     }
@@ -143,20 +93,31 @@ class RepositoryImpl(
         return flow {
             try {
                 val response = apiService.registerUser(
-                    fullname,
-                    username,
-                    email,
-                    phone,
-                    password,
-                    domicile,
-                    userType,
-                    imageProfile
+                    fullname = fullname,
+                    username = username,
+                    email = email,
+                    phone = phone,
+                    password = password,
+                    domicile = domicile,
+                    userType = userType,
+                    imageProfile = imageProfile
                 )
-                if (response.data != null) {
-                    databaseHelper.insertUsers(listOf(response.data.toUserEntity()))
-                    emit(Result.Success(response.data))
+                val user = response.userResponse ?: if (!response.id.isNullOrBlank()) {
+                    UserResponse(
+                        id = response.id,
+                        rawEmail = email,
+                        rawFullname = fullname,
+                        rawUsername = username,
+                        rawPhone = phone,
+                        rawDomisili = domicile,
+                        rawUserType = userType
+                    )
+                } else null
+                if (user != null) {
+                    databaseHelper.insertUsers(listOf(user.toUserEntity()))
+                    emit(Result.Success(user))
                 } else {
-                    emit(Result.Error(Exception(response.message)))
+                    emit(Result.Error(Exception("Registration failed: User not created")))
                 }
             } catch (ex: Exception) {
                 emit(Result.Error(ex))
@@ -174,31 +135,12 @@ class RepositoryImpl(
         userType: String,
         imageProfile: ByteArray?
     ): Flow<Result<UserResponse>> {
-        return flow {
-            try {
-                val response = apiService.updateMe(
-                    fullname,
-                    username,
-                    email,
-                    phone,
-                    password,
-                    domicile,
-                    userType,
-                    imageProfile
-                )
-                if (response.data != null) {
-                    emit(Result.Success(response.data))
-                } else {
-                    emit(Result.Error(Exception(response.message)))
-                }
-            } catch (ex: Exception) {
-                emit(Result.Error(ex))
-            }
-        }.flowOn(Dispatchers.IO)
+        val userId = session.getProfile()?.id.orEmpty()
+        return updateUser(userId, fullname, username, email, phone, password, domicile, userType, imageProfile)
     }
 
     override fun updateUser(
-        userId: Int,
+        userId: String,
         fullname: String,
         username: String,
         email: String,
@@ -211,28 +153,26 @@ class RepositoryImpl(
         return flow {
             try {
                 val response = apiService.updateUser(
-                    userId,
-                    fullname,
-                    username,
-                    email,
-                    phone,
-                    password,
-                    domicile,
-                    userType,
-                    imageProfile
+                    userId = userId,
+                    fullname = fullname,
+                    phone = phone,
+                    domicile = domicile,
+                    username = username,
+                    userType = userType,
+                    imageProfile = imageProfile
                 )
-                if (response.data != null) {
-                    emit(Result.Success(response.data))
-                } else {
-                    emit(Result.Error(Exception(response.message)))
+                databaseHelper.insertUsers(listOf(response.toUserEntity()))
+                if (userId == session.getProfile()?.id) {
+                    session.saveProfile(response)
                 }
+                emit(Result.Success(response))
             } catch (ex: Exception) {
                 emit(Result.Error(ex))
             }
         }.flowOn(Dispatchers.IO)
     }
 
-    override fun getUser(userId: Int): Flow<Result<UserEntity>> {
+    override fun getUser(userId: String): Flow<Result<UserEntity>> {
         return channelFlow {
             try {
                 databaseHelper.getAllUsersAsFlow()
@@ -256,7 +196,7 @@ class RepositoryImpl(
     }
 
     override fun getListUsers(): Flow<Result<List<UserEntity>>> {
-        return networkBoundResource(
+        return networkBoundResourceDirect(
             query = { databaseHelper.getAllUsersAsFlow() },
             fetch = { apiService.getListUsers() },
             saveFetchResult = { networkSource ->
@@ -282,7 +222,9 @@ class RepositoryImpl(
                 if (cache.isNotEmpty()) {
                     emit(Result.Success(cache))
                 } else {
-                    apiService.getListUsers()
+                    val remote = apiService.getListUsers()
+                    databaseHelper.insertUsers(remote.map { it.toUserEntity() })
+                    emit(Result.Success(databaseHelper.getAllUsers()))
                 }
             } catch (ex: Exception) {
                 emit(Result.Error(ex))
@@ -290,10 +232,10 @@ class RepositoryImpl(
         }
     }
 
-    override fun getLocalUser(userId: Int): Flow<Result<UserEntity>> {
+    override fun getLocalUser(userId: String): Flow<Result<UserEntity>> {
         return flow {
             try {
-                databaseHelper.getUserById(userId.toLong())
+                databaseHelper.getUserById(userId)
                     .collectLatest {
                         if (it.isNotEmpty()) {
                             emit(Result.Success(it.first()))
@@ -308,7 +250,7 @@ class RepositoryImpl(
     }
 
     override fun getPeriods(): Flow<Result<List<PeriodEntity>>> {
-        return networkBoundResource(
+        return networkBoundResourceDirect(
             query = { databaseHelper.getAllPeriodsAsFlow() },
             fetch = { apiService.getPeriods() },
             saveFetchResult = { networkSource ->
@@ -326,19 +268,32 @@ class RepositoryImpl(
         )
     }
 
+    override fun addPeriode(periodeName: String, startDate: String, endDate: String): Flow<Result<PeriodeResponse>> {
+        return safeApiCallDirect(
+            apiCall = { apiService.addPeriode(periodeName, startDate, endDate) },
+            onSuccess = {
+                databaseHelper.insertPeriods(listOf(it.toPeriodEntity()))
+            }
+        )
+    }
+
     override fun getTransactions(
         periodId: Int?,
         status: String?,
         paymentId: Int?
     ): Flow<Result<List<TransactionEntity>>> {
-        return networkBoundResource(
+        return networkBoundResourceDirect(
             query = { databaseHelper.getAllTransactionsAsFlow() },
             fetch = { apiService.getTransactions(periodId, status, paymentId) },
             saveFetchResult = { networkSource ->
                 val localTransactions = databaseHelper.getAllTransactions()
                 val networkTransactionIds = networkSource.map { it.transactionId }.toSet()
                 val transactionsToDelete = localTransactions
-                    .filter { it.transactionId !in networkTransactionIds }
+                    .filter {
+                        (periodId == null || it.periodId == periodId) &&
+                                (status == null || it.statusTransaksi == status) &&
+                                it.transactionId !in networkTransactionIds
+                    }
                     .map { it.transactionId }
 
                 databaseHelper.deleteTransactionByIds(transactionsToDelete)
@@ -352,9 +307,8 @@ class RepositoryImpl(
         )
     }
 
-    // SQL Delight
     override fun getPayments(): Flow<Result<List<PaymentEntity>>> {
-        return networkBoundResource(
+        return networkBoundResourceDirect(
             query = { databaseHelper.getAllPaymentsAsFlow() },
             fetch = { apiService.getPayments() },
             saveFetchResult = { networkSource ->
@@ -380,16 +334,8 @@ class RepositoryImpl(
     ): Flow<Result<Unit>> {
         return flow {
             try {
-                val response = apiService.changePassword(
-                    currentPassword,
-                    newPassword,
-                    confirmNewPassword
-                )
-                if (response.code == 200) {
-                    emit(Result.Success(Unit))
-                } else {
-                    emit(Result.Error(Exception(response.message)))
-                }
+                apiService.changePassword(newPassword)
+                emit(Result.Success(Unit))
             } catch (ex: Exception) {
                 emit(Result.Error(ex))
             }
@@ -397,8 +343,8 @@ class RepositoryImpl(
     }
 
     override fun addTransaction(
-        userId: Int?,
-        reportedByUserId: Int?,
+        userId: String?,
+        reportedByUserId: String?,
         amount: Double?,
         transactionDate: String?,
         periodeId: Int?,
@@ -416,12 +362,8 @@ class RepositoryImpl(
                     paymentId = paymentId,
                     file = file
                 )
-
-                if (response.data != null) {
-                    emit(Result.Success(true))
-                } else {
-                    emit(Result.Error(Exception(response.message)))
-                }
+                databaseHelper.insertTransactions(listOf(response.toTransactionEntity()))
+                emit(Result.Success(true))
             } catch (e: JsonConvertException) {
                 val message = normalizeErrorMessage(e)
                 emit(Result.Error(Exception(message)))
@@ -431,4 +373,53 @@ class RepositoryImpl(
             }
         }.flowOn(Dispatchers.IO)
     }
+
+    override fun updateTransactionStatus(
+        transactionId: Int,
+        status: String
+    ): Flow<Result<TransactionEntity>> {
+        val confirmedById = session.getProfile()?.id
+        return safeApiCallDirect(
+            apiCall = { apiService.updateTransactionStatus(transactionId, status, confirmedById) },
+            onSuccess = { transactionResponse ->
+                databaseHelper.insertTransactions(listOf(transactionResponse.toTransactionEntity()))
+            }
+        ).map { result ->
+            when (result) {
+                is Result.Success -> Result.Success(result.data.toTransactionEntity())
+                is Result.Error -> Result.Error(result.t)
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun deleteTransaction(
+        transactionId: Int
+    ): Flow<Result<Unit>> {
+        return flow {
+            try {
+                apiService.deleteTransaction(transactionId)
+                databaseHelper.deleteTransactionById(transactionId.toLong())
+                emit(Result.Success(Unit))
+            } catch (e: JsonConvertException) {
+                val message = normalizeErrorMessage(e)
+                emit(Result.Error(Exception(message)))
+            } catch (e: Exception) {
+                val message = normalizeErrorMessage(e)
+                emit(Result.Error(Exception(message)))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override fun exportTransactions(
+        periodId: Int?,
+        userId: String?,
+        status: String?,
+        format: String
+    ): Flow<Result<ByteArray>> = flow {
+        try {
+            emit(Result.Success(byteArrayOf()))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
 }

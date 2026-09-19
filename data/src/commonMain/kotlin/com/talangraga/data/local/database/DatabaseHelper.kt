@@ -84,7 +84,7 @@ class DatabaseHelper(factory: DriverFactory) {
             }
 
     fun insertTransactions(list: List<TransactionEntity>) {
-        list.forEach { (transactionId, amount, reportedDate, transactionDate, statusTransaksi, buktiTransferUrl, paymentType, paymentName, reportedBy, confirmedBy, userName, userId) ->
+        list.forEach { (transactionId, amount, reportedDate, transactionDate, statusTransaksi, buktiTransferUrl, paymentType, paymentName, reportedBy, confirmedBy, userName, userId, periodId) ->
             transactionsQueries.insertTransactionData(
                 transactionId = transactionId.toLong(),
                 amount = amount.toLong(),
@@ -97,7 +97,8 @@ class DatabaseHelper(factory: DriverFactory) {
                 reportedBy = reportedBy,
                 confirmedBy = confirmedBy,
                 userName = userName,
-                userId = userId.toLong()
+                userId = userId,
+                periodId = periodId.toLong()
             )
         }
     }
@@ -125,25 +126,29 @@ class DatabaseHelper(factory: DriverFactory) {
 
     fun insertUsers(list: List<UserEntity>) {
         list.forEach { (userId, userName, fullname, email, phone, domisili, userType, imageProfileUrl) ->
-            usersQueries.insertUserData(
-                userId = userId.toLong(),
-                username = userName,
-                fullname = fullname,
-                email = email,
-                phone = phone,
-                domisili = domisili,
-                userType = userType,
-                imageProfileUrl = imageProfileUrl
-            )
+            try {
+                usersQueries.insertUserData(
+                    userId = userId,
+                    username = userName,
+                    fullname = fullname,
+                    email = email,
+                    phone = phone,
+                    domisili = domisili,
+                    userType = userType,
+                    imageProfileUrl = imageProfileUrl
+                )
+            } catch (_: Exception) {
+                // Ignore local cache insert failure
+            }
         }
     }
 
     fun clearUsers() = usersQueries.deleteAllUserData()
 
-    fun deleteUserById(userId: Long) = usersQueries.deleteUserDataById(userId = userId)
+    fun deleteUserById(userId: String) = usersQueries.deleteUserDataById(userId = userId)
 
-    fun deleteUserByIds(userIds: List<Int>) {
-        userIds.forEach { deleteUserById(it.toLong()) }
+    fun deleteUserByIds(userIds: List<String>) {
+        userIds.forEach { deleteUserById(it) }
     }
 
     fun getAllUsers() = usersQueries.selectAllUserData().executeAsList().map { it.toUserEntity() }
@@ -156,7 +161,7 @@ class DatabaseHelper(factory: DriverFactory) {
                 data.map { it.toUserEntity() }
             }
 
-    fun getUserById(userId: Long): Flow<List<UserEntity>> {
+    fun getUserById(userId: String): Flow<List<UserEntity>> {
         return usersQueries.selectUser(userId).asFlow()
             .mapToList(Dispatchers.IO)
             .map { data ->

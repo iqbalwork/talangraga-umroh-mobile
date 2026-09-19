@@ -6,4 +6,5 @@ object SessionKey {
     const val REFRESH_TOKEN_KEY = "refreshTokenKey"
     const val PROFILE_KEY = "profile"
     const val DARK_MODE_KEY = "isDarkMode"
+    const val LAST_HOME_PERIOD_ID = "lastHomePeriodId"
 }

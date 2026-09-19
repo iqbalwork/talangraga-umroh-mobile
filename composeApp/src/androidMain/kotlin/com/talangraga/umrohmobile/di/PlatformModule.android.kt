@@ -9,6 +9,12 @@ import org.koin.dsl.module
 
 actual val platformModule: Module
     get() = module {
-        single<HttpClientEngine> { OkHttp.create() }
+        single<HttpClientEngine> { OkHttp.create() {
+            config {
+                // Only for debug/local development
+//                sslSocketFactory(trustAllSslSocketFactory, trustAllCerts[0] as X509TrustManager)
+                hostnameVerifier { _, _ -> true }
+            }
+        } }
         single { DriverFactory(androidContext()) }
     }
