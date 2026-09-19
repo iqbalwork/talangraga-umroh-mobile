@@ -1,0 +1,75 @@
+name: Build & Publish Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name for release (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Create secret.properties
+        run: |
+          cat <<EOF > secret.properties
+          signing_key_password=${{ secrets.SIGNING_KEY_PASSWORD || 'talangraga165' }}
+          signing_keystore_password=${{ secrets.SIGNING_KEYSTORE_PASSWORD || 'talangraga165' }}
+          signing_key_alias=${{ secrets.SIGNING_KEY_ALIAS || 'talangraga' }}
+          signing_key_location=${{ secrets.SIGNING_KEY_LOCATION || '../keystore/talangraga_keystore.jks' }}
+          stagingUrl=${{ secrets.STAGING_URL || 'https://gcxaktjbwiduirhcxgrv.supabase.co/' }}
+          productionUrl=${{ secrets.PRODUCTION_URL || 'https://gcxaktjbwiduirhcxgrv.supabase.co/' }}
+          supabaseAnonKey=${{ secrets.SUPABASE_ANON_KEY || 'sb_publishable_UfPriGa3mrodCgpru7HlBA_XGZhuE4Q' }}
+          kotzillaStagingKey=${{ secrets.KOTZILLA_STAGING_KEY || 'ktz-sdk-DZMH3UFugdk5m6UV2gMBr876g8uoFkhPBFb1A28lojM' }}
+          kotzillaProductionKey=${{ secrets.KOTZILLA_PRODUCTION_KEY || 'ktz-sdk-nO-XzT4ULQfLeuf4f3PYTCRGtGYmJHtvP3_D4S_v078' }}
+          EOF
+
+      - name: Build APK (Production & Staging Release)
+        run: ./gradlew :androidApp:assembleProductionRelease :androidApp:assembleStagingRelease --no-daemon
+
+      - name: Prepare APKs for Release
+        run: |
+          TAG_NAME="${{ github.ref_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.tag_name }}" ]; then
+            TAG_NAME="${{ github.event.inputs.tag_name }}"
+          fi
+          
+          mkdir -p release-apks
+          cp androidApp/build/outputs/apk/production/release/androidApp-production-release.apk release-apks/TalangragaUmroh-Production-${TAG_NAME}.apk
+          cp androidApp/build/outputs/apk/staging/release/androidApp-staging-release.apk release-apks/TalangragaUmroh-Staging-${TAG_NAME}.apk
+
+      - name: Upload APKs to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-apks/*.apk
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || github.event.inputs.tag_name || 'v1.0.0' }}
+          name: Release ${{ github.ref_type == 'tag' && github.ref_name || github.event.inputs.tag_name || 'v1.0.0' }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
